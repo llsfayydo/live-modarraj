@@ -1,0 +1,19 @@
+{
+  "name": "live-modarraj",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Premium Sports Dashboard Engine",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.4.1",
+    "redis": "^4.6.14",
+    "socket.io": "^4.7.5"
+  }
+}
