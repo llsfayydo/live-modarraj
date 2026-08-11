@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدرج لايف | Premium Modarraj</title>
+    <!-- استدعاء المكتبة السحابية المستقرة -->
+    <script src="https://cloudflare.com"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a; 
+            --card-dark: #1e293b;
+            --accent-gold: #f59e0b; 
+            --text-main: #f8fafc;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0; padding: 0;
+        }
+        header {
+            background: linear-gradient(135deg, #1e3a8a, #0f172a);
+            padding: 30px 20px; text-align: center;
+            border-bottom: 3px solid var(--accent-gold);
+        }
+        .ad-banner-space {
+            background: linear-gradient(90deg, #1e293b, #334155);
+            border: 1px dashed var(--accent-gold);
+            border-radius: 10px;
+            margin: 15px auto;
+            padding: 15px;
+            text-align: center;
+            max-width: 760px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .ad-banner-space:hover {
+            background: linear-gradient(90deg, #334155, #1e293b);
+            border-style: solid;
+        }
+        .ad-text { color: #94a3b8; font-size: 11px; margin-bottom: 5px; }
+        .ad-title { color: var(--accent-gold); font-weight: bold; font-size: 15px; text-decoration: none; }
+        .date-bar { display: flex; justify-content: center; gap: 15px; margin: 25px auto; max-width: 600px; }
+        .date-btn {
+            background: var(--card-dark); color: white; border: 2px solid #334155;
+            padding: 10px 25px; border-radius: 30px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .date-btn.active, .date-btn:hover {
+            background: var(--accent-gold); color: var(--bg-dark); border-color: var(--accent-gold);
+        }
+        .container { max-width: 800px; margin: 0 auto; padding: 0 20px 50px 20px; }
+        .league-title {
+            background: #1e3a8a; color: white; padding: 12px 20px; border-radius: 8px;
+            margin: 30px 0 15px 0; font-weight: bold; border-right: 5px solid var(--accent-gold);
+        }
+        .match-card {
+            background: var(--card-dark); border-radius: 14px; padding: 20px; margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; flex-direction: column; gap: 15px;
+        }
+        .match-main { display: flex; justify-content: space-between; align-items: center; }
+        .team { display: flex; flex-direction: column; align-items: center; width: 35%; }
+        .team-logo { width: 55px; height: 55px; object-fit: contain; margin-bottom: 8px; }
+        .team-name { font-size: 15px; font-weight: bold; text-align: center; }
+        .info-sec { width: 30%; text-align: center; }
+        .score { font-size: 30px; font-weight: bold; color: var(--accent-gold); }
+        .status-badge { background: #ef4444; color: white; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .countdown { color: #94a3b8; font-size: 12px; font-weight: bold; direction: ltr; }
+        .match-footer {
+            border-top: 1px solid #334155; padding-top: 10px;
+            display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8;
+        }
+        .no-matches { text-align: center; padding: 40px; color: #94a3b8; background: var(--card-dark); border-radius: 12px; font-weight: bold; font-size: 16px; border: 1px dashed #334155; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 style="margin:0; font-size:28px;">مدرج لايف - Live Modarraj ⚽</h1>
+        <p style="margin:5px 0 0 0; color:#94a3b8;">تغطية حية شاملة للدوريات العربية والعالمية بدون إعلانات مزعجة</p>
+    </header>
+
+    <div class="container">
+        <!-- المساحة الإعلانية العلوية -->
+        <div class="ad-banner-space" onclick="window.location.href='mailto:ads@://modarraj.com رعاية إعلانية'">
+            <div class="ad-text">مساحة إعلانية مباشرة مخصصة للمتاجر الرياضية وتطبيقات التوصيل</div>
+            <a href="#" class="ad-title">أعلن هنا بمشاهدات يومية ضخمة من جماهير الكرة 📢 اضغط للتواصل عبر البريد</a>
+        </div>
+
+        <!-- شريط تصفح التواريخ -->
+        <div class="date-bar">
+            <button class="date-btn" id="btn-yesterday">الأمس</button>
+            <button class="date-btn active" id="btn-today">اليوم</button>
+            <button class="date-btn" id="btn-tomorrow">الغد</button>
+        </div>
+
+        <div id="matches-list">
+            <div class="no-matches">جاري الاتصال بالسيرفر وجلب المباريات...</div>
+        </div>
+
+        <!-- المساحة الإعلانية السفلية -->
+        <div class="ad-banner-space" style="margin-top: 30px专" onclick="window.location.href='mailto:admin@modarraj.com'">
+            <div class="ad-text">رعاية رسمية لمدرج لايف</div>
+            <a href="#" class="ad-title" style="color:#27ae60;">مساحة شاغرة لرعاية ركن المعلقين والقنوات الناقلة 🏆</a>
+        </div>
+    </div>
+
+    <script>
+        const SERVER_URL = 'http://localhost:5000';
+        const socket = io(SERVER_URL);
+        const matchesList = document.getElementById('matches-list');
+        
+        let currentSelectedDate = '';
+        let timerIntervals = [];
+
+        const getFormatDate = (offset) => {
+            const d = new Date();
+            d.setDate(d.getDate() + offset);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+
+        const dates = {
+            yesterday: getFormatDate(-1),
+            today: getFormatDate(0),
+            tomorrow: getFormatDate(1)
+        };
+
+        function fetchMatches(dateString) {
+            currentSelectedDate = dateString;
+            matchesList.innerHTML = '<div class="no-matches">جاري تحديث الجداول والبطولات...</div>';
+            
+            fetch(`${SERVER_URL}/api/matches?date=${dateString}`)
+                .then(res => res.json())
+                .then(resData => renderGroupedMatches(resData.data))
+                .catch(() => { matchesList.innerHTML = '<div class="no-matches" style="color:#ef4444;">عذراً، فشل الاتصال بالمحرك الخلفي للموقع.</div>'; });
+        }
+
+        function renderGroupedMatches(matches) {
+            timerIntervals.forEach(clearInterval);
+            timerIntervals = [];
+
+            // 🌟 كود الحماية القاطع: إذا عادت المصفوفة فارغة من السيرفر، تظهر العبارة فوراً وينكسر التعليق 🌟
+            if (!matches || matches.length === 0) {
+                matchesList.innerHTML = '<div class="no-matches">🏁 لا توجد مباريات كبرى مجدولة حالياً في هذا التاريخ عبر شبكة البيانات.</div>';
+                return;
+            }
+
+            const grouped = {};
+            matches.forEach(m => {
+                const leagueName = m.league?.name || "بطولات أخرى";
+                if (!grouped[leagueName]) grouped[leagueName] = [];
+                grouped[leagueName].push(m);
+            });
+
+            matchesList.innerHTML = '';
+
+            for (const leagueName in grouped) {
+                const header = document.createElement('div');
+                header.className = 'league-title';
+                header.textContent = `🏆 ${leagueName}`;
+                matchesList.appendChild(header);
+
+                grouped[leagueName].forEach((match, i) => {
+                    const card = document.createElement('div');
+                    card.className = 'match-card';
+                    const uId = `${match.fixture.id}-${i}`;
+
+                    card.innerHTML = `
+                        <div class="match-main">
+                            <div class="team">
+                                <img class="team-logo" src="${match.teams.home.logo}" onerror="this.src='https://thesportsdb.com'">
+                                <div class="team-name">${match.teams.home.name}</div>
+                            </div>
+                            <div class="info-sec" id="info-${uId}"></div>
+                            <div class="team">
+                                <img class="team-logo" src="${match.teams.away.logo}" onerror="this.src='https://thesportsdb.com'">
+                                <div class="team-name">${match.teams.away.name}</div>
+                            </div>
+                        </div>
+                        <div class="match-footer">
+                            <div>📺 القناة: <span style="color:white">${match.media?.channel || 'SSC / beIN'}</span></div>
+                            <div>🎙️ المعلق: <span style="color:white">${match.media?.commentator || 'محدد لاحقاً'}</span></div>
+                        </div>`;
+                    matchesList.appendChild(card);
+
+                    const infoBox = document.getElementById(`info-${uId}`);
+                    const status = match.fixture?.status?.short || "NS";
+
+                    if (status === "NS") {
+                        const mDate = new Date(match.fixture.date).getTime();
+                        const tId = setInterval(() => {
+                            const diff = mDate - Date.now();
+                            if (diff < 0) { clearInterval(tId); infoBox.innerHTML = '<span class="status-badge" style="background:green">بدأت الآن</span>'; return; }
+                            const h = Math.floor((diff % 86400000) / 3600000).toString().padStart(2,'0');
+                            const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2,'0');
+                         
+   const s = Math.floor((diff % 60000) / 1000).toString().padStart(2,'0');
+infoBox.innerHTML = <div class="score">VS</div><div class="countdown">تبدأ بعد ${h}:${m}:${s}</div>;}, 1000);timerIntervals.push(tId);} else if (status === "LIVE") {infoBox.innerHTML = <div class="score" style="color:#ef4444">${match.goals.home} - ${match.goals.away}</div><span class="status-badge">مباشر ${match.fixture.status.elapsed}'</span>;} else {infoBox.innerHTML = <div class="score">${match.goals.home} - ${match.goals.away}</div><span class="status-badge" style="background:#27ae60">انتهت</span>;}});}}document.getElementById('btn-yesterday').onclick = (e) => { setActive(e.target); fetchMatches(dates.yesterday); };document.getElementById('btn-today').onclick = (e) => { setActive(e.target); fetchMatches(dates.today); };document.getElementById('btn-tomorrow').onclick = (e) => { setActive(e.target); fetchMatches(dates.tomorrow); };function setActive(btn) { document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }fetchMatches(dates.today);socket.on('matchUpdate', (res) => { if (res.date === currentSelectedDate) renderGroupedMatches(res.matches); });
