@@ -294,7 +294,24 @@
 
                 grouped[leagueName].forEach((match, i) => {
                     const card = document.createElement('div');
-                    card.className = `match-card ${match.fixture?.status?.short === "LIVE" ? "live-priority" : ""}`;
+                    const isLive =
+    ['LIVE', 'HT'].includes(
+        match.fixture?.status?.short
+    );
+
+const isImportant =
+    Number(match.priority || 0) >= 100;
+
+card.className =
+    `match-card ${
+        isLive
+            ? 'live-priority'
+            : ''
+    } ${
+        isImportant
+            ? 'important-match'
+            : ''
+    }`;
                     const uId = `${match.fixture.id}-${i}`;
 
                     card.innerHTML = `
