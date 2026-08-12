@@ -42,6 +42,21 @@ mongoose.connect(dbUrl, { serverSelectionTimeoutMS: 5000 })
 
 let localMemoryCache = {};
 
+// دالة تحويل التاريخ من YYYY-MM-DD إلى DD.MM.YYYY
+const formatDateForTheSportsDB = (dateString) => {
+    try {
+        // إذا كان التاريخ بصيغة YYYY-MM-DD
+        if (dateString.includes('-')) {
+            const [year, month, day] = dateString.split('-');
+            return `${day}.${month}.${year}`; // تحويل إلى DD.MM.YYYY
+        }
+        return dateString; // إذا كان بصيغة صحيحة بالفعل
+    } catch (e) {
+        console.error('خطأ في تحويل التاريخ:', e);
+        return dateString;
+    }
+};
+
 // قائمة الدوريات الرئيسية
 const LEAGUES = [
     'English Premier League',
@@ -67,49 +82,71 @@ app.get('/api/matches', async (req, res) => {
             return res.json({ 
                 source: 'Local Memory Cache', 
                 data: localMemoryCache[cacheKey].data,
-                cached: true 
+                cached: true,
+                count: localMemoryCache[cacheKey].data.length
             });
         }
 
-        console.log(`📡 جلب مباريات من TheSportsDB ليوم: ${requestedDate}`);
+        console.log(`\n📡 جلب مباريات من TheSportsDB ليوم: ${requestedDate}`);
+        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
         
         let allEvents = [];
         const apiKey = process.env.THESPORTSDB_API_KEY || '5010468507';
+        
+        // تحويل التاريخ إلى الصيغة الصحيحة
+        const formattedDate = formatDateForTheSportsDB(requestedDate);
+        console.log(`📅 التاريخ الأصلي: ${requestedDate}`);
+        console.log(`📅 التاريخ بصيغة API: ${formattedDate}`);
+        console.log(`🔑 مفتاح API: ${apiKey.substring(0, 5)}...`);
 
         // محاولة جلب المباريات من كل دوري
         for (const league of LEAGUES) {
             try {
-                console.log(`🔗 جاري جلب مباريات ${league} في تاريخ ${requestedDate}`);
+                console.log(`\n🔗 جاري جلب مباريات: ${league}`);
                 
-                const url = `https://www.thesportsdb.com/api/v1/json/${apiKey}/eventsday.php?d=${requestedDate}&l=${encodeURIComponent(league)}`;
-                console.log(`📍 الرابط: ${url.substring(0, 100)}...`);
+                // استخدام الصيغة الصحيحة للرابط
+                const url = `https://www.thesportsdb.com/api/v1/json/${apiKey}/eventsday.php?d=${formattedDate}&l=${encodeURIComponent(league)}`;
+                
+                console.log(`   🌐 الرابط: ${url.substring(0, 120)}...`);
                 
                 const response = await axios.get(url, { 
-                    timeout: 8000,
+                    timeout: 12000,
                     headers: {
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                     }
                 });
                 
+                console.log(`   ✅ حالة الرد: ${response.status}`);
+                
                 if (response.data && response.data.results) {
                     const leagueEvents = Array.isArray(response.data.results) 
                         ? response.data.results 
                         : [response.data.results];
-                    console.log(`✅ تم جلب ${leagueEvents.length} مبارة من ${league}`);
-                    allEvents = allEvents.concat(leagueEvents);
+                    
+                    // تصفية النتائج الفارغة
+                    const validEvents = leagueEvents.filter(e => e && e.strHomeTeam && e.strAwayTeam);
+                    console.log(`   📊 النتائج: ${validEvents.length} مبارة صحيحة`);
+                    
+                    allEvents = allEvents.concat(validEvents);
+                } else {
+                    console.log(`   ⚠️ لا توجد نتائج في الرد`);
                 }
             } catch (err) {
-                console.log(`⚠️ فشل جلب مباريات ${league}: ${err.message}`);
+                console.log(`   ❌ خطأ: ${err.message}`);
+                if (err.response) {
+                    console.log(`   📍 حالة الخطأ: ${err.response.status}`);
+                }
                 // المتابعة مع الدوريات التالية
                 continue;
             }
         }
 
-        console.log(`📊 إجمالي المباريات المجلوبة: ${allEvents.length}`);
+        console.log(`\n📊 إجمالي المباريات المجلوبة: ${allEvents.length}`);
+        console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
 
         // إذا كانت النتيجة فارغة، إعادة بيانات عينة
         if (!allEvents || allEvents.length === 0) {
-            console.log(`⚠️ لم يتم جلب مباريات، سيتم عرض بيانات تجريبية`);
+            console.log(`⚠️ لم يتم جلب مباريات حقيقية، سيتم عرض بيانات تجريبية`);
             
             const demoMatches = [
                 {
@@ -187,7 +224,7 @@ app.get('/api/matches', async (req, res) => {
                 };
             });
 
-        console.log(`✅ تم معالجة ${standardMatches.length} مبارة`);
+        console.log(`✅ تم معالجة ${standardMatches.length} مبارة\n`);
 
         // حفظ النتيجة في الكاش الداخلي لمدة دقيقة واحدة
         localMemoryCache[cacheKey] = { 
@@ -209,6 +246,11 @@ app.get('/api/matches', async (req, res) => {
 
     } catch (error) {
         console.error("❌ خطأ عام في جلب المباريات:", error.message);
+        if (error.response) {
+            console.error("📍 حالة الخطأ:", error.response.status);
+            console.error("📝 البيانات:", error.response.data);
+        }
+        
         return res.status(500).json({ 
             source: 'Error', 
             data: [],
@@ -228,27 +270,71 @@ app.get('/api/health', (req, res) => {
     res.json({ 
         status: 'ok',
         message: 'السيرفر يعمل بشكل طبيعي',
+        nodeVersion: process.version,
+        environment: process.env.NODE_ENV || 'development',
+        apiKey: process.env.THESPORTSDB_API_KEY ? '✅ موجود' : '❌ غير موجود',
         timestamp: new Date().toISOString()
     });
 });
 
+// endpoint جديد: اختبار اتصال API
+app.get('/api/test', async (req, res) => {
+    try {
+        const apiKey = process.env.THESPORTSDB_API_KEY || '5010468507';
+        const testDate = '12.08.2026';
+        const testUrl = `https://www.thesportsdb.com/api/v1/json/${apiKey}/eventsday.php?d=${testDate}&l=English%20Premier%20League`;
+        
+        console.log(`🧪 اختبار الاتصال بـ TheSportsDB...`);
+        console.log(`📍 الرابط: ${testUrl}`);
+        
+        const response = await axios.get(testUrl, { timeout: 10000 });
+        
+        res.json({
+            status: 'success',
+            message: 'اتصال API يعمل بشكل صحيح',
+            apiKey: apiKey.substring(0, 5) + '...',
+            responseStatus: response.status,
+            dataCount: response.data.results ? (Array.isArray(response.data.results) ? response.data.results.length : 1) : 0,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            status: 'error',
+            message: 'فشل اختبار الاتصال',
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // معالج أخطاء 404
 app.use((req, res) => {
-    res.status(404).json({ error: 'الرابط المطلوب غير موجود', path: req.path });
+    res.status(404).json({ 
+        error: 'الرابط المطلوب غير موجود',
+        path: req.path,
+        method: req.method
+    });
 });
 
 // معالج أخطاء عام
 app.use((err, req, res, next) => {
     console.error('❌ خطأ غير متوقع:', err);
-    res.status(500).json({ error: 'حدث خطأ في السيرفر', message: err.message });
+    res.status(500).json({ 
+        error: 'حدث خطأ في السيرفر',
+        message: err.message 
+    });
 });
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
+    console.log(`\n${'═'.repeat(60)}`);
     console.log(`🚀 السيرفر يعمل بكفاءة وأمان على منفذ ${PORT}`);
+    console.log(`${'═'.repeat(60)}`);
     console.log(`📡 الواجهة الأمامية متاحة على: http://localhost:${PORT}`);
     console.log(`📊 API المباريات متاح على: http://localhost:${PORT}/api/matches?date=YYYY-MM-DD`);
     console.log(`💚 حالة السيرفر: http://localhost:${PORT}/api/health`);
+    console.log(`🧪 اختبار API: http://localhost:${PORT}/api/test`);
+    console.log(`${'═'.repeat(60)}\n`);
 });
 
 // معالجة الأخطاء غير المتوقعة
