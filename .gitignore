@@ -1,0 +1,52 @@
+# بيئة البيانات
+.env
+.env.local
+.env.*.local
+
+# نتائج npm
+/node_modules/
+npm-debug.log
+npm-error.log
+yarn-debug.log
+yarn-error.log
+
+# ملفات النظام
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ملفات المحررات
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ملفات السجلات
+logs/
+*.log
+
+# مجلدات النتائج
+/dist/
+/build/
+/.next/
+
+# ملفات مؤقتة
+.tmp/
+temp/
+
+# ملفات MongoDB
+*.mongodb
+
+# ملفات الاختبار
+coverage/
+.nyc_output/
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
