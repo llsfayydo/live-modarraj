@@ -42,18 +42,17 @@ mongoose.connect(dbUrl, { serverSelectionTimeoutMS: 5000 })
 
 let localMemoryCache = {};
 
-// دالة مساعدة لتحويل التاريخ إلى صيغة صحيحة
-const formatDateForAPI = (dateString) => {
-    try {
-        const date = new Date(dateString);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${day}.${month}.${year}`; // صيغة DD.MM.YYYY
-    } catch (e) {
-        return dateString;
-    }
-};
+// قائمة الدوريات الرئيسية
+const LEAGUES = [
+    'English Premier League',
+    'Serie A',
+    'La Liga',
+    'Ligue 1',
+    'Bundesliga',
+    'Saudi Professional League',
+    'Egyptian Premier League',
+    'UEFA Champions League'
+];
 
 // مسار جلب المباريات الاحترافي المباشر بالتواريخ والقنوات والمعلقين
 app.get('/api/matches', async (req, res) => {
@@ -65,62 +64,57 @@ app.get('/api/matches', async (req, res) => {
         // فحص الكاش المحلي لتسريع الموقع
         if (localMemoryCache[cacheKey] && Date.now() < localMemoryCache[cacheKey].expireAt) {
             console.log(`✅ تم جلب البيانات من الكاش المحلي للتاريخ: ${requestedDate}`);
-            return res.json({ source: 'Local Memory Cache', data: localMemoryCache[cacheKey].data });
+            return res.json({ 
+                source: 'Local Memory Cache', 
+                data: localMemoryCache[cacheKey].data,
+                cached: true 
+            });
         }
 
         console.log(`📡 جلب مباريات من TheSportsDB ليوم: ${requestedDate}`);
         
-        let events = [];
-        const formattedDate = formatDateForAPI(requestedDate);
+        let allEvents = [];
+        const apiKey = process.env.THESPORTSDB_API_KEY || '5010468507';
 
-        try {
-            // الرابط الصحيح - استخدام eventslast.php بدون معاملات أو مع التاريخ الصحيح
-            console.log(`🔗 محاولة الاتصال برابط: https://www.thesportsdb.com/api/v1/eventslast.php`);
-            
-            const response = await axios.get(
-                `https://www.thesportsdb.com/api/v1/eventslast.php`,
-                { 
-                    timeout: 10000,
+        // محاولة جلب المباريات من كل دوري
+        for (const league of LEAGUES) {
+            try {
+                console.log(`🔗 جاري جلب مباريات ${league} في تاريخ ${requestedDate}`);
+                
+                const url = `https://www.thesportsdb.com/api/v1/json/${apiKey}/eventsday.php?d=${requestedDate}&l=${encodeURIComponent(league)}`;
+                console.log(`📍 الرابط: ${url.substring(0, 100)}...`);
+                
+                const response = await axios.get(url, { 
+                    timeout: 8000,
                     headers: {
                         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                     }
+                });
+                
+                if (response.data && response.data.results) {
+                    const leagueEvents = Array.isArray(response.data.results) 
+                        ? response.data.results 
+                        : [response.data.results];
+                    console.log(`✅ تم جلب ${leagueEvents.length} مبارة من ${league}`);
+                    allEvents = allEvents.concat(leagueEvents);
                 }
-            );
-            
-            console.log(`✅ تم الاتصال بنجاح، عدد المباريات: ${response.data.results ? response.data.results.length : 0}`);
-            events = response.data.results || response.data.events || [];
-            
-        } catch (apiErr) {
-            console.log("⚠️ محاولة الاتصال برابط بديل...");
-            console.error("تفاصيل الخطأ:", apiErr.message, apiErr.response?.status);
-            
-            try {
-                // رابط بديل 2 - جلب المباريات من جدول محدد
-                const fallbackResponse = await axios.get(
-                    `https://www.thesportsdb.com/api/v1/eventslast.php`,
-                    { 
-                        timeout: 10000,
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                        }
-                    }
-                );
-                events = fallbackResponse.data.results || [];
-                console.log(`✅ تم استخدام الرابط البديل، عدد المباريات: ${events.length}`);
-            } catch (fallbackErr) {
-                console.error("❌ فشل الاتصال بـ TheSportsDB:", fallbackErr.message);
-                events = [];
+            } catch (err) {
+                console.log(`⚠️ فشل جلب مباريات ${league}: ${err.message}`);
+                // المتابعة مع الدوريات التالية
+                continue;
             }
         }
 
-        // إذا كانت القائمة فارغة في هذا اليوم يرسل مصفوفة فارغة آمنة
-        if (!events || events.length === 0) {
-            console.log(`ℹ️ لا توجد مباريات مجدولة في التاريخ: ${requestedDate}`);
-            // إعادة بيانات عينة للاختبار
-            const demoData = [
+        console.log(`📊 إجمالي المباريات المجلوبة: ${allEvents.length}`);
+
+        // إذا كانت النتيجة فارغة، إعادة بيانات عينة
+        if (!allEvents || allEvents.length === 0) {
+            console.log(`⚠️ لم يتم جلب مباريات، سيتم عرض بيانات تجريبية`);
+            
+            const demoMatches = [
                 {
-                    idEvent: "demo1",
-                    strHomeTeam: "الاتحاد",
+                    idEvent: "demo001",
+                    strHomeTeam: "الاتحاد السعودي",
                     strAwayTeam: "الهلال",
                     strLeague: "الدوري السعودي",
                     intHomeScore: 0,
@@ -131,22 +125,42 @@ app.get('/api/matches', async (req, res) => {
                     strTime: "20:00",
                     strHomeTeamBadge: "https://www.thesportsdb.com/images/media/team/badge/default.png",
                     strAwayTeamBadge: "https://www.thesportsdb.com/images/media/team/badge/default.png"
+                },
+                {
+                    idEvent: "demo002",
+                    strHomeTeam: "الأهلي",
+                    strAwayTeam: "الزمالك",
+                    strLeague: "الدوري المصري",
+                    intHomeScore: 0,
+                    intAwayScore: 0,
+                    strStatus: "Not Started",
+                    strTVStation: "beIN Sports",
+                    dateEvent: requestedDate,
+                    strTime: "19:00",
+                    strHomeTeamBadge: "https://www.thesportsdb.com/images/media/team/badge/default.png",
+                    strAwayTeamBadge: "https://www.thesportsdb.com/images/media/team/badge/default.png"
                 }
             ];
-            events = demoData;
+            
+            allEvents = demoMatches;
         }
 
         // إعادة هيكلة وتجهيز البيانات باللغة العربية والشعارات
-        const standardMatches = events
-            .filter(event => event.strHomeTeam && event.strAwayTeam) // تصفية البيانات غير الكاملة
-            .map(event => {
+        const standardMatches = allEvents
+            .filter(event => event && event.strHomeTeam && event.strAwayTeam)
+            .map((event, index) => {
+                const homeScore = parseInt(event.intHomeScore) || 0;
+                const awayScore = parseInt(event.intAwayScore) || 0;
+                
                 return {
                     fixture: {
-                        id: event.idEvent || Math.random().toString(36),
+                        id: event.idEvent || `match-${index}`,
                         date: event.dateEvent ? `${event.dateEvent}T${event.strTime || '00:00:00'}` : new Date().toISOString(),
                         status: {
-                            short: event.strStatus === "Not Started" ? "NS" : event.strStatus === "Final" ? "FT" : event.strStatus === "Half Time" ? "HT" : "LIVE",
-                            elapsed: event.intHomeScore !== null && event.intAwayScore !== null ? `${event.intHomeScore}-${event.intAwayScore}` : ""
+                            short: event.strStatus === "Not Started" ? "NS" : 
+                                   event.strStatus === "Final" ? "FT" : 
+                                   event.strStatus === "Half Time" ? "HT" : "LIVE",
+                            elapsed: event.strProgress || ""
                         }
                     },
                     league: {
@@ -163,8 +177,8 @@ app.get('/api/matches', async (req, res) => {
                         }
                     },
                     goals: {
-                        home: parseInt(event.intHomeScore) || 0,
-                        away: parseInt(event.intAwayScore) || 0
+                        home: homeScore,
+                        away: awayScore
                     },
                     media: {
                         channel: event.strTVStation || "SSC Sports / beIN",
@@ -173,26 +187,28 @@ app.get('/api/matches', async (req, res) => {
                 };
             });
 
-        // حفظ النتيجة في الكاش الداخلي لمدة 30 ثانية فقط
+        console.log(`✅ تم معالجة ${standardMatches.length} مبارة`);
+
+        // حفظ النتيجة في الكاش الداخلي لمدة دقيقة واحدة
         localMemoryCache[cacheKey] = { 
             data: standardMatches, 
-            expireAt: Date.now() + 30000 
+            expireAt: Date.now() + 60000 
         };
 
         // إرسال تحديث عبر Socket.io
         io.emit('matchUpdate', { date: requestedDate, matches: standardMatches });
         
-        console.log(`✅ تم إعادة ${standardMatches.length} مبارة للعميل`);
-        
         return res.json({ 
-            source: 'TheSportsDB Connection', 
+            source: 'TheSportsDB API', 
             data: standardMatches,
             count: standardMatches.length,
-            timestamp: new Date().toISOString()
+            date: requestedDate,
+            timestamp: new Date().toISOString(),
+            cached: false
         });
 
     } catch (error) {
-        console.error("❌ خطأ في جلب المباريات:", error.message);
+        console.error("❌ خطأ عام في جلب المباريات:", error.message);
         return res.status(500).json({ 
             source: 'Error', 
             data: [],
@@ -207,15 +223,24 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'live_modarraj_frontend.html'));
 });
 
+// endpoint للتحقق من حالة السيرفر
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'ok',
+        message: 'السيرفر يعمل بشكل طبيعي',
+        timestamp: new Date().toISOString()
+    });
+});
+
 // معالج أخطاء 404
 app.use((req, res) => {
-    res.status(404).json({ error: 'الرابط المطلوب غير موجود' });
+    res.status(404).json({ error: 'الرابط المطلوب غير موجود', path: req.path });
 });
 
 // معالج أخطاء عام
 app.use((err, req, res, next) => {
     console.error('❌ خطأ غير متوقع:', err);
-    res.status(500).json({ error: 'حدث خطأ في السيرفر' });
+    res.status(500).json({ error: 'حدث خطأ في السيرفر', message: err.message });
 });
 
 const PORT = process.env.PORT || 5000;
@@ -223,6 +248,7 @@ server.listen(PORT, () => {
     console.log(`🚀 السيرفر يعمل بكفاءة وأمان على منفذ ${PORT}`);
     console.log(`📡 الواجهة الأمامية متاحة على: http://localhost:${PORT}`);
     console.log(`📊 API المباريات متاح على: http://localhost:${PORT}/api/matches?date=YYYY-MM-DD`);
+    console.log(`💚 حالة السيرفر: http://localhost:${PORT}/api/health`);
 });
 
 // معالجة الأخطاء غير المتوقعة
