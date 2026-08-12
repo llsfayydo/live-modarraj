@@ -1,11 +1,11 @@
-import express from 'express';
-import http from 'http';
-import { Server } from 'socket.io';
-import mongoose from 'mongoose';
-import axios from 'axios';
-import { fileURLToPath } from 'url';
-import path from 'path';
-import dotenv from 'dotenv';
+import express from "express";
+import http from "http";
+import { Server } from "socket.io";
+import mongoose from "mongoose";
+import axios from "axios";
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -13,11 +13,10 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-    cors: {
-        origin: '*',
-        methods: ['GET', 'POST']
-    },
-    allowEIO3: true
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
 });
 
 app.use(express.json());
@@ -28,73 +27,17 @@ const __dirname = path.dirname(__filename);
 app.use(express.static(__dirname));
 
 /* =========================================================
-   CORS
+   ENV
 ========================================================= */
 
-app.use((req, res, next) => {
-
-    res.setHeader(
-        'Access-Control-Allow-Origin',
-        '*'
-    );
-
-    res.setHeader(
-        'Access-Control-Allow-Methods',
-        'GET,POST,OPTIONS'
-    );
-
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'Content-Type, Authorization'
-    );
-
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
-
-    next();
-});
-
-/* =========================================================
-   ENVIRONMENT
-========================================================= */
-
-const PORT =
-    process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
 const API_KEY =
-    process.env.THESPORTSDB_API_KEY;
+  process.env.THESPORTSDB_API_KEY;
 
 const DATABASE_URL =
-    process.env.DATABASE_URL ||
-    process.env.MONGODB_URI;
-
-/* =========================================================
-   MONGODB
-========================================================= */
-
-if (DATABASE_URL) {
-
-    mongoose
-        .connect(DATABASE_URL, {
-            serverSelectionTimeoutMS: 10000
-        })
-        .then(() => {
-            console.log('✅ MongoDB متصل بنجاح');
-        })
-        .catch((error) => {
-            console.error(
-                '⚠️ تعذر الاتصال بـ MongoDB:',
-                error.message
-            );
-        });
-
-} else {
-
-    console.log(
-        '⚠️ DATABASE_URL غير موجود - سيعمل السيرفر بدون MongoDB'
-    );
-}
+  process.env.DATABASE_URL ||
+  process.env.MONGODB_URI;
 
 /* =========================================================
    CACHE
@@ -102,297 +45,246 @@ if (DATABASE_URL) {
 
 const cache = new Map();
 
-const CACHE_TIME =
-    60 * 1000;
+const CACHE_TIME = 30 * 1000;
 
 /* =========================================================
-   DEFAULT LOGO
+   AXIOS
 ========================================================= */
 
-const DEFAULT_LOGO =
-    'https://www.thesportsdb.com/images/media/team/badge/default.png';
+const api = axios.create({
+  timeout: 20000,
+
+  headers: {
+    "User-Agent": "Live-Modarraj/1.0",
+    Accept: "application/json"
+  }
+});
 
 /* =========================================================
-   LEAGUE IMPORTANCE
+   DATABASE
 ========================================================= */
 
-const LEAGUE_PRIORITY = {
-
-    'Saudi Professional League': 100,
-
-    'UEFA Champions League': 100,
-
-    'FIFA World Cup': 100,
-
-    'Premier League': 95,
-
-    'English Premier League': 95,
-
-    'La Liga': 90,
-
-    'Serie A': 90,
-
-    'Bundesliga': 90,
-
-    'Ligue 1': 85,
-
-    'Egyptian Premier League': 80,
-
-    'CAF Champions League': 90,
-
-    'AFC Champions League': 90,
-
-    'AFC Champions League Elite': 95,
-
-    'UEFA Europa League': 90,
-
-    'UEFA Europa Conference League': 80,
-
-    'Saudi Kings Cup': 90,
-
-    'King Cup': 90
-};
+if (DATABASE_URL) {
+  mongoose
+    .connect(DATABASE_URL, {
+      serverSelectionTimeoutMS: 10000
+    })
+    .then(() => {
+      console.log("✅ MongoDB متصل");
+    })
+    .catch((error) => {
+      console.error(
+        "⚠️ MongoDB:",
+        error.message
+      );
+    });
+} else {
+  console.log(
+    "ℹ️ يعمل بدون MongoDB"
+  );
+}
 
 /* =========================================================
-   ARABIC LEAGUE NAMES
+   ARABIC LEAGUES
 ========================================================= */
 
 const ARABIC_LEAGUES = {
 
-    'Saudi Professional League':
-        'الدوري السعودي للمحترفين',
+  "Saudi-Arabian Pro League":
+    "الدوري السعودي للمحترفين",
 
-    'Premier League':
-        'الدوري الإنجليزي الممتاز',
+  "Saudi Professional League":
+    "الدوري السعودي للمحترفين",
 
-    'English Premier League':
-        'الدوري الإنجليزي الممتاز',
+  "Premier League":
+    "الدوري الإنجليزي الممتاز",
 
-    'La Liga':
-        'الدوري الإسباني',
+  "English Premier League":
+    "الدوري الإنجليزي الممتاز",
 
-    'Serie A':
-        'الدوري الإيطالي',
+  "La Liga":
+    "الدوري الإسباني",
 
-    'Bundesliga':
-        'الدوري الألماني',
+  "Serie A":
+    "الدوري الإيطالي",
 
-    'Ligue 1':
-        'الدوري الفرنسي',
+  "Bundesliga":
+    "الدوري الألماني",
 
-    'Egyptian Premier League':
-        'الدوري المصري الممتاز',
+  "Ligue 1":
+    "الدوري الفرنسي",
 
-    'UEFA Champions League':
-        'دوري أبطال أوروبا',
+  "UEFA Champions League":
+    "دوري أبطال أوروبا",
 
-    'UEFA Europa League':
-        'الدوري الأوروبي',
+  "UEFA Europa League":
+    "الدوري الأوروبي",
 
-    'UEFA Europa Conference League':
-        'دوري المؤتمر الأوروبي',
+  "UEFA Europa Conference League":
+    "دوري المؤتمر الأوروبي",
 
-    'CAF Champions League':
-        'دوري أبطال أفريقيا',
+  "CAF Champions League":
+    "دوري أبطال أفريقيا",
 
-    'AFC Champions League':
-        'دوري أبطال آسيا',
+  "AFC Champions League":
+    "دوري أبطال آسيا",
 
-    'AFC Champions League Elite':
-        'دوري أبطال آسيا للنخبة',
+  "AFC Champions League Elite":
+    "دوري أبطال آسيا للنخبة",
 
-    'FIFA World Cup':
-        'كأس العالم',
+  "FIFA World Cup":
+    "كأس العالم",
 
-    'Saudi Kings Cup':
-        'كأس خادم الحرمين الشريفين',
+  "King Cup":
+    "كأس الملك",
 
-    'King Cup':
-        'كأس الملك'
+  "Saudi Kings Cup":
+    "كأس خادم الحرمين الشريفين"
 };
 
 /* =========================================================
-   ARABIC TEAM NAMES
+   ARABIC TEAMS
 ========================================================= */
 
 const ARABIC_TEAMS = {
 
-    'Al Hilal':
-        'الهلال',
+  "Al-Hilal":
+    "الهلال",
 
-    'Al-Hilal':
-        'الهلال',
+  "Al Hilal":
+    "الهلال",
 
-    'Al Nassr':
-        'النصر',
+  "Al-Hilal Riyadh":
+    "الهلال",
 
-    'Al-Nassr':
-        'النصر',
+  "Al-Nassr":
+    "النصر",
 
-    'Al Ittihad':
-        'الاتحاد',
+  "Al Nassr":
+    "النصر",
 
-    'Al-Ittihad':
-        'الاتحاد',
+  "Al-Nassr Riyadh":
+    "النصر",
 
-    'Al Ahli':
-        'الأهلي',
+  "Al-Ittihad":
+    "الاتحاد",
 
-    'Al-Ahli':
-        'الأهلي',
+  "Al Ittihad":
+    "الاتحاد",
 
-    'Al Shabab':
-        'الشباب',
+  "Al-Ahli":
+    "الأهلي",
 
-    'Al-Shabab':
-        'الشباب',
+  "Al Ahli":
+    "الأهلي",
 
-    'Al Ettifaq':
-        'الاتفاق',
+  "Al-Shabab":
+    "الشباب",
 
-    'Al-Ettifaq':
-        'الاتفاق',
+  "Al Shabab":
+    "الشباب",
 
-    'Al Fateh':
-        'الفتح',
+  "Al-Ettifaq":
+    "الاتفاق",
 
-    'Al-Fateh':
-        'الفتح',
+  "Al Ettifaq":
+    "الاتفاق",
 
-    'Al Taawoun':
-        'التعاون',
+  "Al-Taawoun":
+    "التعاون",
 
-    'Al-Taawoun':
-        'التعاون',
+  "Al Taawoun":
+    "التعاون",
 
-    'Al Riyadh':
-        'الرياض',
+  "Al-Fateh":
+    "الفتح",
 
-    'Al-Riyadh':
-        'الرياض',
+  "Al Fateh":
+    "الفتح",
 
-    'Al Khaleej':
-        'الخليج',
+  "Al-Raed":
+    "الرائد",
 
-    'Al-Khaleej':
-        'الخليج',
+  "Al Raed":
+    "الرائد",
 
-    'Al Raed':
-        'الرائد',
+  "Al-Wehda":
+    "الوحدة",
 
-    'Al-Raed':
-        'الرائد',
+  "Al Wehda":
+    "الوحدة",
 
-    'Al Wehda':
-        'الوحدة',
+  "Al-Khaleej":
+    "الخليج",
 
-    'Al-Wehda':
-        'الوحدة',
+  "Al Khaleej":
+    "الخليج",
 
-    'Al Okhdood':
-        'الأخدود',
+  "Al-Okhdood":
+    "الأخدود",
 
-    'Al-Okhdood':
-        'الأخدود',
+  "Al Okhdood":
+    "الأخدود",
 
-    'Al Qadsiah':
-        'القادسية',
+  "Al-Qadsiah":
+    "القادسية",
 
-    'Al-Qadsiah':
-        'القادسية',
+  "Al Qadsiah":
+    "القادسية",
 
-    'Al Kholood':
-        'الخلود',
+  "Real Madrid":
+    "ريال مدريد",
 
-    'Al-Kholood':
-        'الخلود',
+  "Barcelona":
+    "برشلونة",
 
-    'Neom SC':
-        'نيوم',
+  "Atletico Madrid":
+    "أتلتيكو مدريد",
 
-    'Al Najma':
-        'النجمة',
+  "Manchester City":
+    "مانشستر سيتي",
 
-    'Al Najran':
-        'نجران',
+  "Manchester United":
+    "مانشستر يونايتد",
 
-    'Al Ettifaq':
-        'الاتفاق',
+  "Liverpool":
+    "ليفربول",
 
-    'Al Ahli Saudi':
-        'الأهلي',
+  "Arsenal":
+    "أرسنال",
 
-    'Al Hilal Riyadh':
-        'الهلال',
+  "Chelsea":
+    "تشيلسي",
 
-    'Al Nassr Riyadh':
-        'النصر',
+  "Tottenham Hotspur":
+    "توتنهام",
 
-    'Al Ittihad Jeddah':
-        'الاتحاد',
+  "Bayern Munich":
+    "بايرن ميونخ",
 
-    'Al Ahly':
-        'الأهلي',
+  "Borussia Dortmund":
+    "بوروسيا دورتموند",
 
-    'Zamalek':
-        'الزمالك',
+  "Paris Saint-Germain":
+    "باريس سان جيرمان",
 
-    'Pyramids FC':
-        'بيراميدز',
+  "PSG":
+    "باريس سان جيرمان",
 
-    'Manchester City':
-        'مانشستر سيتي',
+  "Juventus":
+    "يوفنتوس",
 
-    'Manchester United':
-        'مانشستر يونايتد',
+  "Inter Milan":
+    "إنتر ميلان",
 
-    'Liverpool':
-        'ليفربول',
+  "AC Milan":
+    "ميلان",
 
-    'Arsenal':
-        'أرسنال',
+  "Napoli":
+    "نابولي",
 
-    'Chelsea':
-        'تشيلسي',
-
-    'Tottenham Hotspur':
-        'توتنهام',
-
-    'Real Madrid':
-        'ريال مدريد',
-
-    'Barcelona':
-        'برشلونة',
-
-    'Atletico Madrid':
-        'أتلتيكو مدريد',
-
-    'Bayern Munich':
-        'بايرن ميونخ',
-
-    'Borussia Dortmund':
-        'بوروسيا دورتموند',
-
-    'Paris Saint-Germain':
-        'باريس سان جيرمان',
-
-    'PSG':
-        'باريس سان جيرمان',
-
-    'Inter Milan':
-        'إنتر ميلان',
-
-    'AC Milan':
-        'ميلان',
-
-    'Juventus':
-        'يوفنتوس',
-
-    'Napoli':
-        'نابولي',
-
-    'Roma':
-        'روما'
+  "Roma":
+    "روما"
 };
 
 /* =========================================================
@@ -401,318 +293,224 @@ const ARABIC_TEAMS = {
 
 function translateTeam(name) {
 
-    if (!name) {
-        return 'فريق غير معروف';
-    }
+  if (!name) {
+    return "فريق غير معروف";
+  }
 
-    const clean =
-        String(name).trim();
+  const clean =
+    String(name).trim();
 
-    return (
-        ARABIC_TEAMS[clean] ||
-        clean
-    );
+  return (
+    ARABIC_TEAMS[clean] ||
+    clean
+  );
 }
 
 function translateLeague(name) {
 
-    if (!name) {
-        return 'بطولات أخرى';
-    }
+  if (!name) {
+    return "بطولة أخرى";
+  }
 
-    const clean =
-        String(name).trim();
+  const clean =
+    String(name).trim();
 
-    return (
-        ARABIC_LEAGUES[clean] ||
-        clean
-    );
+  return (
+    ARABIC_LEAGUES[clean] ||
+    clean
+  );
 }
+
+/* =========================================================
+   IMPORTANT LEAGUES
+========================================================= */
+
+const IMPORTANT_LEAGUES = {
+
+  "4480": 100, // UEFA Champions League
+
+  "4328": 95,  // Premier League
+
+  "4335": 90,  // La Liga
+
+  "4332": 90,  // Serie A
+
+  "4331": 90,  // Bundesliga
+
+  "4334": 85,  // Ligue 1
+
+  "4668": 100  // Saudi Pro League
+};
+
+/* =========================================================
+   IMPORTANT TEAMS
+========================================================= */
+
+const IMPORTANT_TEAM_NAMES = [
+
+  "al-hilal",
+  "al hilal",
+
+  "al-nassr",
+  "al nassr",
+
+  "al-ittihad",
+  "al ittihad",
+
+  "al-ahli",
+  "al ahli",
+
+  "real madrid",
+  "barcelona",
+
+  "manchester city",
+  "manchester united",
+
+  "liverpool",
+  "arsenal",
+  "chelsea",
+
+  "bayern munich",
+
+  "paris saint-germain",
+  "psg",
+
+  "juventus",
+  "inter milan",
+  "ac milan"
+];
 
 /* =========================================================
    TEAM PRIORITY
 ========================================================= */
 
-const IMPORTANT_TEAMS = [
+function teamPriority(event) {
 
-    'Al Hilal',
-    'Al-Hilal',
-    'Al Nassr',
-    'Al-Nassr',
-    'Al Ittihad',
-    'Al-Ittihad',
-    'Al Ahli',
-    'Al-Ahli',
+  const home =
+    String(
+      event.strHomeTeam || ""
+    ).toLowerCase();
 
-    'Real Madrid',
-    'Barcelona',
+  const away =
+    String(
+      event.strAwayTeam || ""
+    ).toLowerCase();
 
-    'Manchester City',
-    'Manchester United',
-    'Liverpool',
-    'Arsenal',
-    'Chelsea',
+  let score = 0;
 
-    'Bayern Munich',
-
-    'Paris Saint-Germain',
-    'PSG',
-
-    'Juventus',
-    'Inter Milan',
-    'AC Milan'
-];
-
-function getTeamPriority(event) {
-
-    let score = 0;
-
-    const home =
-        String(
-            event.strHomeTeam || ''
-        ).toLowerCase();
-
-    const away =
-        String(
-            event.strAwayTeam || ''
-        ).toLowerCase();
-
-    for (
-        const team
-        of IMPORTANT_TEAMS
-    ) {
-
-        const t =
-            team.toLowerCase();
-
-        if (home.includes(t)) {
-            score += 15;
-        }
-
-        if (away.includes(t)) {
-            score += 15;
-        }
-    }
-
-    return score;
-}
-
-/* =========================================================
-   MATCH PRIORITY
-========================================================= */
-
-function getMatchPriority(event) {
-
-    const leagueName =
-        String(
-            event.strLeague || ''
-        );
-
-    let score =
-        LEAGUE_PRIORITY[
-            leagueName
-        ] || 40;
-
-    score +=
-        getTeamPriority(event);
-
-    const status =
-        String(
-            event.strStatus || ''
-        ).toUpperCase();
-
-    /* مباشر */
+  for (
+    const team
+    of IMPORTANT_TEAM_NAMES
+  ) {
 
     if (
-        [
-            '1H',
-            '2H',
-            'LIVE',
-            'ET',
-            'P'
-        ].includes(status)
+      home.includes(team)
     ) {
-
-        score += 1000;
+      score += 25;
     }
-
-    /* استراحة */
 
     if (
-        status === 'HT'
+      away.includes(team)
     ) {
-
-        score += 900;
+      score += 25;
     }
+  }
 
-    /* مباراة منتهية */
-
-    if (
-        [
-            'FT',
-            'AET',
-            'PEN',
-            'FINAL'
-        ].includes(status)
-    ) {
-
-        score += 5;
-    }
-
-    return score;
+  return score;
 }
 
 /* =========================================================
    STATUS
 ========================================================= */
 
-function normalizeStatus(status) {
+function normalizeStatus(event) {
 
-    const value =
-        String(
-            status || ''
-        )
-        .trim()
-        .toUpperCase();
+  const status =
+    String(
+      event.strStatus ||
+      ""
+    )
+    .trim()
+    .toUpperCase();
 
-    if (
-        [
-            '1H',
-            '2H',
-            'LIVE',
-            'ET',
-            'P'
-        ].includes(value)
-    ) {
+  const progress =
+    String(
+      event.strProgress ||
+      ""
+    )
+    .trim()
+    .toUpperCase();
 
-        return 'LIVE';
-    }
+  if (
+    [
+      "1H",
+      "2H",
+      "LIVE",
+      "ET",
+      "P"
+    ].includes(status)
+  ) {
+    return "LIVE";
+  }
 
-    if (
-        [
-            'HT',
-            'HALF TIME',
-            'HALFTIME'
-        ].includes(value)
-    ) {
+  if (
+    status === "HT" ||
+    progress.includes("HALF")
+  ) {
+    return "HT";
+  }
 
-        return 'HT';
-    }
+  if (
+    [
+      "FT",
+      "FINAL",
+      "AET",
+      "PEN"
+    ].includes(status) ||
+    progress === "FINAL"
+  ) {
+    return "FT";
+  }
 
-    if (
-        [
-            'FT',
-            'FINAL',
-            'AET',
-            'PEN'
-        ].includes(value)
-    ) {
-
-        return 'FT';
-    }
-
-    return 'NS';
+  return "NS";
 }
 
 /* =========================================================
-   DATE VALIDATION
+   PRIORITY
 ========================================================= */
 
-function isValidDate(dateString) {
+function calculatePriority(event) {
 
-    if (
-        !/^\d{4}-\d{2}-\d{2}$/.test(
-            dateString
-        )
-    ) {
-
-        return false;
-    }
-
-    const date =
-        new Date(
-            `${dateString}T00:00:00Z`
-        );
-
-    return (
-        !Number.isNaN(
-            date.getTime()
-        )
-    );
-}
-
-/* =========================================================
-   FETCH THE SPORTSDb
-========================================================= */
-
-async function fetchFootballMatches(
-    requestedDate
-) {
-
-    if (!API_KEY) {
-
-        throw new Error(
-            'THESPORTSDB_API_KEY غير موجود في Render'
-        );
-    }
-
-    /*
-       مهم جداً:
-       لا نحول التاريخ إلى DD.MM.YYYY.
-       TheSportsDB يستخدم YYYY-MM-DD.
-    */
-
-    const url =
-        `https://www.thesportsdb.com/api/v1/json/` +
-        `${API_KEY}` +
-        `/eventsday.php` +
-        `?d=${encodeURIComponent(
-            requestedDate
-        )}` +
-        `&s=Soccer`;
-
-    console.log('');
-    console.log(
-        '📡 جلب مباريات كرة القدم من TheSportsDB'
+  const leagueId =
+    String(
+      event.idLeague ||
+      ""
     );
 
-    console.log(
-        `📅 التاريخ: ${requestedDate}`
-    );
+  let score =
+    IMPORTANT_LEAGUES[
+      leagueId
+    ] || 30;
 
-    console.log(
-        '⚽ الرياضة: Soccer'
-    );
+  score +=
+    teamPriority(event);
 
-    const response =
-        await axios.get(
-            url,
-            {
-                timeout: 20000,
+  const status =
+    normalizeStatus(event);
 
-                headers: {
-                    'User-Agent':
-                        'Live-Modarraj/1.0'
-                }
-            }
-        );
+  if (status === "LIVE") {
+    score += 1000;
+  }
 
-    const events =
-        response.data?.events;
+  if (status === "HT") {
+    score += 900;
+  }
 
-    if (
-        !Array.isArray(events)
-    ) {
+  if (status === "FT") {
+    score += 5;
+  }
 
-        return [];
-    }
-
-    return events.filter(
-        event =>
-            event &&
-            event.strHomeTeam &&
-            event.strAwayTeam
-    );
+  return score;
 }
 
 /* =========================================================
@@ -720,145 +518,701 @@ async function fetchFootballMatches(
 ========================================================= */
 
 function normalizeEvent(
-    event,
-    index
+  event,
+  source = "TheSportsDB"
 ) {
 
-    const homeScore =
-        Number(
-            event.intHomeScore
-        ) || 0;
+  const status =
+    normalizeStatus(event);
 
-    const awayScore =
-        Number(
-            event.intAwayScore
-        ) || 0;
+  const date =
+    event.dateEvent ||
+    event.strEventDate ||
+    "";
 
-    const status =
-        normalizeStatus(
-            event.strStatus
+  const time =
+    event.strEventTime ||
+    event.strTime ||
+    "00:00:00";
+
+  return {
+
+    fixture: {
+
+      id:
+        event.idEvent ||
+        event.idLiveScore ||
+        `${event.idHomeTeam}-${event.idAwayTeam}-${date}`,
+
+      date:
+        `${date}T${time}`,
+
+      status: {
+
+        short:
+          status,
+
+        elapsed:
+          event.strProgress ||
+          ""
+      }
+    },
+
+    league: {
+
+      id:
+        String(
+          event.idLeague ||
+          ""
+        ),
+
+      name:
+        translateLeague(
+          event.strLeague
+        ),
+
+      originalName:
+        event.strLeague ||
+        "",
+
+      country:
+        event.strCountry ||
+        ""
+    },
+
+    teams: {
+
+      home: {
+
+        name:
+          translateTeam(
+            event.strHomeTeam
+          ),
+
+        originalName:
+          event.strHomeTeam ||
+          "",
+
+        logo:
+          event.strHomeTeamBadge ||
+          ""
+      },
+
+      away: {
+
+        name:
+          translateTeam(
+            event.strAwayTeam
+          ),
+
+        originalName:
+          event.strAwayTeam ||
+          "",
+
+        logo:
+          event.strAwayTeamBadge ||
+          ""
+      }
+    },
+
+    goals: {
+
+      home:
+        event.intHomeScore ??
+        0,
+
+      away:
+        event.intAwayScore ??
+        0
+    },
+
+    media: {
+
+      channel:
+        event.strTVStation ||
+        "",
+
+      commentator:
+        event.strCommentator ||
+        ""
+    },
+
+    venue:
+      event.strVenue ||
+      "",
+
+    city:
+      event.strCity ||
+      "",
+
+    priority:
+      calculatePriority(event),
+
+    source
+  };
+}
+
+/* =========================================================
+   V1 - EVENTS DAY
+========================================================= */
+
+async function fetchEventsDay(date) {
+
+  if (!API_KEY) {
+    throw new Error(
+      "THESPORTSDB_API_KEY غير موجود"
+    );
+  }
+
+  const url =
+    `https://www.thesportsdb.com/api/v1/json/` +
+    `${API_KEY}/eventsday.php` +
+    `?d=${encodeURIComponent(date)}` +
+    `&s=Soccer`;
+
+  console.log(
+    `📅 V1 eventsday: ${date}`
+  );
+
+  try {
+
+    const response =
+      await api.get(url);
+
+    const events =
+      response.data?.events;
+
+    if (
+      !Array.isArray(events)
+    ) {
+      return [];
+    }
+
+    return events;
+
+  } catch (error) {
+
+    console.error(
+      "❌ eventsday:",
+      error.message
+    );
+
+    return [];
+  }
+}
+
+/* =========================================================
+   V2 - LIVE SCORES
+========================================================= */
+
+async function fetchLiveScores() {
+
+  if (!API_KEY) {
+    return [];
+  }
+
+  const url =
+    "https://www.thesportsdb.com/api/v2/json/livescore/soccer";
+
+  console.log(
+    "🔴 V2 Livescore"
+  );
+
+  try {
+
+    const response =
+      await api.get(
+        url,
+        {
+          headers: {
+            "X-API-KEY":
+              API_KEY,
+
+            "Content-Type":
+              "application/json"
+          }
+        }
+      );
+
+    /*
+      V2 قد يرجع:
+      livescores
+      أو events
+      حسب نسخة الاستجابة.
+    */
+
+    const data =
+      response.data;
+
+    if (
+      Array.isArray(data)
+    ) {
+      return data;
+    }
+
+    if (
+      Array.isArray(
+        data?.livescores
+      )
+    ) {
+      return data.livescores;
+    }
+
+    if (
+      Array.isArray(
+        data?.events
+      )
+    ) {
+      return data.events;
+    }
+
+    if (
+      Array.isArray(
+        data?.data
+      )
+    ) {
+      return data.data;
+    }
+
+    return [];
+
+  } catch (error) {
+
+    console.error(
+      "❌ V2 Livescore:",
+      error.response?.status ||
+      error.message
+    );
+
+    return [];
+  }
+}
+
+/* =========================================================
+   V2 - NEXT IMPORTANT LEAGUE EVENTS
+========================================================= */
+
+async function fetchNextLeagueEvents(
+  leagueId
+) {
+
+  if (!API_KEY) {
+    return [];
+  }
+
+  const url =
+    `https://www.thesportsdb.com/api/v2/json/schedule/next/league/${leagueId}`;
+
+  try {
+
+    const response =
+      await api.get(
+        url,
+        {
+          headers: {
+            "X-API-KEY":
+              API_KEY,
+
+            "Content-Type":
+              "application/json"
+          }
+        }
+      );
+
+    const data =
+      response.data;
+
+    if (
+      Array.isArray(data)
+    ) {
+      return data;
+    }
+
+    if (
+      Array.isArray(
+        data?.events
+      )
+    ) {
+      return data.events;
+    }
+
+    if (
+      Array.isArray(
+        data?.data
+      )
+    ) {
+      return data.data;
+    }
+
+    return [];
+
+  } catch (error) {
+
+    console.error(
+      `⚠️ League ${leagueId}:`,
+      error.response?.status ||
+      error.message
+    );
+
+    return [];
+  }
+}
+
+/* =========================================================
+   FALLBACK SCHEDULE
+========================================================= */
+
+async function fetchImportantSchedules(
+  requestedDate
+) {
+
+  const leagueIds =
+    Object.keys(
+      IMPORTANT_LEAGUES
+    );
+
+  const results = [];
+
+  /*
+     لا نريد أكثر من عدد صغير من الطلبات.
+     Premium يسمح بـ100 طلب/دقيقة.
+  */
+
+  const responses =
+    await Promise.allSettled(
+
+      leagueIds.map(
+        id =>
+          fetchNextLeagueEvents(id)
+      )
+    );
+
+  for (
+    const result
+    of responses
+  ) {
+
+    if (
+      result.status !==
+      "fulfilled"
+    ) {
+      continue;
+    }
+
+    for (
+      const event
+      of result.value
+    ) {
+
+      if (!event) {
+        continue;
+      }
+
+      const eventDate =
+        event.dateEvent ||
+        event.strEventDate ||
+        "";
+
+      if (
+        eventDate ===
+        requestedDate
+      ) {
+
+        results.push(event);
+      }
+    }
+  }
+
+  return results;
+}
+
+/* =========================================================
+   MERGE
+========================================================= */
+
+function mergeEvents(
+  arrays
+) {
+
+  const map =
+    new Map();
+
+  for (
+    const events
+    of arrays
+  ) {
+
+    for (
+      const event
+      of events
+    ) {
+
+      if (!event) {
+        continue;
+      }
+
+      const id =
+        event.idEvent ||
+        event.idLiveScore ||
+        `${event.idHomeTeam}-${event.idAwayTeam}-${event.dateEvent}`;
+
+      if (!id) {
+        continue;
+      }
+
+      /*
+        إذا كان Livescore موجوداً
+        فهو أحدث من Schedule.
+      */
+
+      const existing =
+        map.get(id);
+
+      if (!existing) {
+
+        map.set(
+          id,
+          event
         );
 
-    const date =
-        event.dateEvent
-            ? `${event.dateEvent}T${event.strTime || '00:00:00'}`
-            : new Date().toISOString();
+      } else {
+
+        const live =
+          normalizeStatus(event);
+
+        if (
+          live === "LIVE" ||
+          live === "HT"
+        ) {
+
+          map.set(
+            id,
+            event
+          );
+        }
+      }
+    }
+  }
+
+  return Array.from(
+    map.values()
+  );
+}
+
+/* =========================================================
+   SORT
+========================================================= */
+
+function sortMatches(
+  matches
+) {
+
+  return matches.sort(
+    (a, b) => {
+
+      const liveA =
+        ["LIVE", "HT"]
+          .includes(
+            a.fixture.status.short
+          )
+          ? 1
+          : 0;
+
+      const liveB =
+        ["LIVE", "HT"]
+          .includes(
+            b.fixture.status.short
+          )
+          ? 1
+          : 0;
+
+      if (
+        liveA !== liveB
+      ) {
+
+        return (
+          liveB -
+          liveA
+        );
+      }
+
+      if (
+        b.priority !==
+        a.priority
+      ) {
+
+        return (
+          b.priority -
+          a.priority
+        );
+      }
+
+      return (
+        new Date(
+          a.fixture.date
+        ) -
+        new Date(
+          b.fixture.date
+        )
+      );
+    }
+  );
+}
+
+/* =========================================================
+   GET MATCHES
+========================================================= */
+
+async function getMatches(
+  requestedDate
+) {
+
+  const cacheKey =
+    `matches:${requestedDate}`;
+
+  const cached =
+    cache.get(cacheKey);
+
+  if (
+    cached &&
+    Date.now() <
+      cached.expiresAt
+  ) {
 
     return {
+      data:
+        cached.data,
 
-        fixture: {
-
-            id:
-                event.idEvent ||
-                `match-${index}`,
-
-            date,
-
-            status: {
-
-                short:
-                    status,
-
-                elapsed:
-                    event.strProgress ||
-                    event.intProgress ||
-                    ''
-
-            }
-
-        },
-
-        league: {
-
-            id:
-                event.idLeague ||
-                '',
-
-            name:
-                translateLeague(
-                    event.strLeague
-                ),
-
-            originalName:
-                event.strLeague ||
-                '',
-
-            country:
-                event.strCountry ||
-                ''
-
-        },
-
-        teams: {
-
-            home: {
-
-                name:
-                    translateTeam(
-                        event.strHomeTeam
-                    ),
-
-                originalName:
-                    event.strHomeTeam,
-
-                logo:
-                    event.strHomeTeamBadge ||
-                    DEFAULT_LOGO
-
-            },
-
-            away: {
-
-                name:
-                    translateTeam(
-                        event.strAwayTeam
-                    ),
-
-                originalName:
-                    event.strAwayTeam,
-
-                logo:
-                    event.strAwayTeamBadge ||
-                    DEFAULT_LOGO
-
-            }
-
-        },
-
-        goals: {
-
-            home:
-                homeScore,
-
-            away:
-                awayScore
-
-        },
-
-        media: {
-
-            channel:
-                event.strTVStation ||
-                '',
-
-            commentator:
-                event.strCommentator ||
-                ''
-
-        },
-
-        venue:
-            event.strVenue ||
-            '',
-
-        city:
-            event.strCity ||
-            '',
-
-        priority:
-            getMatchPriority(event)
-
+      cached:
+        true
     };
+  }
+
+  /*
+     1. مباريات اليوم
+  */
+
+  const dayEvents =
+    await fetchEventsDay(
+      requestedDate
+    );
+
+  /*
+     2. المباريات المباشرة
+  */
+
+  const liveEvents =
+    await fetchLiveScores();
+
+  /*
+     لا نريد livescore من يوم آخر
+     إلا إذا كان التاريخ المطلوب هو اليوم.
+  */
+
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
+
+  const filteredLive =
+    requestedDate === today
+      ? liveEvents
+      : [];
+
+  /*
+     3. fallback للدوريات المهمة
+  */
+
+  let scheduleEvents = [];
+
+  if (
+    dayEvents.length === 0
+  ) {
+
+    console.log(
+      "ℹ️ لا توجد نتائج eventsday، تشغيل fallback"
+    );
+
+    scheduleEvents =
+      await fetchImportantSchedules(
+        requestedDate
+      );
+  }
+
+  /*
+     4. دمج
+  */
+
+  const rawEvents =
+    mergeEvents([
+      dayEvents,
+      scheduleEvents,
+      filteredLive
+    ]);
+
+  /*
+     5. تحويل
+  */
+
+  let matches =
+    rawEvents.map(
+      (event) =>
+        normalizeEvent(
+          event,
+          filteredLive.includes(event)
+            ? "V2 Livescore"
+            : "TheSportsDB"
+        )
+    );
+
+  /*
+     6. إزالة التكرار
+  */
+
+  matches =
+    Array.from(
+      new Map(
+        matches.map(
+          match => [
+            match.fixture.id,
+            match
+          ]
+        )
+      ).values()
+    );
+
+  /*
+     7. ترتيب حسب أهمية الزائر
+  */
+
+  matches =
+    sortMatches(
+      matches
+    );
+
+  /*
+     8. Cache
+  */
+
+  cache.set(
+    cacheKey,
+    {
+      data:
+        matches,
+
+      expiresAt:
+        Date.now() +
+        CACHE_TIME
+    }
+  );
+
+  return {
+    data:
+      matches,
+
+    cached:
+      false
+  };
 }
 
 /* =========================================================
@@ -866,320 +1220,96 @@ function normalizeEvent(
 ========================================================= */
 
 app.get(
-    '/api/matches',
-    async (req, res) => {
+  "/api/matches",
+  async (req, res) => {
 
-        const requestedDate =
-            req.query.date ||
-            new Date()
-                .toISOString()
-                .split('T')[0];
+    const requestedDate =
+      req.query.date ||
+      new Date()
+        .toISOString()
+        .split("T")[0];
 
-        if (
-            !isValidDate(
-                requestedDate
-            )
-        ) {
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/
+        .test(requestedDate)
+    ) {
 
-            return res.status(400).json({
+      return res.status(400).json({
 
-                source:
-                    'Validation Error',
+        source:
+          "Validation",
 
-                data: [],
+        data: [],
 
-                count: 0,
+        count: 0,
 
-                error:
-                    'التاريخ يجب أن يكون YYYY-MM-DD'
-
-            });
-        }
-
-        const cacheKey =
-            `football_${requestedDate}`;
-
-        /* ---------------------------------------------
-           CACHE
-        --------------------------------------------- */
-
-        const cached =
-            cache.get(
-                cacheKey
-            );
-
-        if (
-            cached &&
-            Date.now() <
-                cached.expiresAt
-        ) {
-
-            return res.json({
-
-                source:
-                    'Local Cache',
-
-                data:
-                    cached.data,
-
-                count:
-                    cached.data.length,
-
-                date:
-                    requestedDate,
-
-                cached:
-                    true
-
-            });
-        }
-
-        try {
-
-            /* -----------------------------------------
-               FETCH
-            ----------------------------------------- */
-
-            const events =
-                await fetchFootballMatches(
-                    requestedDate
-                );
-
-            console.log(
-                `📊 مباريات حقيقية: ${events.length}`
-            );
-
-            /* -----------------------------------------
-               NORMALIZE
-            ----------------------------------------- */
-
-            let matches =
-                events.map(
-                    normalizeEvent
-                );
-
-            /* -----------------------------------------
-               REMOVE DUPLICATES
-            ----------------------------------------- */
-
-            matches =
-                Array.from(
-                    new Map(
-                        matches.map(
-                            match => [
-                                match.fixture.id,
-                                match
-                            ]
-                        )
-                    ).values()
-                );
-
-            /* -----------------------------------------
-               SORT FOR VISITOR
-            ----------------------------------------- */
-
-            matches.sort(
-                (a, b) => {
-
-                    /*
-                       1. LIVE / HT
-                    */
-
-                    const liveA =
-                        [
-                            'LIVE',
-                            'HT'
-                        ].includes(
-                            a.fixture.status.short
-                        )
-                            ? 1
-                            : 0;
-
-                    const liveB =
-                        [
-                            'LIVE',
-                            'HT'
-                        ].includes(
-                            b.fixture.status.short
-                        )
-                            ? 1
-                            : 0;
-
-                    if (
-                        liveA !== liveB
-                    ) {
-
-                        return (
-                            liveB -
-                            liveA
-                        );
-                    }
-
-                    /*
-                       2. IMPORTANCE
-                    */
-
-                    if (
-                        b.priority !==
-                        a.priority
-                    ) {
-
-                        return (
-                            b.priority -
-                            a.priority
-                        );
-                    }
-
-                    /*
-                       3. TIME
-                    */
-
-                    return (
-                        new Date(
-                            a.fixture.date
-                        ) -
-                        new Date(
-                            b.fixture.date
-                        )
-                    );
-                }
-            );
-
-            /* -----------------------------------------
-               CACHE
-            ----------------------------------------- */
-
-            cache.set(
-                cacheKey,
-                {
-
-                    data:
-                        matches,
-
-                    expiresAt:
-                        Date.now() +
-                        CACHE_TIME
-
-                }
-            );
-
-            /* -----------------------------------------
-               SOCKET
-            ----------------------------------------- */
-
-            io.emit(
-                'matchUpdate',
-                {
-
-                    date:
-                        requestedDate,
-
-                    matches
-
-                }
-            );
-
-            /* -----------------------------------------
-               RESPONSE
-            ----------------------------------------- */
-
-            return res.json({
-
-                source:
-                    'TheSportsDB API',
-
-                data:
-                    matches,
-
-                count:
-                    matches.length,
-
-                date:
-                    requestedDate,
-
-                cached:
-                    false,
-
-                timestamp:
-                    new Date().toISOString()
-
-            });
-
-        } catch (error) {
-
-            console.error(
-                '❌ خطأ في TheSportsDB:',
-                error.message
-            );
-
-            if (
-                error.response
-            ) {
-
-                console.error(
-                    'HTTP:',
-                    error.response.status
-                );
-
-                console.error(
-                    error.response.data
-                );
-            }
-
-            return res.status(502).json({
-
-                source:
-                    'TheSportsDB Error',
-
-                data: [],
-
-                count: 0,
-
-                error:
-                    error.message,
-
-                date:
-                    requestedDate
-
-            });
-        }
+        error:
+          "التاريخ يجب أن يكون YYYY-MM-DD"
+      });
     }
-);
 
-/* =========================================================
-   HEALTH
-========================================================= */
+    try {
 
-app.get(
-    '/api/health',
-    (req, res) => {
+      const result =
+        await getMatches(
+          requestedDate
+        );
 
-        res.json({
+      io.emit(
+        "matchUpdate",
+        {
+          date:
+            requestedDate,
 
-            status:
-                'ok',
+          matches:
+            result.data
+        }
+      );
 
-            server:
-                'Live Modarraj',
+      return res.json({
 
-            apiKey:
-                API_KEY
-                    ? 'موجود'
-                    : 'غير موجود',
+        source:
+          result.cached
+            ? "Local Cache"
+            : "TheSportsDB API",
 
-            database:
-                DATABASE_URL
-                    ? 'موجود'
-                    : 'غير موجود',
+        data:
+          result.data,
 
-            mongodb:
-                mongoose.connection.readyState,
+        count:
+          result.data.length,
 
-            timestamp:
-                new Date().toISOString()
+        date:
+          requestedDate,
 
-        });
+        cached:
+          result.cached,
+
+        timestamp:
+          new Date().toISOString()
+      });
+
+    } catch (error) {
+
+      console.error(
+        "❌ /api/matches:",
+        error
+      );
+
+      return res.status(500).json({
+
+        source:
+          "Server Error",
+
+        data: [],
+
+        count: 0,
+
+        error:
+          error.message
+      });
     }
+  }
 );
 
 /* =========================================================
@@ -1187,69 +1317,176 @@ app.get(
 ========================================================= */
 
 app.get(
-    '/api/test',
-    async (req, res) => {
+  "/api/test",
+  async (req, res) => {
 
-        if (!API_KEY) {
+    const date =
+      new Date()
+        .toISOString()
+        .split("T")[0];
 
-            return res.status(500).json({
+    const result = {
 
-                status:
-                    'error',
+      date,
 
-                message:
-                    'THESPORTSDB_API_KEY غير موجود'
+      v1EventsDay: 0,
 
-            });
-        }
+      v2Livescores: 0,
 
-        const testDate =
-            new Date()
-                .toISOString()
-                .split('T')[0];
+      fallbackSchedule: 0,
 
-        try {
+      finalMatches: 0
+    };
 
-            const events =
-                await fetchFootballMatches(
-                    testDate
-                );
+    try {
 
-            return res.json({
+      const day =
+        await fetchEventsDay(
+          date
+        );
 
-                status:
-                    'success',
+      result.v1EventsDay =
+        day.length;
 
-                message:
-                    'TheSportsDB يعمل بنجاح',
+      const live =
+        await fetchLiveScores();
 
-                date:
-                    testDate,
+      result.v2Livescores =
+        live.length;
 
-                matchesFound:
-                    events.length,
+      if (
+        day.length === 0
+      ) {
 
-                timestamp:
-                    new Date().toISOString()
+        const fallback =
+          await fetchImportantSchedules(
+            date
+          );
 
-            });
+        result.fallbackSchedule =
+          fallback.length;
+      }
 
-        } catch (error) {
+      const matches =
+        await getMatches(
+          date
+        );
 
-            return res.status(502).json({
+      result.finalMatches =
+        matches.data.length;
 
-                status:
-                    'error',
+      return res.json({
 
-                message:
-                    'فشل الاتصال بـ TheSportsDB',
+        status:
+          "success",
 
-                error:
-                    error.message
+        message:
+          "اختبار مصادر TheSportsDB اكتمل",
 
-            });
-        }
+        ...result,
+
+        timestamp:
+          new Date().toISOString()
+      });
+
+    } catch (error) {
+
+      return res.status(500).json({
+
+        status:
+          "error",
+
+        error:
+          error.message,
+
+        ...result
+      });
     }
+  }
+);
+
+/* =========================================================
+   V2 LIVE TEST
+========================================================= */
+
+app.get(
+  "/api/test/live",
+  async (req, res) => {
+
+    try {
+
+      const live =
+        await fetchLiveScores();
+
+      return res.json({
+
+        status:
+          "success",
+
+        source:
+          "TheSportsDB V2 Livescore",
+
+        matches:
+          live.length,
+
+        data:
+          live
+
+      });
+
+    } catch (error) {
+
+      return res.status(502).json({
+
+        status:
+          "error",
+
+        error:
+          error.message
+
+      });
+    }
+  }
+);
+
+/* =========================================================
+   HEALTH
+========================================================= */
+
+app.get(
+  "/api/health",
+  (req, res) => {
+
+    res.json({
+
+      status:
+        "ok",
+
+      server:
+        "Live Modarraj",
+
+      apiKey:
+        API_KEY
+          ? "موجود"
+          : "غير موجود",
+
+      database:
+        DATABASE_URL
+          ? "موجود"
+          : "غير موجود",
+
+      mongodb:
+        mongoose.connection.readyState,
+
+      v2:
+        API_KEY
+          ? "جاهز"
+          : "غير جاهز",
+
+      timestamp:
+        new Date().toISOString()
+    });
+  }
 );
 
 /* =========================================================
@@ -1257,12 +1494,12 @@ app.get(
 ========================================================= */
 
 app.get(
-    '/favicon.ico',
-    (req, res) => {
+  "/favicon.ico",
+  (req, res) => {
 
-        res.status(204).end();
+    res.status(204).end();
 
-    }
+  }
 );
 
 /* =========================================================
@@ -1270,17 +1507,16 @@ app.get(
 ========================================================= */
 
 app.get(
-    '/',
-    (req, res) => {
+  "/",
+  (req, res) => {
 
-        res.sendFile(
-            path.join(
-                __dirname,
-                'live_modarraj_frontend.render.html'
-            )
-        );
-
-    }
+    res.sendFile(
+      path.join(
+        __dirname,
+        "live_modarraj_frontend.render.html"
+      )
+    );
+  }
 );
 
 /* =========================================================
@@ -1288,24 +1524,24 @@ app.get(
 ========================================================= */
 
 io.on(
-    'connection',
-    socket => {
+  "connection",
+  (socket) => {
+
+    console.log(
+      `🔌 اتصال: ${socket.id}`
+    );
+
+    socket.on(
+      "disconnect",
+      () => {
 
         console.log(
-            `🔌 اتصال جديد: ${socket.id}`
+          `🔌 خروج: ${socket.id}`
         );
 
-        socket.on(
-            'disconnect',
-            () => {
-
-                console.log(
-                    `🔌 خروج: ${socket.id}`
-                );
-
-            }
-        );
-    }
+      }
+    );
+  }
 );
 
 /* =========================================================
@@ -1313,18 +1549,18 @@ io.on(
 ========================================================= */
 
 app.use(
-    (req, res) => {
+  (req, res) => {
 
-        res.status(404).json({
+    res.status(404).json({
 
-            error:
-                'الرابط غير موجود',
+      error:
+        "الرابط غير موجود",
 
-            path:
-                req.path
+      path:
+        req.path
 
-        });
-    }
+    });
+  }
 );
 
 /* =========================================================
@@ -1332,67 +1568,64 @@ app.use(
 ========================================================= */
 
 server.listen(
-    PORT,
-    () => {
+  PORT,
+  () => {
 
-        console.log('');
-        console.log(
-            '════════════════════════════════════'
-        );
+    console.log(
+      "================================="
+    );
 
-        console.log(
-            `🚀 Live Modarraj يعمل على ${PORT}`
-        );
+    console.log(
+      `🚀 Live Modarraj يعمل على ${PORT}`
+    );
 
-        console.log(
-            `🔐 API Key: ${
-                API_KEY
-                    ? 'موجود'
-                    : '❌ غير موجود'
-            }`
-        );
+    console.log(
+      `🔐 API Key: ${
+        API_KEY
+          ? "موجود"
+          : "❌ غير موجود"
+      }`
+    );
 
-        console.log(
-            `🗄️ DATABASE_URL: ${
-                DATABASE_URL
-                    ? 'موجود'
-                    : '❌ غير موجود'
-            }`
-        );
+    console.log(
+      `🗄️ Database: ${
+        DATABASE_URL
+          ? "موجود"
+          : "غير موجود"
+      }`
+    );
 
-        console.log(
-            '════════════════════════════════════'
-        );
-
-    }
+    console.log(
+      "================================="
+    );
+  }
 );
 
 /* =========================================================
-   PROCESS ERRORS
+   ERRORS
 ========================================================= */
 
 process.on(
-    'unhandledRejection',
-    reason => {
+  "unhandledRejection",
+  (reason) => {
 
-        console.error(
-            '❌ Unhandled Rejection:',
-            reason
-        );
+    console.error(
+      "❌ Unhandled Rejection:",
+      reason
+    );
 
-    }
+  }
 );
 
 process.on(
-    'uncaughtException',
-    error => {
+  "uncaughtException",
+  (error) => {
 
-        console.error(
-            '❌ Uncaught Exception:',
-            error
-        );
+    console.error(
+      "❌ Uncaught Exception:",
+      error
+    );
 
-        process.exit(1);
-
-    }
+    process.exit(1);
+  }
 );
