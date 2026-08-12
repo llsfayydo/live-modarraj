@@ -252,119 +252,370 @@
             currentSelectedDate = dateString;
             matchesList.innerHTML = '<div class="no-matches">جاري تحديث الجداول والبطولات السحابية...</div>';
             
-            fetch(`${SERVER_URL}/api/matches?date=${dateString}`)
+            fetch(`${SERVER_URL}/api/matches?date=${encodeURIComponent(dateString)}`, { cache: 'no-store' })
                 .then(res => {
-                    if (!res.ok) throw new Error('خطأ في الاتصال بالسيرفر');
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     return res.json();
                 })
-                .then(resData => renderGroupedMatches(resData.data))
-                .catch(error => { 
-                    console.error('خطأ:', error);
-                    matchesList.innerHTML = '<div class="no-matches" style="color:#ef4444;">عذراً، فشل الاتصال بالمحرك السحابي للموقع. انتظر ثواني وحاول مجدداً.</div>';
+                .then(resData => {
+                    console.log('📦 بيانات المباريات:', resData);
+                    if (!resData || !Array.isArray(resData.data)) {
+                        throw new Error('صيغة بيانات غير متوقعة من السيرفر');
+                    }
+                    renderGroupedMatches(resData.data);
+                })
+                .catch(error => {
+                    console.error('❌ خطأ:', error);
+                    matchesList.innerHTML = '<div class="no-matches" style="color:#ef4444;">عذراً، تعذر تحميل المباريات. افتح وحدة التحكم لمعرفة الخطأ.</div>';
                 });
         }
 
-        // عرض المباريات مجمعة حسب الدوري
+        // =========================
+        // نظام التعريب
+        // =========================
+        const AR_TRANSLATIONS = {
+            // البطولات العالمية
+            "UEFA Champions League": "دوري أبطال أوروبا",
+            "UEFA Europa League": "الدوري الأوروبي",
+            "UEFA Europa Conference League": "دوري المؤتمر الأوروبي",
+            "Premier League": "الدوري الإنجليزي الممتاز",
+            "English Premier League": "الدوري الإنجليزي الممتاز",
+            "La Liga": "الدوري الإسباني",
+            "Spanish La Liga": "الدوري الإسباني",
+            "Bundesliga": "الدوري الألماني",
+            "German Bundesliga": "الدوري الألماني",
+            "Serie A": "الدوري الإيطالي",
+            "Italian Serie A": "الدوري الإيطالي",
+            "Ligue 1": "الدوري الفرنسي",
+            "French Ligue 1": "الدوري الفرنسي",
+            "Saudi Pro League": "الدوري السعودي للمحترفين",
+            "Saudi Arabia Pro League": "الدوري السعودي للمحترفين",
+            "Egyptian Premier League": "الدوري المصري الممتاز",
+            "Qatar Stars League": "الدوري القطري",
+            "UAE Pro League": "الدوري الإماراتي للمحترفين",
+            "Iraq Stars League": "دوري نجوم العراق",
+            "Kuwait Premier League": "الدوري الكويتي الممتاز",
+            "Moroccan Botola": "الدوري المغربي",
+            "Botola Pro": "الدوري المغربي للمحترفين",
+            "Turkish Super Lig": "الدوري التركي الممتاز",
+            "Eredivisie": "الدوري الهولندي",
+            "Primeira Liga": "الدوري البرتغالي",
+            "Belgian Pro League": "الدوري البلجيكي",
+            "Scottish Premiership": "الدوري الإسكتلندي الممتاز",
+            "FIFA World Cup": "كأس العالم",
+            "World Cup": "كأس العالم",
+            "AFC Asian Cup": "كأس آسيا",
+            "Asian Cup": "كأس آسيا",
+            "Africa Cup of Nations": "كأس أمم أفريقيا",
+            "Copa Libertadores": "كأس ليبرتادوريس",
+            "Copa Sudamericana": "كأس سود أمريكانا",
+
+            // أندية عربية وأوروبية شائعة
+            "Al Hilal": "الهلال",
+            "Al-Hilal": "الهلال",
+            "Al Nassr": "النصر",
+            "Al-Nassr": "النصر",
+            "Al Ahli": "الأهلي",
+            "Al-Ahli": "الأهلي",
+            "Al Ittihad": "الاتحاد",
+            "Al-Ittihad": "الاتحاد",
+            "Al Shabab": "الشباب",
+            "Al-Shabab": "الشباب",
+            "Al Ettifaq": "الاتفاق",
+            "Al-Ettifaq": "الاتفاق",
+            "Al Fateh": "الفتح",
+            "Al-Fateh": "الفتح",
+            "Al Taawoun": "التعاون",
+            "Al-Taawoun": "التعاون",
+            "Al Riyadh": "الرياض",
+            "Al-Riyadh": "الرياض",
+            "Al Raed": "الرائد",
+            "Al-Raed": "الرائد",
+            "Al Khaleej": "الخليج",
+            "Al-Khaleej": "الخليج",
+            "Manchester City": "مانشستر سيتي",
+            "Manchester United": "مانشستر يونايتد",
+            "Liverpool": "ليفربول",
+            "Arsenal": "أرسنال",
+            "Chelsea": "تشيلسي",
+            "Tottenham Hotspur": "توتنهام",
+            "Newcastle United": "نيوكاسل يونايتد",
+            "Aston Villa": "أستون فيلا",
+            "West Ham United": "وست هام يونايتد",
+            "Real Madrid": "ريال مدريد",
+            "Barcelona": "برشلونة",
+            "Atletico Madrid": "أتلتيكو مدريد",
+            "Atlético Madrid": "أتلتيكو مدريد",
+            "Sevilla": "إشبيلية",
+            "Valencia": "فالنسيا",
+            "Villarreal": "فياريال",
+            "Athletic Club": "أتلتيك بلباو",
+            "Bayern Munich": "بايرن ميونخ",
+            "Bayern München": "بايرن ميونخ",
+            "Borussia Dortmund": "بوروسيا دورتموند",
+            "RB Leipzig": "لايبزيغ",
+            "Bayer Leverkusen": "باير ليفركوزن",
+            "Inter Milan": "إنتر ميلان",
+            "Inter": "إنتر ميلان",
+            "AC Milan": "ميلان",
+            "Juventus": "يوفنتوس",
+            "Napoli": "نابولي",
+            "Roma": "روما",
+            "Lazio": "لاتسيو",
+            "Paris Saint-Germain": "باريس سان جيرمان",
+            "PSG": "باريس سان جيرمان",
+            "Olympique Marseille": "مارسيليا",
+            "Monaco": "موناكو",
+            "Ajax": "أياكس",
+            "PSV Eindhoven": "آيندهوفن",
+            "Feyenoord": "فينورد",
+            "Porto": "بورتو",
+            "Benfica": "بنفيكا",
+            "Sporting CP": "سبورتينغ لشبونة",
+            "Galatasaray": "غلطة سراي",
+            "Fenerbahce": "فنربخشة",
+            "Fenerbahçe": "فنربخشة",
+            "Besiktas": "بشكتاش",
+            "Beşiktaş": "بشكتاش",
+            "Olympiacos": "أولمبياكوس",
+            "Celtic": "سلتيك",
+            "Rangers": "رينجرز"
+        };
+
+        const AR_WORDS = [
+            ["United", "يونايتد"], ["City", "سيتي"], ["Town", "تاون"],
+            ["Rovers", "روفرز"], ["Wanderers", "واندررز"], ["Athletic", "أتلتيك"],
+            ["Sporting", "سبورتينغ"], ["Olympique", "أولمبيك"], ["Racing", "راسينغ"],
+            ["Real", "ريال"], ["Club", "كلوب"], ["FC", "إف سي"], ["SC", "إس سي"],
+            ["Boca Juniors", "بوكا جونيورز"], ["River Plate", "ريفر بليت"],
+            ["Young Boys", "يونغ بويز"], ["Red Star", "النجم الأحمر"],
+            ["Dynamo", "دينامو"], ["Dinamo", "دينامو"], ["Sparta", "سبارتا"],
+            ["Lokomotiv", "لوكوموتيف"], ["Rapid", "رابيد"], ["United FC", "يونايتد إف سي"]
+        ];
+
+        function translateSportName(value, fallback = "") {
+            const original = String(value ?? "").trim();
+            if (!original) return fallback;
+
+            // تعريب مباشر للاسم الكامل إن كان موجوداً في القاموس.
+            if (AR_TRANSLATIONS[original]) return AR_TRANSLATIONS[original];
+
+            // إزالة بعض اللاحقات التي لا يحتاجها الزائر العربي.
+            let translated = original
+                .replace(/\s+\(.*?\)$/g, "")
+                .replace(/\s+Women'?s?$/i, " سيدات")
+                .replace(/\s+W$/i, " سيدات");
+
+            for (const [from, to] of AR_WORDS) {
+                translated = translated.replace(new RegExp(`\\b${from.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&")}\\b`, "gi"), to);
+            }
+
+            return translated;
+        }
+
+        function translateLeagueName(value) {
+            const original = String(value ?? "").trim();
+            if (!original) return "بطولات أخرى";
+            if (AR_TRANSLATIONS[original]) return AR_TRANSLATIONS[original];
+
+            const patterns = [
+                [/UEFA Champions League/i, "دوري أبطال أوروبا"],
+                [/UEFA Europa Conference League/i, "دوري المؤتمر الأوروبي"],
+                [/UEFA Europa League/i, "الدوري الأوروبي"],
+                [/Premier League/i, "الدوري الممتاز"],
+                [/Champions League/i, "دوري أبطال أوروبا"],
+                [/Europa League/i, "الدوري الأوروبي"],
+                [/Conference League/i, "دوري المؤتمر الأوروبي"],
+                [/Super Cup/i, "كأس السوبر"],
+                [/Cup/i, "كأس"],
+                [/League/i, "الدوري"]
+            ];
+
+            for (const [pattern, replacement] of patterns) {
+                if (pattern.test(original)) {
+                    let result = original.replace(pattern, replacement);
+                    // استبدال أسماء الدول داخل اسم البطولة.
+                    const countries = {
+                        "Saudi Arabia": "السعودية", "England": "إنجلترا", "Spain": "إسبانيا",
+                        "Germany": "ألمانيا", "Italy": "إيطاليا", "France": "فرنسا",
+                        "Netherlands": "هولندا", "Portugal": "البرتغال", "Turkey": "تركيا",
+                        "Argentina": "الأرجنتين", "Brazil": "البرازيل", "Egypt": "مصر",
+                        "Morocco": "المغرب", "Qatar": "قطر", "United States": "الولايات المتحدة"
+                    };
+                    Object.entries(countries).forEach(([en, ar]) => {
+                        result = result.replace(new RegExp(`\\b${en}\\b`, "gi"), ar);
+                    });
+                    return result.trim();
+                }
+            }
+            return translateSportName(original, "بطولات أخرى");
+        }
+
+        // عرض المباريات: المباشر أولاً ثم المهمة ثم باقي المباريات
         function renderGroupedMatches(matches) {
-            // إيقاف جميع المؤقتات السابقة
             timerIntervals.forEach(clearInterval);
             timerIntervals = [];
 
-            if (!matches || matches.length === 0) {
-                matchesList.innerHTML = '<div class="no-matches">🏁 لا توجد مباريات كبرى مجدولة حالياً في هذا التاريخ عبر شبكة البيانات المباشرة.</div>';
+            if (!Array.isArray(matches) || matches.length === 0) {
+                matchesList.innerHTML =
+                    '<div class="no-matches">🏁 لا توجد مباريات مجدولة في هذا التاريخ.</div>';
                 return;
             }
 
-            // تجميع المباريات حسب الدوري
-            const grouped = {};
-            matches.forEach(m => {
-                const leagueName = m.league?.name || "بطولات أخرى";
-                if (!grouped[leagueName]) grouped[leagueName] = [];
-                grouped[leagueName].push(m);
+            const normalized = matches.map((m, index) => {
+                const fixture = m.fixture || {};
+                const teams = m.teams || {};
+                const home = teams.home || {};
+                const away = teams.away || {};
+                const goals = m.goals || {};
+                const status = fixture.status || {};
+                const statusShort = String(status.short || "NS").toUpperCase();
+
+                const liveStatuses = ["LIVE", "1H", "2H", "ET", "BT", "P", "INT", "HT"];
+                const isLive = liveStatuses.includes(statusShort);
+                const isFinished = ["FT", "AET", "PEN"].includes(statusShort);
+                const priority = Number(m.priority || 0);
+
+                let importance = priority;
+                const leagueName = translateLeagueName(m.league?.name || "بطولات أخرى");
+
+                const majorLeagueWords = [
+                    "Champions League", "Europa League", "Conference League",
+                    "Premier League", "La Liga", "Bundesliga", "Serie A",
+                    "Ligue 1", "World Cup", "Asian Cup", "Africa Cup",
+                    "Copa Libertadores", "Saudi", "Egypt", "Morocco",
+                    "Qatar", "UAE", "Iraq", "Kuwait"
+                ];
+
+                if (majorLeagueWords.some(w =>
+                    leagueName.toLowerCase().includes(w.toLowerCase())
+                )) importance += 80;
+
+                if (isLive) importance += 10000;
+                if (isFinished) importance -= 100;
+
+                return {
+                    original: m, fixture, home, away, goals, statusShort,
+                    isLive, isFinished, importance,
+                    matchTime: new Date(fixture.date || 0).getTime(),
+                    leagueName, index
+                };
             });
 
-            matchesList.innerHTML = '';
+            normalized.sort((a, b) => {
+                if (a.isLive !== b.isLive) return a.isLive ? -1 : 1;
+                if (b.importance !== a.importance) return b.importance - a.importance;
+                return a.matchTime - b.matchTime;
+            });
 
-            // عرض كل دوري ومبارياته
-            for (const leagueName in grouped) {
-                const header = document.createElement('div');
-                header.className = 'league-title';
+            const liveMatches = normalized.filter(m => m.isLive);
+            const otherMatches = normalized.filter(m => !m.isLive);
+
+            matchesList.innerHTML = "";
+
+            if (liveMatches.length) {
+                const liveHeader = document.createElement("div");
+                liveHeader.className = "league-title";
+                liveHeader.innerHTML = "🔴 المباريات المباشرة الآن";
+                matchesList.appendChild(liveHeader);
+                liveMatches.forEach((item, i) => createMatchCard(item, `live-${i}`));
+            }
+
+            const grouped = {};
+            otherMatches.forEach(item => {
+                if (!grouped[item.leagueName]) grouped[item.leagueName] = [];
+                grouped[item.leagueName].push(item);
+            });
+
+            Object.keys(grouped).forEach(leagueName => {
+                const header = document.createElement("div");
+                header.className = "league-title";
                 header.textContent = `🏆 ${leagueName}`;
                 matchesList.appendChild(header);
 
-                grouped[leagueName].forEach((match, i) => {
-                    const card = document.createElement('div');
-                    const isLive =
-    ['LIVE', 'HT'].includes(
-        match.fixture?.status?.short
-    );
+                grouped[leagueName].forEach((item, i) => {
+                    createMatchCard(item, `${item.fixture.id || "match"}-${i}`);
+                });
+            });
 
-const isImportant =
-    Number(match.priority || 0) >= 100;
+            function createMatchCard(item, uniqueId) {
+                const { fixture, home, away, goals, statusShort, isLive, isFinished } = item;
+                const card = document.createElement("div");
+                const isImportant = Number(item.original.priority || 0) >= 100;
 
-card.className =
-    `match-card ${
-        isLive
-            ? 'live-priority'
-            : ''
-    } ${
-        isImportant
-            ? 'important-match'
-            : ''
-    }`;
-                    const uId = `${match.fixture.id}-${i}`;
+                card.className = `match-card ${isLive ? "live-priority" : ""} ${isImportant ? "important-match" : ""}`;
 
-                    card.innerHTML = `
-                        <div class="match-main">
-                            <div class="team">
-                                <img class="team-logo" src="${match.teams.home.logo}" onerror="this.src='https://thesportsdb.com/images/media/team/badge/default.png'">
-                                <div class="team-name">${match.teams.home.name}</div>
-                            </div>
-                            <div class="info-sec" id="info-${uId}"></div>
-                            <div class="team">
-                                <img class="team-logo" src="${match.teams.away.logo}" onerror="this.src='https://thesportsdb.com/images/media/team/badge/default.png'">
-                                <div class="team-name">${match.teams.away.name}</div>
-                            </div>
+                const homeLogo = home.logo || "https://r2.thesportsdb.com/images/media/team/badge/default.png";
+                const awayLogo = away.logo || "https://r2.thesportsdb.com/images/media/team/badge/default.png";
+                const homeName = translateSportName(home.name, "الفريق المضيف");
+                const awayName = translateSportName(away.name, "الفريق الضيف");
+                const uId = `info-${String(uniqueId).replace(/[^a-zA-Z0-9_-]/g, "_")}`;
+
+                card.innerHTML = `
+                    <div class="match-main">
+                        <div class="team">
+                            <img class="team-logo" src="${escapeHtml(homeLogo)}" alt="${escapeHtml(homeName)}"
+                                 onerror="this.onerror=null;this.src='https://r2.thesportsdb.com/images/media/team/badge/default.png'">
+                            <div class="team-name">${escapeHtml(homeName)}</div>
                         </div>
-                        <div class="match-footer">
-                            <div>📺 القناة: <span style="color:white">${match.media?.channel || 'SSC / beIN'}</span></div>
-                            <div>🎙️ المعلق: <span style="color:white">${match.media?.commentator || 'محدد لاحقاً'}</span></div>
-                        </div>`;
-                    matchesList.appendChild(card);
+                        <div class="info-sec" id="${uId}"></div>
+                        <div class="team">
+                            <img class="team-logo" src="${escapeHtml(awayLogo)}" alt="${escapeHtml(awayName)}"
+                                 onerror="this.onerror=null;this.src='https://r2.thesportsdb.com/images/media/team/badge/default.png'">
+                            <div class="team-name">${escapeHtml(awayName)}</div>
+                        </div>
+                    </div>
+                    <div class="match-footer">
+                        <div>📺 القناة: <span style="color:white">${escapeHtml(item.original.media?.channel || "غير محددة")}</span></div>
+                        <div>🎙️ المعلق: <span style="color:white">${escapeHtml(item.original.media?.commentator || "غير محدد")}</span></div>
+                    </div>`;
 
-                    const infoBox = document.getElementById(`info-${uId}`);
-                    const status = match.fixture?.status?.short || "NS";
+                matchesList.appendChild(card);
+                const infoBox = document.getElementById(uId);
 
-                    // معالجة الحالات المختلفة للمبارة
-                    if (status === "NS") {
-                        // المبارة لم تبدأ بعد - عرض المؤقت العكسي
-                        const mDate = new Date(match.fixture.date).getTime();
+                if (isLive) {
+                    const hg = goals.home ?? 0;
+                    const ag = goals.away ?? 0;
+                    const elapsed = fixture.status?.elapsed ? ` ${fixture.status.elapsed}'` : "";
+                    infoBox.innerHTML = `<div class="score" style="color:#ef4444">${hg} - ${ag}</div><span class="status-badge">مباشر${elapsed}</span>`;
+                } else if (isFinished) {
+                    infoBox.innerHTML = `<div class="score">${goals.home ?? 0} - ${goals.away ?? 0}</div><span class="status-badge" style="background:#10b981">انتهت</span>`;
+                } else if (statusShort === "NS" || !statusShort) {
+                    const mDate = new Date(fixture.date || 0).getTime();
+
+                    const updateCountdown = () => {
+                        const diff = mDate - Date.now();
+                        if (!Number.isFinite(mDate) || diff <= 0) {
+                            infoBox.innerHTML = `<div class="score">VS</div><span class="status-badge" style="background:#16a34a">تبدأ الآن</span>`;
+                            return false;
+                        }
+
+                        const h = Math.floor(diff / 3600000).toString().padStart(2, "0");
+                        const min = Math.floor((diff % 3600000) / 60000).toString().padStart(2, "0");
+                        const sec = Math.floor((diff % 60000) / 1000).toString().padStart(2, "0");
+
+                        infoBox.innerHTML = `<div class="score">VS</div><div class="countdown">تبدأ بعد ${h}:${min}:${sec}</div>`;
+                        return true;
+                    };
+
+                    if (updateCountdown()) {
                         const tId = setInterval(() => {
-                            const diff = mDate - Date.now();
-                            if (diff < 0) {
-                                clearInterval(tId);
-                                infoBox.innerHTML = '<span class="status-badge" style="background:green">بدأت الآن 🔴</span>';
-                                return;
-                            }
-                            const h = Math.floor((diff % 86400000) / 3600000).toString().padStart(2, '0');
-                            const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-                            const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                            infoBox.innerHTML = `<div class="score">VS</div><div class="countdown">تبدأ بعد ${h}:${m}:${s}</div>`;
+                            if (!updateCountdown()) clearInterval(tId);
                         }, 1000);
                         timerIntervals.push(tId);
-                    } else if (status === "LIVE") {
-                        // المبارة مباشرة الآن
-                        infoBox.innerHTML = `<div class="score" style="color:#ef4444">${match.goals.home} - ${match.goals.away}</div><span class="status-badge">مباشر ${match.fixture.status.elapsed}'</span>`;
-                    } else if (status === "FT") {
-                        // المبارة انتهت
-                        infoBox.innerHTML = `<div class="score">${match.goals.home} - ${match.goals.away}</div><span class="status-badge" style="background:#10b981">انتهت</span>`;
-                    } else if (status === "HT") {
-                        // نهاية الشوط الأول
-                        infoBox.innerHTML = `<div class="score">${match.goals.home} - ${match.goals.away}</div><span class="status-badge" style="background:#f59e0b">استراحة</span>`;
-                    } else {
-                        infoBox.innerHTML = `<div class="score">VS</div><span class="status-badge">قريباً</span>`;
                     }
-                });
+                } else {
+                    infoBox.innerHTML = `<div class="score">${goals.home ?? "-"} - ${goals.away ?? "-"}</div><span class="status-badge">قريباً</span>`;
+                }
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
             }
         }
 
