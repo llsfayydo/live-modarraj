@@ -170,7 +170,32 @@
             border: 2px solid #ef4444;
             box-shadow: 0 0 18px rgba(239,68,68,0.25);
         }
-    </style>
+    
+        .importance-badge {
+            display: inline-block;
+            margin-bottom: 5px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: rgba(245, 158, 11, 0.18);
+            color: #fbbf24;
+            font-size: 11px;
+            font-weight: 800;
+        }
+        .importance-badge.top {
+            background: rgba(239, 68, 68, 0.18);
+            color: #fca5a5;
+        }
+        .importance-badge.live {
+            background: rgba(239, 68, 68, 0.18);
+            color: #f87171;
+        }
+        .important-match {
+            border-color: rgba(245, 158, 11, 0.55) !important;
+        }
+        .live-priority {
+            border-color: rgba(239, 68, 68, 0.65) !important;
+        }
+</style>
 </head>
 <body>
 
@@ -451,7 +476,8 @@
             return translateSportName(original, "بطولات أخرى");
         }
 
-        // عرض المباريات: المباشر أولاً ثم المهمة ثم باقي المباريات
+        // نظام ترتيب المباريات حسب أهمية الزائر العربي:
+        // مباشر → أهم المباريات → البطولات الكبرى → باقي المباريات
         function renderGroupedMatches(matches) {
             timerIntervals.forEach(clearInterval);
             timerIntervals = [];
@@ -460,6 +486,91 @@
                 matchesList.innerHTML =
                     '<div class="no-matches">🏁 لا توجد مباريات مجدولة في هذا التاريخ.</div>';
                 return;
+            }
+
+            const BIG_TEAMS = [
+                "real madrid", "barcelona", "atletico madrid", "manchester city",
+                "manchester united", "liverpool", "arsenal", "chelsea", "tottenham",
+                "bayern munich", "bayern münchen", "borussia dortmund", "psg",
+                "paris saint-germain", "juventus", "inter", "inter milan", "ac milan",
+                "napoli", "roma", "ajax", "benfica", "porto", "galatasaray",
+                "fenerbahce", "fenerbahçe", "besiktas", "beşiktaş", "olympiacos",
+                "al hilal", "al-hilal", "al nassr", "al-nassr", "al ahli", "al-ahli",
+                "al ittihad", "al-ittihad", "al shabab", "al-shabab"
+            ];
+
+            const LEAGUE_TIERS = [
+                { words: ["world cup", "fifa world cup"], score: 1200 },
+                { words: ["champions league", "uefa champions league"], score: 1150 },
+                { words: ["premier league", "english premier league"], score: 1050 },
+                { words: ["la liga", "spanish la liga"], score: 1040 },
+                { words: ["serie a", "italian serie a"], score: 1030 },
+                { words: ["bundesliga", "german bundesliga"], score: 1020 },
+                { words: ["ligue 1", "french ligue 1"], score: 1010 },
+                { words: ["saudi pro league", "saudi arabia pro league"], score: 1000 },
+                { words: ["europa league", "uefa europa league"], score: 980 },
+                { words: ["conference league", "uefa europa conference league"], score: 960 },
+                { words: ["asian cup", "afc asian cup"], score: 950 },
+                { words: ["africa cup", "africa cup of nations"], score: 940 },
+                { words: ["copa libertadores"], score: 920 },
+                { words: ["egyptian premier league"], score: 900 },
+                { words: ["qatar stars league"], score: 890 },
+                { words: ["uae pro league"], score: 880 },
+                { words: ["iraq stars league"], score: 870 },
+                { words: ["moroccan botola", "botola pro"], score: 860 },
+                { words: ["turkish super lig"], score: 850 },
+                { words: ["eredivisie"], score: 840 },
+                { words: ["primeira liga"], score: 830 }
+            ];
+
+            function normalizedText(value) {
+                return String(value ?? "")
+                    .toLowerCase()
+                    .replace(/[–—]/g, "-")
+                    .trim();
+            }
+
+            function getLeagueTier(leagueName) {
+                const text = normalizedText(leagueName);
+                for (const tier of LEAGUE_TIERS) {
+                    if (tier.words.some(word => text.includes(word))) return tier.score;
+                }
+
+                if (/(cup|super cup|final|playoff|play-off)/i.test(leagueName || "")) return 700;
+                if (/(league|division|premier|pro)/i.test(leagueName || "")) return 600;
+                return 400;
+            }
+
+            function getTeamBoost(teamName) {
+                const text = normalizedText(teamName);
+                return BIG_TEAMS.some(team => text === team || text.includes(team)) ? 130 : 0;
+            }
+
+            function getImportance(m, isLive, isFinished) {
+                const fixture = m.fixture || {};
+                const leagueOriginal = String(m.league?.name || "");
+                const teams = m.teams || {};
+                const homeName = String(teams.home?.name || "");
+                const awayName = String(teams.away?.name || "");
+                const apiPriority = Number(m.priority || 0);
+
+                let score = Math.max(0, apiPriority);
+                score = Math.max(score, getLeagueTier(leagueOriginal));
+                score += getTeamBoost(homeName) + getTeamBoost(awayName);
+
+                // مواجهة بين فريقين كبيرين = اهتمام أعلى.
+                if (getTeamBoost(homeName) && getTeamBoost(awayName)) score += 180;
+
+                // المباشر يأخذ الأولوية القصوى، والمنتهي لا يطغى على القادم.
+                if (isLive) score += 5000;
+                if (isFinished) score -= 500;
+
+                // النهائي/نصف النهائي/مباراة فاصلة مهمة.
+                if (/(final|semi|semifinal|playoff|play-off)/i.test(String(fixture?.status?.long || ""))) {
+                    score += 100;
+                }
+
+                return score;
             }
 
             const normalized = matches.map((m, index) => {
@@ -474,31 +585,24 @@
                 const liveStatuses = ["LIVE", "1H", "2H", "ET", "BT", "P", "INT", "HT"];
                 const isLive = liveStatuses.includes(statusShort);
                 const isFinished = ["FT", "AET", "PEN"].includes(statusShort);
-                const priority = Number(m.priority || 0);
-
-                let importance = priority;
-                const leagueName = translateLeagueName(m.league?.name || "بطولات أخرى");
-
-                const majorLeagueWords = [
-                    "Champions League", "Europa League", "Conference League",
-                    "Premier League", "La Liga", "Bundesliga", "Serie A",
-                    "Ligue 1", "World Cup", "Asian Cup", "Africa Cup",
-                    "Copa Libertadores", "Saudi", "Egypt", "Morocco",
-                    "Qatar", "UAE", "Iraq", "Kuwait"
-                ];
-
-                if (majorLeagueWords.some(w =>
-                    leagueName.toLowerCase().includes(w.toLowerCase())
-                )) importance += 80;
-
-                if (isLive) importance += 10000;
-                if (isFinished) importance -= 100;
+                const importance = getImportance(m, isLive, isFinished);
+                const originalLeagueName = String(m.league?.name || "بطولات أخرى");
+                const leagueName = translateLeagueName(originalLeagueName);
 
                 return {
-                    original: m, fixture, home, away, goals, statusShort,
-                    isLive, isFinished, importance,
+                    original: m,
+                    fixture,
+                    home,
+                    away,
+                    goals,
+                    statusShort,
+                    isLive,
+                    isFinished,
+                    importance,
+                    originalLeagueName,
+                    leagueName,
                     matchTime: new Date(fixture.date || 0).getTime(),
-                    leagueName, index
+                    index
                 };
             });
 
@@ -509,39 +613,60 @@
             });
 
             const liveMatches = normalized.filter(m => m.isLive);
-            const otherMatches = normalized.filter(m => !m.isLive);
+            const importantMatches = normalized.filter(m => !m.isLive && !m.isFinished && m.importance >= 950);
+            const importantIds = new Set(importantMatches.map(m => `${m.fixture.id || ""}-${m.index}`));
+            const remainingMatches = normalized.filter(m =>
+                !m.isLive && !importantIds.has(`${m.fixture.id || ""}-${m.index}`)
+            );
 
             matchesList.innerHTML = "";
 
-            if (liveMatches.length) {
-                const liveHeader = document.createElement("div");
-                liveHeader.className = "league-title";
-                liveHeader.innerHTML = "🔴 المباريات المباشرة الآن";
-                matchesList.appendChild(liveHeader);
-                liveMatches.forEach((item, i) => createMatchCard(item, `live-${i}`));
+            function appendSection(title, items, className = "") {
+                if (!items.length) return;
+                const header = document.createElement("div");
+                header.className = `league-title ${className}`;
+                header.innerHTML = title;
+                matchesList.appendChild(header);
+                items.forEach((item, i) => createMatchCard(item, `${item.fixture.id || "match"}-${item.index}-${i}`));
             }
 
+            appendSection("🔴 المباريات المباشرة الآن", liveMatches, "live-section");
+            appendSection("⭐ أهم مباريات اليوم", importantMatches, "important-section");
+
+            // ترتيب مجموعات البطولات حسب أعلى مباراة أهمية داخل كل بطولة.
             const grouped = {};
-            otherMatches.forEach(item => {
+            remainingMatches.forEach(item => {
                 if (!grouped[item.leagueName]) grouped[item.leagueName] = [];
                 grouped[item.leagueName].push(item);
             });
 
-            Object.keys(grouped).forEach(leagueName => {
-                const header = document.createElement("div");
-                header.className = "league-title";
-                header.textContent = `🏆 ${leagueName}`;
-                matchesList.appendChild(header);
+            Object.entries(grouped)
+                .sort(([, a], [, b]) => {
+                    const scoreA = Math.max(...a.map(x => x.importance));
+                    const scoreB = Math.max(...b.map(x => x.importance));
+                    if (scoreB !== scoreA) return scoreB - scoreA;
+                    return a[0].matchTime - b[0].matchTime;
+                })
+                .forEach(([leagueName, leagueMatches]) => {
+                    const header = document.createElement("div");
+                    header.className = "league-title";
+                    header.textContent = `🏆 ${leagueName}`;
+                    matchesList.appendChild(header);
 
-                grouped[leagueName].forEach((item, i) => {
-                    createMatchCard(item, `${item.fixture.id || "match"}-${i}`);
+                    leagueMatches
+                        .sort((a, b) => {
+                            if (b.importance !== a.importance) return b.importance - a.importance;
+                            return a.matchTime - b.matchTime;
+                        })
+                        .forEach((item, i) => createMatchCard(item, `${item.fixture.id || "match"}-${item.index}-${i}`));
                 });
-            });
 
             function createMatchCard(item, uniqueId) {
                 const { fixture, home, away, goals, statusShort, isLive, isFinished } = item;
                 const card = document.createElement("div");
-                const isImportant = Number(item.original.priority || 0) >= 100;
+                const apiPriority = Number(item.original.priority || 0);
+                const isImportant = item.importance >= 950;
+                const isVeryImportant = item.importance >= 1050;
 
                 card.className = `match-card ${isLive ? "live-priority" : ""} ${isImportant ? "important-match" : ""}`;
 
@@ -551,6 +676,11 @@
                 const awayName = translateSportName(away.name, "الفريق الضيف");
                 const uId = `info-${String(uniqueId).replace(/[^a-zA-Z0-9_-]/g, "_")}`;
 
+                let importanceBadge = "";
+                if (isLive) importanceBadge = `<span class="importance-badge live">🔴 مباشر</span>`;
+                else if (isVeryImportant) importanceBadge = `<span class="importance-badge top">⭐ قمة</span>`;
+                else if (isImportant || apiPriority >= 100) importanceBadge = `<span class="importance-badge">⭐ مهمة</span>`;
+
                 card.innerHTML = `
                     <div class="match-main">
                         <div class="team">
@@ -558,7 +688,7 @@
                                  onerror="this.onerror=null;this.src='https://r2.thesportsdb.com/images/media/team/badge/default.png'">
                             <div class="team-name">${escapeHtml(homeName)}</div>
                         </div>
-                        <div class="info-sec" id="${uId}"></div>
+                        <div class="info-sec" id="${uId}">${importanceBadge}</div>
                         <div class="team">
                             <img class="team-logo" src="${escapeHtml(awayLogo)}" alt="${escapeHtml(awayName)}"
                                  onerror="this.onerror=null;this.src='https://r2.thesportsdb.com/images/media/team/badge/default.png'">
@@ -577,16 +707,16 @@
                     const hg = goals.home ?? 0;
                     const ag = goals.away ?? 0;
                     const elapsed = fixture.status?.elapsed ? ` ${fixture.status.elapsed}'` : "";
-                    infoBox.innerHTML = `<div class="score" style="color:#ef4444">${hg} - ${ag}</div><span class="status-badge">مباشر${elapsed}</span>`;
+                    infoBox.innerHTML = `${importanceBadge}<div class="score" style="color:#ef4444">${hg} - ${ag}</div><span class="status-badge">مباشر${elapsed}</span>`;
                 } else if (isFinished) {
-                    infoBox.innerHTML = `<div class="score">${goals.home ?? 0} - ${goals.away ?? 0}</div><span class="status-badge" style="background:#10b981">انتهت</span>`;
+                    infoBox.innerHTML = `${importanceBadge}<div class="score">${goals.home ?? 0} - ${goals.away ?? 0}</div><span class="status-badge" style="background:#10b981">انتهت</span>`;
                 } else if (statusShort === "NS" || !statusShort) {
                     const mDate = new Date(fixture.date || 0).getTime();
 
                     const updateCountdown = () => {
                         const diff = mDate - Date.now();
                         if (!Number.isFinite(mDate) || diff <= 0) {
-                            infoBox.innerHTML = `<div class="score">VS</div><span class="status-badge" style="background:#16a34a">تبدأ الآن</span>`;
+                            infoBox.innerHTML = `${importanceBadge}<div class="score">VS</div><span class="status-badge" style="background:#16a34a">تبدأ الآن</span>`;
                             return false;
                         }
 
@@ -594,7 +724,7 @@
                         const min = Math.floor((diff % 3600000) / 60000).toString().padStart(2, "0");
                         const sec = Math.floor((diff % 60000) / 1000).toString().padStart(2, "0");
 
-                        infoBox.innerHTML = `<div class="score">VS</div><div class="countdown">تبدأ بعد ${h}:${min}:${sec}</div>`;
+                        infoBox.innerHTML = `${importanceBadge}<div class="score">VS</div><div class="countdown">تبدأ بعد ${h}:${min}:${sec}</div>`;
                         return true;
                     };
 
@@ -605,7 +735,7 @@
                         timerIntervals.push(tId);
                     }
                 } else {
-                    infoBox.innerHTML = `<div class="score">${goals.home ?? "-"} - ${goals.away ?? "-"}</div><span class="status-badge">قريباً</span>`;
+                    infoBox.innerHTML = `${importanceBadge}<div class="score">${goals.home ?? "-"} - ${goals.away ?? "-"}</div><span class="status-badge">قريباً</span>`;
                 }
             }
 
