@@ -883,3 +883,58 @@ process.on(
     );
   }
 );
+app.get("/api/debug/events", async (req, res) => {
+  try {
+    const date = req.query.date || "2026-08-12";
+
+    const urls = [
+      `https://www.thesportsdb.com/api/v1/json/${API_KEY}/eventsday.php?d=${date}`,
+      `https://www.thesportsdb.com/api/v1/json/${API_KEY}/eventsday.php?d=${date.split("-").reverse().join(".")}`
+    ];
+
+    const results = [];
+
+    for (const url of urls) {
+      try {
+        const response = await axios.get(url, {
+          timeout: 15000,
+          headers: {
+            "User-Agent": "Live-Modarraj/1.0"
+          }
+        });
+
+        results.push({
+          url,
+          httpStatus: response.status,
+          events:
+            response.data?.events?.length || 0,
+          keys:
+            Object.keys(response.data || {}),
+          sample:
+            response.data?.events?.slice(0, 2) || []
+        });
+      } catch (error) {
+        results.push({
+          url,
+          error: error.message,
+          status:
+            error.response?.status || null,
+          response:
+            error.response?.data || null
+        });
+      }
+    }
+
+    res.json({
+      status: "success",
+      date,
+      results
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      error: error.message
+    });
+  }
+});
