@@ -24,243 +24,81 @@ const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 5000;
 const API_KEY = process.env.THESPORTSDB_API_KEY;
 
-app.use(express.json());
-app.use(express.static(__dirname));
+const cache = new Map();
+const CACHE_TIME = 30 * 1000;
 
 const api = axios.create({
   timeout: 20000,
   headers: {
-    "User-Agent": "Live-Modarraj/1.0",
+    "User-Agent": "Modarraj-Live/1.0",
     "Accept": "application/json"
   }
 });
 
-/* =========================
-   Memory Cache
-========================= */
-
-const cache = new Map();
-const CACHE_TIME = 30 * 1000;
+app.use(express.json());
+app.use(express.static(__dirname));
 
 /* =========================
    League Priority
 ========================= */
 
-const LEAGUE_PRIORITY = {
-  "FIFA World Cup": 110,
-  "World Cup": 110,
+const LEAGUES = {
+  "FIFA World Cup": 120,
+  "World Cup": 120,
 
-  "AFC Asian Cup": 105,
-  "Asian Cup": 105,
+  "UEFA Champions League": 115,
+  "UEFA Europa League": 110,
+  "UEFA Europa Conference League": 105,
 
-  "Africa Cup of Nations": 103,
+  "English Premier League": 100,
+  "Premier League": 100,
 
-  "UEFA Champions League": 100,
-  "UEFA Europa League": 95,
-  "UEFA Europa Conference League": 90,
+  "La Liga": 98,
+  "Serie A": 96,
+  "Bundesliga": 94,
+  "Ligue 1": 92,
 
-  "English Premier League": 88,
-  "Premier League": 88,
+  "Saudi Pro League": 90,
+  "Saudi Professional League": 90,
+  "Saudi-Arabian Pro League": 90,
 
-  "La Liga": 86,
-  "Serie A": 84,
-  "Bundesliga": 82,
-  "Ligue 1": 80,
+  "AFC Champions League Elite": 88,
+  "AFC Champions League": 86,
 
-  "Saudi Professional League": 78,
-  "Saudi-Arabian Pro League": 78,
-  "Saudi Pro League": 78,
+  "Moroccan Botola": 84,
+  "Botola Pro": 84,
 
-  "AFC Champions League Elite": 75,
-  "AFC Champions League": 74,
-  "CAF Champions League": 73,
+  "Egyptian Premier League": 82,
+  "Qatar Stars League": 80,
+  "UAE Pro League": 78,
+  "Iraq Stars League": 76,
+  "Kuwait Premier League": 74,
+  "Tunisian Ligue 1": 72,
+  "Algeria Ligue 1": 70,
 
-  "Moroccan Botola": 72,
-  "Botola Pro": 72,
-
-  "Egyptian Premier League": 70,
-  "Qatar Stars League": 68,
-  "UAE Pro League": 66,
-  "Iraq Stars League": 64,
-  "Kuwait Premier League": 62,
-  "Tunisian Ligue 1": 60,
-  "Algeria Ligue 1": 58
+  "Africa Cup of Nations": 90,
+  "AFC Asian Cup": 90,
+  "Asian Cup": 90
 };
 
 /* =========================
-   Important Teams
+   Helpers
 ========================= */
 
-const TEAM_PRIORITY = [
-  "al-hilal",
-  "al hilal",
-  "al-nassr",
-  "al nassr",
-  "al-ittihad",
-  "al ittihad",
-  "al-ahli",
-  "al ahli",
-
-  "real madrid",
-  "barcelona",
-  "atletico madrid",
-
-  "manchester city",
-  "manchester united",
-  "liverpool",
-  "arsenal",
-  "chelsea",
-  "tottenham",
-
-  "bayern munich",
-  "borussia dortmund",
-
-  "paris saint-germain",
-  "psg",
-
-  "juventus",
-  "inter milan",
-  "ac milan",
-  "napoli"
-];
-
-/* =========================
-   Arabic Translation
-========================= */
-
-const TEAM_AR = {
-  "Al-Hilal": "الهلال",
-  "Al Hilal": "الهلال",
-  "Al-Hilal Riyadh": "الهلال",
-
-  "Al-Nassr": "النصر",
-  "Al Nassr": "النصر",
-  "Al-Nassr Riyadh": "النصر",
-
-  "Al-Ittihad": "الاتحاد",
-  "Al Ittihad": "الاتحاد",
-
-  "Al-Ahli": "الأهلي",
-  "Al Ahli": "الأهلي",
-
-  "Al-Shabab": "الشباب",
-  "Al Shabab": "الشباب",
-
-  "Al-Ettifaq": "الاتفاق",
-  "Al Ettifaq": "الاتفاق",
-
-  "Al-Taawoun": "التعاون",
-  "Al Taawoun": "التعاون",
-
-  "Al-Fateh": "الفتح",
-  "Al Fateh": "الفتح",
-
-  "Al-Raed": "الرائد",
-  "Al Raed": "الرائد",
-
-  "Al-Wehda": "الوحدة",
-  "Al Wehda": "الوحدة",
-
-  "Al-Khaleej": "الخليج",
-  "Al Khaleej": "الخليج",
-
-  "Al-Okhdood": "الأخدود",
-  "Al Okhdood": "الأخدود",
-
-  "Al-Qadsiah": "القادسية",
-  "Al Qadsiah": "القادسية",
-
-  "Real Madrid": "ريال مدريد",
-  "Barcelona": "برشلونة",
-  "Atletico Madrid": "أتلتيكو مدريد",
-
-  "Manchester City": "مانشستر سيتي",
-  "Manchester United": "مانشستر يونايتد",
-
-  "Liverpool": "ليفربول",
-  "Arsenal": "أرسنال",
-  "Chelsea": "تشيلسي",
-  "Tottenham Hotspur": "توتنهام",
-
-  "Bayern Munich": "بايرن ميونخ",
-  "Borussia Dortmund": "بوروسيا دورتموند",
-
-  "Paris Saint-Germain": "باريس سان جيرمان",
-  "PSG": "باريس سان جيرمان",
-
-  "Juventus": "يوفنتوس",
-  "Inter Milan": "إنتر ميلان",
-  "AC Milan": "ميلان",
-  "Napoli": "نابولي",
-  "Roma": "روما"
-};
-
-const LEAGUE_AR = {
-  "UEFA Champions League": "دوري أبطال أوروبا",
-  "UEFA Europa League": "الدوري الأوروبي",
-  "UEFA Europa Conference League": "دوري المؤتمر الأوروبي",
-
-  "English Premier League": "الدوري الإنجليزي الممتاز",
-  "Premier League": "الدوري الإنجليزي الممتاز",
-
-  "La Liga": "الدوري الإسباني",
-  "Serie A": "الدوري الإيطالي",
-  "Bundesliga": "الدوري الألماني",
-  "Ligue 1": "الدوري الفرنسي",
-
-  "Saudi Professional League": "الدوري السعودي للمحترفين",
-  "Saudi-Arabian Pro League": "الدوري السعودي للمحترفين",
-  "Saudi Pro League": "الدوري السعودي للمحترفين",
-
-  "Moroccan Botola": "الدوري المغربي",
-  "Botola Pro": "الدوري المغربي للمحترفين",
-
-  "Egyptian Premier League": "الدوري المصري الممتاز",
-  "Qatar Stars League": "الدوري القطري",
-  "UAE Pro League": "الدوري الإماراتي للمحترفين",
-
-  "Iraq Stars League": "دوري نجوم العراق",
-  "Kuwait Premier League": "الدوري الكويتي الممتاز",
-  "Tunisian Ligue 1": "الدوري التونسي",
-  "Algeria Ligue 1": "الدوري الجزائري",
-
-  "AFC Champions League Elite": "دوري أبطال آسيا للنخبة",
-  "AFC Champions League": "دوري أبطال آسيا",
-  "CAF Champions League": "دوري أبطال أفريقيا",
-
-  "FIFA World Cup": "كأس العالم",
-  "World Cup": "كأس العالم",
-
-  "AFC Asian Cup": "كأس آسيا",
-  "Asian Cup": "كأس آسيا",
-
-  "Africa Cup of Nations": "كأس أمم أفريقيا"
-};
-
-function translateTeam(name) {
-  const value = String(name || "").trim();
-
-  return TEAM_AR[value] || value || "فريق غير معروف";
+function getDate() {
+  return new Date()
+    .toISOString()
+    .slice(0, 10);
 }
 
-function translateLeague(name) {
-  const value = String(name || "").trim();
+function getStatus(event) {
+  const status = String(
+    event?.strStatus || ""
+  ).toUpperCase();
 
-  return LEAGUE_AR[value] || value || "بطولة أخرى";
-}
-
-/* =========================
-   Match Status
-========================= */
-
-function statusOf(event) {
-  const status = String(event?.strStatus || "")
-    .trim()
-    .toUpperCase();
-
-  const progress = String(event?.strProgress || "")
-    .trim()
-    .toUpperCase();
+  const progress = String(
+    event?.strProgress || ""
+  ).toUpperCase();
 
   if (
     ["LIVE", "1H", "2H", "ET", "P"].includes(status)
@@ -285,120 +123,76 @@ function statusOf(event) {
   return "NS";
 }
 
-/* =========================
-   Match Priority
-========================= */
+function leaguePriority(name) {
+  const value = String(name || "");
 
-function priorityOf(event) {
-  const league = String(event?.strLeague || "");
-
-  const leagueBase =
-    LEAGUE_PRIORITY[league] ?? 30;
-
-  const home =
-    String(event?.strHomeTeam || "").toLowerCase();
-
-  const away =
-    String(event?.strAwayTeam || "").toLowerCase();
-
-  let score = leagueBase;
-
-  for (const team of TEAM_PRIORITY) {
-    if (home.includes(team)) {
-      score += 8;
-    }
-
-    if (away.includes(team)) {
-      score += 8;
-    }
-  }
-
-  const status = statusOf(event);
-
-  if (status === "LIVE") {
-    score += 1000;
-  }
-
-  if (status === "HT") {
-    score += 900;
-  }
-
-  if (status === "FT") {
-    score += 5;
-  }
-
-  return score;
+  return LEAGUES[value] ?? 20;
 }
 
-/* =========================
-   Normalize Match
-========================= */
-
-function normalizeEvent(event, source = "TheSportsDB") {
-  const date =
-    event?.dateEvent ||
-    event?.strEventDate ||
-    "";
-
-  const time =
-    event?.strEventTime ||
-    event?.strTime ||
-    "00:00:00";
-
-  const status = statusOf(event);
-
+function normalize(event, source) {
   return {
     fixture: {
       id:
         event?.idEvent ||
         event?.idLiveScore ||
-        `${event?.idHomeTeam || ""}-${event?.idAwayTeam || ""}-${date}`,
+        `${event?.idHomeTeam || ""}-${event?.idAwayTeam || ""}-${event?.dateEvent || ""}`,
 
-      date: `${date}T${time}`,
+      date: event?.dateEvent || "",
+
+      time:
+        event?.strEventTime ||
+        "",
 
       status: {
-        short: status,
-        elapsed: event?.strProgress || ""
+        short: getStatus(event),
+
+        progress:
+          event?.strProgress ||
+          ""
       }
     },
 
     league: {
-      id: String(event?.idLeague || ""),
+      id:
+        event?.idLeague ||
+        "",
 
-      name: translateLeague(
-        event?.strLeague
-      ),
-
-      originalName:
-        event?.strLeague || "",
+      name:
+        event?.strLeague ||
+        "Other",
 
       country:
-        event?.strCountry || ""
+        event?.strCountry ||
+        ""
     },
 
     teams: {
       home: {
-        name: translateTeam(
-          event?.strHomeTeam
-        ),
+        id:
+          event?.idHomeTeam ||
+          "",
 
-        originalName:
-          event?.strHomeTeam || "",
+        name:
+          event?.strHomeTeam ||
+          "Unknown Team",
 
         logo:
-          event?.strHomeTeamBadge || ""
+          event?.strHomeTeamBadge ||
+          ""
       },
 
       away: {
-        name: translateTeam(
-          event?.strAwayTeam
-        ),
+        id:
+          event?.idAwayTeam ||
+          "",
 
-        originalName:
-          event?.strAwayTeam || "",
+        name:
+          event?.strAwayTeam ||
+          "Unknown Team",
 
         logo:
-          event?.strAwayTeamBadge || ""
+          event?.strAwayTeamBadge ||
+          ""
       }
     },
 
@@ -412,39 +206,39 @@ function normalizeEvent(event, source = "TheSportsDB") {
 
     media: {
       channel:
-        event?.strTVStation || "",
+        event?.strTVStation ||
+        "",
 
       commentator:
-        event?.strCommentator || ""
+        event?.strCommentator ||
+        ""
     },
 
     venue:
-      event?.strVenue || "",
+      event?.strVenue ||
+      "",
 
     city:
-      event?.strCity || "",
-
-    priority:
-      priorityOf(event),
+      event?.strCity ||
+      "",
 
     source
   };
 }
 
 /* =========================
-   TheSportsDB Events Day
+   V1 Events Day
 ========================= */
 
 async function fetchEventsDay(date) {
   if (!API_KEY) {
     throw new Error(
-      "THESPORTSDB_API_KEY غير موجود"
+      "THESPORTSDB_API_KEY is missing"
     );
   }
 
   const url =
-    `https://www.thesportsdb.com/api/v1/json/${API_KEY}/eventsday.php` +
-    `?d=${encodeURIComponent(date)}&s=Soccer`;
+    `https://www.thesportsdb.com/api/v1/json/${API_KEY}/eventsday.php?d=${date}&s=Soccer`;
 
   try {
     const response =
@@ -458,7 +252,7 @@ async function fetchEventsDay(date) {
 
   } catch (error) {
     console.error(
-      "eventsday:",
+      "Events Day error:",
       error.response?.status ||
       error.message
     );
@@ -468,62 +262,63 @@ async function fetchEventsDay(date) {
 }
 
 /* =========================
-   TheSportsDB V2 Livescore
+   V2 Livescore
 ========================= */
 
-async function fetchLiveScores() {
+async function fetchLivescores() {
   if (!API_KEY) {
     return [];
   }
 
-  const url =
-    "https://www.thesportsdb.com/api/v2/json/livescore/soccer";
-
   try {
     const response =
-      await api.get(url, {
-        headers: {
-          "X-API-KEY": API_KEY,
-          "Content-Type": "application/json"
+      await api.get(
+        "https://www.thesportsdb.com/api/v2/json/livescore/soccer",
+        {
+          headers: {
+            "X-API-KEY": API_KEY,
+            "Content-Type":
+              "application/json"
+          }
         }
-      });
+      );
 
-    const data =
+    const body =
       response.data;
 
-    if (Array.isArray(data)) {
-      return data;
+    if (Array.isArray(body)) {
+      return body;
     }
 
     if (
       Array.isArray(
-        data?.livescores
+        body?.data
       )
     ) {
-      return data.livescores;
+      return body.data;
     }
 
     if (
       Array.isArray(
-        data?.events
+        body?.livescores
       )
     ) {
-      return data.events;
+      return body.livescores;
     }
 
     if (
       Array.isArray(
-        data?.data
+        body?.events
       )
     ) {
-      return data.data;
+      return body.events;
     }
 
     return [];
 
   } catch (error) {
     console.error(
-      "V2 Livescore:",
+      "Livescore error:",
       error.response?.status ||
       error.message
     );
@@ -533,95 +328,123 @@ async function fetchLiveScores() {
 }
 
 /* =========================
-   Merge Events
+   Merge
 ========================= */
 
-function mergeEvents(arrays) {
+function merge(events) {
   const map = new Map();
 
-  for (const events of arrays) {
-    for (const event of events) {
-      if (!event) continue;
+  for (const event of events) {
+    if (!event) continue;
 
-      const id =
-        event.idEvent ||
-        event.idLiveScore ||
-        `${event.idHomeTeam}-${event.idAwayTeam}-${event.dateEvent}`;
+    const id =
+      event.idEvent ||
+      event.idLiveScore;
 
-      if (!id) continue;
+    if (!id) continue;
 
-      const existing =
-        map.get(id);
+    const old =
+      map.get(String(id));
 
-      if (!existing) {
-        map.set(id, event);
-        continue;
-      }
+    if (!old) {
+      map.set(
+        String(id),
+        event
+      );
+      continue;
+    }
 
-      const incomingStatus =
-        statusOf(event);
+    const oldStatus =
+      getStatus(old);
 
-      if (
-        incomingStatus === "LIVE" ||
-        incomingStatus === "HT"
-      ) {
-        map.set(id, event);
-      }
+    const newStatus =
+      getStatus(event);
+
+    if (
+      newStatus === "LIVE" ||
+      newStatus === "HT"
+    ) {
+      map.set(
+        String(id),
+        event
+      );
+    } else if (
+      oldStatus === "NS"
+    ) {
+      map.set(
+        String(id),
+        event
+      );
     }
   }
 
-  return [...map.values()];
+  return [
+    ...map.values()
+  ];
 }
 
 /* =========================
-   Sort Matches
+   Sort
 ========================= */
 
 function sortMatches(matches) {
-  return matches.sort((a, b) => {
+  return matches.sort(
+    (a, b) => {
 
-    const liveA =
-      ["LIVE", "HT"].includes(
-        a.fixture.status.short
-      )
-        ? 1
-        : 0;
+      const aLive =
+        ["LIVE", "HT"].includes(
+          a.fixture.status.short
+        );
 
-    const liveB =
-      ["LIVE", "HT"].includes(
-        b.fixture.status.short
-      )
-        ? 1
-        : 0;
+      const bLive =
+        ["LIVE", "HT"].includes(
+          b.fixture.status.short
+        );
 
-    if (liveA !== liveB) {
-      return liveB - liveA;
-    }
+      if (
+        aLive !== bLive
+      ) {
+        return bLive - aLive;
+      }
 
-    if (
-      b.priority !==
-      a.priority
-    ) {
-      return (
-        b.priority -
-        a.priority
+      const aPriority =
+        leaguePriority(
+          a.league.name
+        );
+
+      const bPriority =
+        leaguePriority(
+          b.league.name
+        );
+
+      if (
+        aPriority !==
+        bPriority
+      ) {
+        return (
+          bPriority -
+          aPriority
+        );
+      }
+
+      return String(
+        a.fixture.time
+      ).localeCompare(
+        String(
+          b.fixture.time
+        )
       );
     }
-
-    return (
-      new Date(a.fixture.date) -
-      new Date(b.fixture.date)
-    );
-  });
+  );
 }
 
 /* =========================
-   Get Matches
+   Main Fetch
 ========================= */
 
 async function getMatches(date) {
   const key =
-    `matches:${date}`;
+    `matches-${date}`;
 
   const cached =
     cache.get(key);
@@ -629,7 +452,7 @@ async function getMatches(date) {
   if (
     cached &&
     Date.now() <
-      cached.expiresAt
+      cached.expires
   ) {
     return {
       data: cached.data,
@@ -637,48 +460,59 @@ async function getMatches(date) {
     };
   }
 
-  const dayEvents =
+  const day =
     await fetchEventsDay(date);
 
   const today =
-    new Date()
-      .toISOString()
-      .slice(0, 10);
+    getDate();
 
-  const liveEvents =
+  let live = [];
+
+  if (
     date === today
-      ? await fetchLiveScores()
-      : [];
+  ) {
+    live =
+      await fetchLivescores();
+  }
 
-  const raw =
-    mergeEvents([
-      dayEvents,
-      liveEvents
+  const all =
+    merge([
+      ...day,
+      ...live
     ]);
 
   let matches =
-    raw.map(event =>
-      normalizeEvent(
-        event,
-        "TheSportsDB"
-      )
+    all.map(
+      event =>
+        normalize(
+          event,
+          live.includes(event)
+            ? "TheSportsDB V2"
+            : "TheSportsDB V1"
+        )
     );
 
-  matches =
-    [
-      ...new Map(
-        matches.map(match => [
-          match.fixture.id,
-          match
-        ])
-      ).values()
-    ];
+  const unique =
+    new Map();
+
+  for (const match of matches) {
+    unique.set(
+      String(
+        match.fixture.id
+      ),
+      match
+    );
+  }
+
+  matches = [
+    ...unique.values()
+  ];
 
   sortMatches(matches);
 
   cache.set(key, {
     data: matches,
-    expiresAt:
+    expires:
       Date.now() +
       CACHE_TIME
   });
@@ -690,52 +524,50 @@ async function getMatches(date) {
 }
 
 /* =========================
-   API Matches
+   Matches API
 ========================= */
 
 app.get(
   "/api/matches",
   async (req, res) => {
 
-    const requestedDate =
+    const date =
       req.query.date ||
-      new Date()
-        .toISOString()
-        .slice(0, 10);
+      getDate();
 
     if (
       !/^\d{4}-\d{2}-\d{2}$/.test(
-        requestedDate
+        date
       )
     ) {
       return res.status(400).json({
         source: "Validation",
         data: [],
         count: 0,
+        date,
         error:
-          "التاريخ يجب أن يكون YYYY-MM-DD"
+          "Invalid date format"
       });
     }
 
     try {
 
       const result =
-        await getMatches(
-          requestedDate
-        );
+        await getMatches(date);
 
       io.emit(
-        "matchUpdate",
+        "matches",
         {
-          date: requestedDate,
-          matches: result.data
+          date,
+          data:
+            result.data
         }
       );
 
-      return res.json({
+      res.json({
         source:
           result.cached
-            ? "Local Cache"
+            ? "Memory Cache"
             : "TheSportsDB API",
 
         data:
@@ -744,8 +576,7 @@ app.get(
         count:
           result.data.length,
 
-        date:
-          requestedDate,
+        date,
 
         cached:
           result.cached,
@@ -757,45 +588,19 @@ app.get(
     } catch (error) {
 
       console.error(
-        "/api/matches:",
+        "API matches:",
         error
       );
 
-      return res.status(500).json({
-        source: "Server Error",
+      res.status(500).json({
+        source: "Server",
         data: [],
         count: 0,
+        date,
         error:
           error.message
       });
     }
-  }
-);
-
-/* =========================
-   Health
-   للاختبار فقط
-========================= */
-
-app.get(
-  "/api/health",
-  (req, res) => {
-
-    res.json({
-      status: "ok",
-      server: "Live Modarraj",
-
-      apiKey:
-        API_KEY
-          ? "موجود"
-          : "غير موجود",
-
-      database:
-        "disabled - memory cache only",
-
-      timestamp:
-        new Date().toISOString()
-    });
   }
 );
 
@@ -807,35 +612,43 @@ app.get(
   "/api/test/live",
   async (req, res) => {
 
-    try {
+    const data =
+      await fetchLivescores();
 
-      const live =
-        await fetchLiveScores();
+    res.json({
+      status: "success",
+      source:
+        "TheSportsDB V2 Livescore",
+      matches:
+        data.length,
+      data,
+      timestamp:
+        new Date().toISOString()
+    });
+  }
+);
 
-      res.json({
-        status: "success",
+/* =========================
+   Health
+========================= */
 
-        source:
-          "TheSportsDB V2 Livescore",
+app.get(
+  "/api/health",
+  (req, res) => {
 
-        matches:
-          live.length,
-
-        data:
-          live,
-
-        timestamp:
-          new Date().toISOString()
-      });
-
-    } catch (error) {
-
-      res.status(502).json({
-        status: "error",
-        error:
-          error.message
-      });
-    }
+    res.json({
+      status: "ok",
+      server:
+        "Modarraj Live",
+      database:
+        "disabled",
+      apiKey:
+        API_KEY
+          ? "present"
+          : "missing",
+      timestamp:
+        new Date().toISOString()
+    });
   }
 );
 
@@ -857,17 +670,6 @@ app.get(
 );
 
 /* =========================
-   Favicon
-========================= */
-
-app.get(
-  "/favicon.ico",
-  (req, res) => {
-    res.status(204).end();
-  }
-);
-
-/* =========================
    404
 ========================= */
 
@@ -876,11 +678,9 @@ app.use(
 
     res.status(404).json({
       error:
-        "الرابط المطلوب غير موجود",
-
+        "Route not found",
       path:
         req.path,
-
       method:
         req.method
     });
@@ -888,7 +688,7 @@ app.use(
 );
 
 /* =========================
-   Socket.IO
+   Socket
 ========================= */
 
 io.on(
@@ -896,7 +696,8 @@ io.on(
   socket => {
 
     console.log(
-      `Socket connected: ${socket.id}`
+      "Socket connected:",
+      socket.id
     );
 
     socket.on(
@@ -904,8 +705,10 @@ io.on(
       () => {
 
         console.log(
-          `Socket disconnected: ${socket.id}`
+          "Socket disconnected:",
+          socket.id
         );
+
       }
     );
   }
@@ -920,19 +723,16 @@ server.listen(
   () => {
 
     console.log(
-      `Live Modarraj running on port ${PORT}`
+      `Modarraj Live listening on ${PORT}`
     );
 
     console.log(
-      `TheSportsDB API key: ${
+      `TheSportsDB API: ${
         API_KEY
-          ? "present"
+          ? "configured"
           : "missing"
       }`
     );
 
-    console.log(
-      "Database: disabled - memory cache only"
-    );
   }
 );
