@@ -2,7 +2,7 @@
   "name": "live-modarraj",
   "version": "1.0.0",
   "type": "module",
-  "description": "Premium Sports Dashboard Engine - تطبيق مدرج لايف لتغطية المباريات الحية",
+  "description": "Premium Sports Dashboard Engine - مدرج لايف",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
