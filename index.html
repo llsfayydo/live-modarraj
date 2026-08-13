@@ -2,22 +2,26 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>مدرج لايف</title>
 
   <style>
+
     :root {
-      --bg: #06101f;
-      --header: #0b1c38;
-      --panel: #111f35;
-      --panel2: #172d50;
-      --border: #263b5a;
-      --gold: #f6a000;
-      --text: #f5f7fb;
-      --muted: #91a4bf;
+      --bg: #07111f;
+      --card: #111f35;
+      --card-2: #172b4b;
+      --line: #293e5d;
+      --gold: #f5a000;
+      --text: #f7f9fc;
+      --muted: #9aacc5;
       --green: #19d38a;
-      --red: #ff5b68;
+      --red: #ff6978;
     }
 
     * {
@@ -26,292 +30,248 @@
 
     body {
       margin: 0;
-      min-height: 100vh;
       background:
         linear-gradient(
           180deg,
-          #0a1c3a 0%,
-          #06101f 45%,
-          #050e1a 100%
+          #0a1a34 0%,
+          #06101c 100%
         );
       color: var(--text);
-      font-family: Tahoma, Arial, sans-serif;
+      font-family:
+        Tahoma,
+        Arial,
+        sans-serif;
+      min-height: 100vh;
     }
 
     /* =========================
-       HEADER
+       Header
     ========================= */
 
     header {
       text-align: center;
-      padding: 35px 15px 30px;
+      padding: 30px 15px 25px;
+
       background:
         linear-gradient(
           180deg,
-          #112953,
-          #071426
+          #10254a,
+          #081426
         );
 
-      border-bottom: 2px solid var(--gold);
+      border-bottom:
+        2px solid var(--gold);
     }
 
     header h1 {
       margin: 0;
-      font-size: 38px;
+
+      font-size: 34px;
       font-weight: 900;
     }
 
     header p {
-      margin: 10px 0 15px;
-      color: #a9bad3;
-      font-size: 17px;
-    }
-
-    .server-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-
-      padding: 8px 16px;
-
-      border-radius: 22px;
-
-      background: #063c34;
-      color: #64efb7;
-
-      font-weight: bold;
-    }
-
-    .server-dot {
-      width: 9px;
-      height: 9px;
-
-      border-radius: 50%;
-
-      background: var(--green);
-
-      box-shadow: 0 0 10px var(--green);
-    }
-
-    /* =========================
-       MAIN
-    ========================= */
-
-    main {
-      width: min(1080px, 94%);
-      margin: 22px auto 50px;
-    }
-
-    /* =========================
-       DAYS
-    ========================= */
-
-    .days {
-      display: grid;
-
-      grid-template-columns:
-        1fr
-        1fr
-        1fr;
-
-      gap: 10px;
-
-      margin-bottom: 20px;
-    }
-
-    .day-button {
-      border: 1px solid var(--border);
-
-      background: #101f35;
-
-      color: #a9bad3;
-
-      padding: 14px;
-
-      border-radius: 15px;
-
-      font-size: 16px;
-
-      cursor: pointer;
-
-      transition: .2s;
-    }
-
-    .day-button:hover {
-      border-color: var(--gold);
-    }
-
-    .day-button.active {
-      background: var(--gold);
-
-      color: #111;
-
-      border-color: var(--gold);
-
-      font-weight: 900;
-    }
-
-    /* =========================
-       SUMMARY
-    ========================= */
-
-    .summary {
-      display: flex;
-
-      align-items: center;
-
-      justify-content: space-between;
-
-      margin: 8px 0 15px;
+      margin: 8px 0 0;
 
       color: var(--muted);
 
       font-size: 14px;
     }
 
-    #match-count {
-      color: white;
+    /* =========================
+       Main
+    ========================= */
 
-      font-weight: 900;
+    main {
+      width: min(1050px, 94%);
+
+      margin:
+        22px auto
+        50px;
     }
 
     /* =========================
-       LOADING / EMPTY
+       Date Buttons
     ========================= */
 
-    .loading,
-    .empty,
-    .error {
-      text-align: center;
+    .days {
+      display: grid;
 
-      padding: 45px 20px;
-
-      border: 1px dashed var(--border);
-
-      border-radius: 18px;
-
-      background: var(--panel);
-
-      color: var(--muted);
-    }
-
-    .loading-icon,
-    .empty-icon,
-    .error-icon {
-      font-size: 35px;
-
-      margin-bottom: 10px;
-    }
-
-    .error {
-      color: #ff9ca5;
-    }
-
-    .retry-button {
-      margin-top: 15px;
-
-      border: 0;
-
-      background: var(--gold);
-
-      color: #111;
-
-      padding: 10px 20px;
-
-      border-radius: 10px;
-
-      cursor: pointer;
-
-      font-weight: 900;
-    }
-
-    /* =========================
-       LEAGUE
-    ========================= */
-
-    .league-section {
-      margin-bottom: 22px;
-
-      overflow: hidden;
-
-      border: 1px solid var(--border);
-
-      border-radius: 17px;
-
-      background: rgba(17, 31, 53, .82);
-    }
-
-    .league-header {
-      display: flex;
-
-      align-items: center;
-
-      justify-content: space-between;
+      grid-template-columns:
+        repeat(3, 1fr);
 
       gap: 10px;
 
-      padding: 14px 17px;
-
-      background: var(--panel2);
-
-      border-right: 4px solid var(--gold);
+      margin-bottom: 20px;
     }
 
-    .league-name {
-      font-weight: 900;
+    .day {
+      padding: 13px;
 
-      font-size: 16px;
+      border:
+        1px solid
+        var(--line);
+
+      border-radius: 14px;
+
+      background:
+        var(--card);
+
+      color: #b8c6d8;
+
+      font-weight: 800;
+
+      cursor: pointer;
+
+      transition:
+        .2s ease;
     }
 
-    .league-count {
-      color: var(--muted);
+    .day:hover {
+      border-color:
+        var(--gold);
+    }
 
-      font-size: 13px;
+    .day.active {
+      background:
+        var(--gold);
+
+      color: #111;
+
+      border-color:
+        var(--gold);
     }
 
     /* =========================
-       MATCH
+       Summary
     ========================= */
 
-    .match-card {
-      padding: 18px 16px;
+    .summary {
+      display: flex;
 
-      border-top: 1px solid var(--border);
+      justify-content:
+        space-between;
+
+      align-items: center;
+
+      color:
+        var(--muted);
+
+      font-size: 13px;
+
+      margin-bottom: 14px;
+    }
+
+    #count {
+      color: #fff;
+
+      font-weight: 900;
+    }
+
+    #dateLabel {
+      text-align: left;
+    }
+
+    /* =========================
+       League
+    ========================= */
+
+    .league {
+      overflow: hidden;
+
+      margin-bottom: 22px;
+
+      border:
+        1px solid
+        var(--line);
+
+      border-radius: 16px;
+
+      background:
+        rgba(17, 31, 53, .88);
+    }
+
+    .league-head {
+      display: flex;
+
+      justify-content:
+        space-between;
+
+      align-items: center;
+
+      padding:
+        13px 16px;
+
+      background:
+        var(--card-2);
+
+      border-right:
+        4px solid
+        var(--gold);
+    }
+
+    .league-head strong {
+      font-size: 16px;
+
+      font-weight: 900;
+    }
+
+    .league-head small {
+      color:
+        var(--muted);
+    }
+
+    /* =========================
+       Match
+    ========================= */
+
+    .match {
+      padding:
+        18px 15px;
+
+      border-top:
+        1px solid
+        var(--line);
     }
 
     .match-top {
       display: flex;
 
+      justify-content:
+        space-between;
+
       align-items: center;
 
-      justify-content: space-between;
+      margin-bottom: 15px;
 
-      margin-bottom: 16px;
+      color:
+        var(--muted);
 
-      color: var(--muted);
-
-      font-size: 13px;
+      font-size: 12px;
     }
 
-    .important {
-      padding: 4px 9px;
+    .badge {
+      padding:
+        4px 8px;
 
       border-radius: 12px;
 
-      border: 1px solid #745719;
+      color: #ffd55e;
 
-      color: #ffd45d;
-
-      white-space: nowrap;
+      border:
+        1px solid
+        #765a18;
     }
+
+    /* =========================
+       Teams
+    ========================= */
 
     .teams {
       display: grid;
 
       grid-template-columns:
-        1fr
-        110px
-        1fr;
+        1fr 110px 1fr;
 
       align-items: center;
 
@@ -322,144 +282,204 @@
       text-align: center;
     }
 
-    .team-logo {
-      width: 62px;
-      height: 62px;
+    .logo {
+      width: 58px;
+      height: 58px;
 
       object-fit: contain;
 
-      display: block;
+      margin:
+        0 auto 8px;
 
-      margin: 0 auto 8px;
+      display: block;
     }
 
     .team-name {
-      font-size: 17px;
-
       font-weight: 900;
+
+      font-size: 16px;
+
+      line-height: 1.5;
     }
 
-    .score-area {
+    /* =========================
+       Score
+    ========================= */
+
+    .center {
       text-align: center;
     }
 
     .score {
-      font-size: 29px;
+      font-size: 28px;
 
       font-weight: 900;
-
-      color: white;
     }
 
-    .match-status {
+    .status {
       display: inline-block;
 
-      margin-top: 7px;
+      margin-top: 6px;
 
-      padding: 4px 10px;
+      padding:
+        4px 9px;
 
       border-radius: 12px;
 
-      background: #293b57;
+      background:
+        #30415a;
 
-      color: #c8d3e1;
+      color:
+        #d1dbe8;
+
+      font-size: 11px;
+
+      font-weight: 800;
+    }
+
+    .status.live {
+      background:
+        #086d4d;
+
+      color:
+        #74ffc4;
+    }
+
+    .status.finished {
+      background:
+        #3d485b;
+    }
+
+    /* =========================
+       Details
+    ========================= */
+
+    .details {
+      display: flex;
+
+      justify-content: center;
+
+      gap: 13px;
+
+      flex-wrap: wrap;
+
+      margin-top: 15px;
+
+      padding-top: 11px;
+
+      border-top:
+        1px solid
+        var(--line);
+
+      font-size: 12px;
+
+      color:
+        var(--muted);
+    }
+
+    /*
+      القناة لا تظهر إذا كانت
+      غير متوفرة
+    */
+
+    .channel {
+      color:
+        #ffd45e;
+
+      font-weight: 900;
+    }
+
+    /* =========================
+       Loading
+    ========================= */
+
+    .loading,
+    .empty,
+    .error {
+      text-align: center;
+
+      padding: 45px 20px;
+
+      border:
+        1px dashed
+        var(--line);
+
+      border-radius: 17px;
+
+      background:
+        var(--card);
+
+      color:
+        var(--muted);
+    }
+
+    .error {
+      color:
+        #ff9ca5;
+    }
+
+    .retry {
+      margin-top: 12px;
+
+      padding:
+        9px 17px;
+
+      border: 0;
+
+      border-radius: 9px;
+
+      background:
+        var(--gold);
+
+      font-weight: 900;
+
+      cursor: pointer;
+    }
+
+    /* =========================
+       Footer
+    ========================= */
+
+    footer {
+      text-align: center;
+
+      color:
+        #657b99;
+
+      border-top:
+        1px solid
+        var(--line);
+
+      width:
+        min(1050px, 94%);
+
+      margin:
+        auto;
+
+      padding:
+        20px;
 
       font-size: 12px;
     }
 
-    .match-status.live {
-      background: #096c4d;
-
-      color: #73ffc4;
-    }
-
-    .match-status.finished {
-      background: #3b4659;
-
-      color: #d7dfea;
-    }
-
     /* =========================
-       DETAILS
-    ========================= */
-
-    .match-details {
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      flex-wrap: wrap;
-
-      gap: 13px;
-
-      margin-top: 16px;
-
-      padding-top: 12px;
-
-      border-top: 1px solid var(--border);
-
-      color: var(--muted);
-
-      font-size: 13px;
-    }
-
-    /*
-      القناة تظهر فقط إذا كانت موجودة.
-      إذا لم توجد لن يتم إنشاء عنصر القناة أساسًا.
-    */
-
-    .channel {
-      color: #ffd35e;
-
-      font-weight: 900;
-    }
-
-    /* =========================
-       FOOTER
-    ========================= */
-
-    footer {
-      width: min(1080px, 94%);
-
-      margin: 0 auto 30px;
-
-      padding: 20px;
-
-      border-top: 1px solid var(--border);
-
-      text-align: center;
-
-      color: #657c9d;
-
-      font-size: 13px;
-    }
-
-    /* =========================
-       MOBILE
+       Mobile
     ========================= */
 
     @media (max-width: 700px) {
 
       header h1 {
-        font-size: 29px;
-      }
-
-      header p {
-        font-size: 14px;
+        font-size: 28px;
       }
 
       .teams {
         grid-template-columns:
-          1fr
-          75px
-          1fr;
+          1fr 75px 1fr;
       }
 
-      .team-logo {
-        width: 48px;
-        height: 48px;
+      .logo {
+        width: 46px;
+        height: 46px;
       }
 
       .team-name {
@@ -469,61 +489,70 @@
       .score {
         font-size: 23px;
       }
+
+      .summary {
+        align-items: flex-start;
+
+        gap: 10px;
+
+        flex-direction:
+          column;
+      }
+
+      #dateLabel {
+        text-align: right;
+      }
+
     }
+
   </style>
 </head>
 
 <body>
 
   <!-- =========================
-       HEADER
+       Header
+       لا توجد هنا عبارة
+       "السيرفر يعمل"
   ========================= -->
 
   <header>
 
-    <h1>⚽ مدرج لايف</h1>
+    <h1>
+      ⚽ مدرج لايف
+    </h1>
 
     <p>
-      المباريات الأهم أولاً — مباشرة، قادمة ونتائج اليوم
+      أهم المباريات أولاً
     </p>
-
-    <div class="server-status">
-
-      <span class="server-dot"></span>
-
-      متصل بالسيرفر
-
-    </div>
 
   </header>
 
 
-  <!-- =========================
-       MAIN
-  ========================= -->
-
   <main>
 
-    <!-- الأيام -->
+    <!-- =========================
+         Dates
+    ========================= -->
 
     <div class="days">
 
       <button
-        class="day-button"
+        class="day"
         data-offset="-1"
       >
         أمس
       </button>
 
       <button
-        class="day-button active"
+        class="day active"
         data-offset="0"
       >
         اليوم
       </button>
 
       <button
-        class="day-button"
+        class="day"
         data-offset="1"
       >
         غداً
@@ -532,32 +561,30 @@
     </div>
 
 
-    <!-- معلومات -->
+    <!-- =========================
+         Summary
+    ========================= -->
 
     <div class="summary">
 
       <span>
         المباريات:
-        <span id="match-count">0</span>
+        <b id="count">0</b>
       </span>
 
-      <span id="date-label"></span>
+      <span id="dateLabel"></span>
 
     </div>
 
 
-    <!-- المباريات -->
+    <!-- =========================
+         Matches
+    ========================= -->
 
-    <section id="matches-container">
+    <section id="matches">
 
       <div class="loading">
-
-        <div class="loading-icon">
-          ⏳
-        </div>
-
-        جاري تحميل المباريات...
-
+        ⏳ جاري تحميل المباريات...
       </div>
 
     </section>
@@ -565,449 +592,296 @@
   </main>
 
 
-  <!-- =========================
-       FOOTER
-  ========================= -->
-
   <footer>
-
     مدرج لايف © 2026
-
-    <br>
-
-    متابعة المباريات والنتائج المباشرة
-
   </footer>
 
 
   <script>
 
-    /*
-     * ==========================================================
-     * إعداد API
-     * ==========================================================
-     *
-     * السيرفر عندك يعمل على نفس النطاق.
-     *
-     * مثال:
-     *
-     * https://live-modarraj.onrender.com/api/matches?date=2026-08-12
-     *
-     */
+    /* =========================
+       API
+    ========================= */
 
-    const API_URL = "/api/matches";
+    const API = "/api/matches";
 
 
-    /*
-     * التاريخ الحالي
-     */
+    /* =========================
+       Current Date
+    ========================= */
 
-    let currentDate = formatDate(new Date());
+    let currentDate =
+      formatDate(
+        new Date()
+      );
 
 
-    /*
-     * ==========================================================
-     * ترتيب البطولات
-     * ==========================================================
-     *
-     * 1 - الدوريات الكبرى
-     * 2 - السعودية
-     * 3 - المغرب
-     * 4 - مصر
-     * 5 - الخليج
-     * 6 - بقية العرب
-     * 7 - بقية أوروبا
-     * 8 - بقية العالم
-     */
+    /* =========================
+       League Priority
+    ========================= */
 
-    const LEAGUE_PRIORITY = [
+    const leaguePriority = [
 
-      /* أوروبا الكبرى */
+      "FIFA World Cup",
+      "World Cup",
+
+      "AFC Asian Cup",
+      "Asian Cup",
 
       "UEFA Champions League",
-      "Champions League",
-
       "UEFA Europa League",
-      "Europa League",
+      "UEFA Europa Conference League",
 
-      "UEFA Conference League",
-      "Conference League",
-
-      "Premier League",
       "English Premier League",
+      "Premier League",
 
       "La Liga",
-      "Primera Division",
-
       "Serie A",
-
       "Bundesliga",
-
       "Ligue 1",
 
-      /* السعودية */
-
-      "Saudi Pro League",
       "Saudi Professional League",
-      "Saudi League",
+      "Saudi-Arabian Pro League",
+      "Saudi Pro League",
 
-      /* المغرب */
+      "AFC Champions League Elite",
+      "AFC Champions League",
 
-      "Botola",
-      "Morocco",
+      "CAF Champions League",
 
-      /* مصر */
+      "Moroccan Botola",
+      "Botola Pro",
 
       "Egyptian Premier League",
-      "Egypt",
-
-      /* الإمارات */
-
-      "UAE Pro League",
-      "UAE League",
-      "United Arab Emirates",
-
-      /* قطر */
 
       "Qatar Stars League",
-      "Qatar",
 
-      /* العراق */
+      "UAE Pro League",
 
-      "Iraqi Premier League",
-      "Iraq",
-
-      /* الأردن */
-
-      "Jordanian Pro League",
-      "Jordan",
-
-      /* تونس */
-
-      "Tunisian Ligue 1",
-      "Tunisia",
-
-      /* الجزائر */
-
-      "Algeria Ligue 1",
-      "Algeria",
-
-      /* الكويت */
+      "Iraq Stars League",
 
       "Kuwait Premier League",
-      "Kuwait",
 
-      /* عمان */
+      "Tunisian Ligue 1",
 
-      "Oman",
-
-      /* البحرين */
-
-      "Bahrain",
-
-      /* البطولات الدولية */
-
-      "World Cup",
-      "European Championship",
-      "Africa Cup of Nations",
-      "Asian Cup"
+      "Algeria Ligue 1"
 
     ];
 
 
-    /*
-     * ==========================================================
-     * تنسيق التاريخ
-     * ==========================================================
-     */
+    /* =========================
+       Date Helpers
+    ========================= */
 
     function formatDate(date) {
 
-      const year =
-        date.getFullYear();
+      return `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}-${String(
+        date.getDate()
+      ).padStart(2, "0")}`;
 
-      const month =
-        String(
-          date.getMonth() + 1
-        ).padStart(2, "0");
-
-      const day =
-        String(
-          date.getDate()
-        ).padStart(2, "0");
-
-      return `${year}-${month}-${day}`;
     }
 
 
-    /*
-     * ==========================================================
-     * أمس / اليوم / غداً
-     * ==========================================================
-     */
-
-    function getDateByOffset(offset) {
+    function dateOffset(offset) {
 
       const date =
         new Date();
 
       date.setDate(
         date.getDate() +
-        Number(offset)
+        offset
       );
 
       return formatDate(date);
+
     }
 
 
-    /*
-     * ==========================================================
-     * حماية النصوص
-     * ==========================================================
-     */
+    /* =========================
+       Escape HTML
+    ========================= */
 
-    function escapeHtml(value) {
-
-      return String(value ?? "")
-
-        .replaceAll("&", "&amp;")
-
-        .replaceAll("<", "&lt;")
-
-        .replaceAll(">", "&gt;")
-
-        .replaceAll('"', "&quot;")
-
-        .replaceAll("'", "&#039;");
-    }
-
-
-    /*
-     * ==========================================================
-     * اسم الدوري
-     * ==========================================================
-     */
-
-    function getLeagueName(match) {
-
-      return (
-
-        match?.league?.name ||
-
-        match?.league?.originalName ||
-
-        match?.leagueName ||
-
-        "بطولة أخرى"
-
-      );
-    }
-
-
-    /*
-     * ==========================================================
-     * الدولة
-     * ==========================================================
-     */
-
-    function getCountry(match) {
+    function esc(value) {
 
       return String(
-        match?.league?.country || ""
-      ).toLowerCase();
+        value ?? ""
+      )
+        .replaceAll(
+          "&",
+          "&amp;"
+        )
+        .replaceAll(
+          "<",
+          "&lt;"
+        )
+        .replaceAll(
+          ">",
+          "&gt;"
+        )
+        .replaceAll(
+          '"',
+          "&quot;"
+        )
+        .replaceAll(
+          "'",
+          "&#039;"
+        );
+
     }
 
 
-    /*
-     * ==========================================================
-     * ترتيب الدوري
-     * ==========================================================
-     */
+    /* =========================
+       League Name
+    ========================= */
 
-    function getLeaguePriority(match) {
+    function leagueName(match) {
+
+      return (
+        match?.league?.name ||
+        match?.league?.originalName ||
+        "بطولة أخرى"
+      );
+
+    }
+
+
+    /* =========================
+       Priority
+    ========================= */
+
+    function priority(match) {
 
       const name =
-        getLeagueName(match)
+        leagueName(match)
           .toLowerCase();
 
-      const country =
-        getCountry(match);
-
-
-      /*
-       * البطولات المحددة
-       */
-
       const index =
-        LEAGUE_PRIORITY.findIndex(
+        leaguePriority.findIndex(
           league =>
             name.includes(
               league.toLowerCase()
             )
         );
 
+      let score =
+        index >= 0
+          ? 1000 - index
+          : 100;
 
-      if (index >= 0) {
 
-        return index;
+      /*
+        المباريات المباشرة
+        لها أعلى أولوية
+      */
+
+      if (
+        ["LIVE", "HT"]
+          .includes(
+            match?.fixture?.status?.short
+          )
+      ) {
+
+        score += 5000;
 
       }
 
 
-      /*
-       * الدول العربية
-       */
+      score +=
+        Number(
+          match?.priority || 0
+        );
 
-      const arabCountries = [
 
-        "saudi",
-        "morocco",
-        "egypt",
-        "qatar",
-        "uae",
-        "united arab emirates",
-        "iraq",
-        "jordan",
-        "tunisia",
-        "algeria",
-        "kuwait",
-        "oman",
-        "bahrain"
+      return score;
 
-      ];
+    }
+
+
+    /* =========================
+       Match Status
+    ========================= */
+
+    function status(match) {
+
+      const value =
+        String(
+          match?.fixture?.status?.short ||
+          ""
+        ).toUpperCase();
 
 
       if (
-        arabCountries.some(
-          item =>
-            country.includes(item)
-        )
+        [
+          "LIVE",
+          "1H",
+          "2H",
+          "ET",
+          "P"
+        ].includes(value)
       ) {
 
-        return 100;
+        return [
+          "مباشر",
+          "live"
+        ];
 
       }
 
 
-      /*
-       * أوروبا
-       */
+      if (value === "HT") {
 
-      const europeanCountries = [
+        return [
+          "استراحة",
+          "live"
+        ];
 
-        "england",
-        "spain",
-        "italy",
-        "germany",
-        "france",
-        "netherlands",
-        "portugal",
-        "belgium",
-        "scotland",
-        "turkey"
-
-      ];
+      }
 
 
       if (
-        europeanCountries.some(
-          item =>
-            country.includes(item)
-        )
+        [
+          "FT",
+          "AET",
+          "PEN"
+        ].includes(value)
       ) {
 
-        return 150;
+        return [
+          "انتهت",
+          "finished"
+        ];
 
       }
 
 
-      /*
-       * بقية العالم
-       */
-
-      return 500;
-
-    }
-
-
-    /*
-     * ==========================================================
-     * الفريق
-     * ==========================================================
-     */
-
-    function getTeam(match, side) {
-
-      return (
-        match?.teams?.[side] || {}
-      );
-
-    }
-
-
-    function getTeamName(match, side) {
-
-      const team =
-        getTeam(match, side);
-
-      return (
-
-        team.name ||
-
-        team.originalName ||
-
-        "غير معروف"
-
-      );
-
-    }
-
-
-    function getTeamLogo(match, side) {
-
-      return (
-        getTeam(match, side).logo ||
+      return [
+        "لم تبدأ",
         ""
-      );
+      ];
 
     }
 
 
-    /*
-     * ==========================================================
-     * وقت المباراة
-     * ==========================================================
-     */
+    /* =========================
+       Time
+    ========================= */
 
-    function getFixtureDate(match) {
-
-      return (
-
-        match?.fixture?.date ||
-
-        match?.date ||
-
-        ""
-
-      );
-
-    }
-
-
-    function getMatchTime(match) {
+    function time(match) {
 
       const raw =
-        getFixtureDate(match);
+        match?.fixture?.date;
+
 
       if (!raw) {
-
         return "";
-
       }
 
 
       const date =
         new Date(raw);
+
 
       if (
         Number.isNaN(
@@ -1031,359 +905,106 @@
     }
 
 
-    /*
-     * ==========================================================
-     * حالة المباراة
-     * ==========================================================
-     */
+    /* =========================
+       Channel
+       لا نعرضها إذا لم توجد
+    ========================= */
 
-    function getMatchStatus(match) {
+    function channel(match) {
 
-      const short =
-        String(
+      const value =
+        match?.media?.channel;
 
-          match?.fixture?.status?.short ||
-
-          match?.status?.short ||
-
-          ""
-
-        ).toUpperCase();
-
-
-      const elapsed =
-
-        match?.fixture?.status?.elapsed ??
-
-        match?.status?.elapsed;
-
-
-      /*
-       * مباراة مباشرة
-       */
 
       if (
-
-        [
-          "LIVE",
-          "1H",
-          "2H",
-          "HT",
-          "ET",
-          "P",
-          "BT"
-        ].includes(short)
-
+        typeof value !== "string"
       ) {
-
-        return {
-
-          text:
-            elapsed
-              ? `مباشر ${elapsed}'`
-              : "مباشر",
-
-          className:
-            "live"
-
-        };
-
-      }
-
-
-      /*
-       * انتهت
-       */
-
-      if (
-
-        [
-          "FT",
-          "AET",
-          "PEN"
-        ].includes(short)
-
-      ) {
-
-        return {
-
-          text: "انتهت",
-
-          className:
-            "finished"
-
-        };
-
-      }
-
-
-      /*
-       * حالات خاصة
-       */
-
-      if (
-
-        [
-          "CANC",
-          "ABD",
-          "PST",
-          "SUSP"
-        ].includes(short)
-
-      ) {
-
-        return {
-
-          text:
-            "ملغاة/مؤجلة",
-
-          className:
-            "finished"
-
-        };
-
-      }
-
-
-      /*
-       * لم تبدأ
-       */
-
-      return {
-
-        text: "قريباً",
-
-        className: ""
-
-      };
-
-    }
-
-
-    /*
-     * ==========================================================
-     * النتيجة
-     * ==========================================================
-     */
-
-    function getScore(match) {
-
-      const goals =
-        match?.goals || {};
-
-
-      const home =
-        goals.home;
-
-      const away =
-        goals.away;
-
-
-      /*
-       * مباراة لم تبدأ
-       */
-
-      if (
-        home === null ||
-        home === undefined ||
-        away === null ||
-        away === undefined
-      ) {
-
-        return "VS";
-
-      }
-
-
-      return `${home} - ${away}`;
-
-    }
-
-
-    /*
-     * ==========================================================
-     * القناة
-     * ==========================================================
-     *
-     * مهم جداً:
-     *
-     * إذا لم توجد قناة فلن يتم إظهار أي شيء.
-     */
-
-    function getChannel(match) {
-
-      const media =
-        match?.media || {};
-
-
-      const candidates = [
-
-        media.channel,
-
-        media.tv,
-
-        media.tvChannel,
-
-        media.broadcast,
-
-        match?.channel,
-
-        match?.tvChannel
-
-      ];
-
-
-      const channel =
-        candidates.find(
-          value =>
-            typeof value === "string" &&
-            value.trim() !== "" &&
-            value.trim() !== "-"
-        );
-
-
-      if (!channel) {
 
         return "";
 
       }
 
 
-      return channel.trim();
+      const channel =
+        value.trim();
+
+
+      if (
+        !channel ||
+        channel === "-"
+      ) {
+
+        return "";
+
+      }
+
+
+      return channel;
 
     }
 
 
-    /*
-     * ==========================================================
-     * إنشاء بطاقة المباراة
-     * ==========================================================
-     */
+    /* =========================
+       Match Card
+    ========================= */
 
-    function createMatchCard(match) {
+    function card(match) {
 
       const home =
-        getTeamName(
-          match,
-          "home"
-        );
-
+        match?.teams?.home || {};
 
       const away =
-        getTeamName(
-          match,
-          "away"
-        );
+        match?.teams?.away || {};
 
 
-      const homeLogo =
-        getTeamLogo(
-          match,
-          "home"
-        );
+      const matchStatus =
+        status(match);
 
 
-      const awayLogo =
-        getTeamLogo(
-          match,
-          "away"
-        );
+      const matchChannel =
+        channel(match);
 
 
-      const status =
-        getMatchStatus(match);
+      const homeGoals =
+        match?.goals?.home;
+
+
+      const awayGoals =
+        match?.goals?.away;
 
 
       const score =
-        getScore(match);
-
-
-      const time =
-        getMatchTime(match);
-
-
-      const channel =
-        getChannel(match);
-
-
-      const venue =
-        match?.venue ||
-        match?.fixture?.venue ||
-        "";
-
-
-      const city =
-        match?.city ||
-        match?.fixture?.city ||
-        "";
-
-
-      const priority =
-        Number(
-          match?.priority ?? 999
-        );
-
-
-      const leaguePriority =
-        getLeaguePriority(match);
+        homeGoals === null ||
+        homeGoals === undefined ||
+        awayGoals === null ||
+        awayGoals === undefined
+          ? "VS"
+          : `${homeGoals} - ${awayGoals}`;
 
 
       const important =
-        priority <= 30 ||
-        leaguePriority < 15;
-
-
-      /*
-       * القناة
-       *
-       * لا ننشئ HTML للقناة إطلاقاً
-       * إذا لم تكن متوفرة.
-       */
-
-      const channelHtml =
-        channel
-          ? `
-            <span class="channel">
-              📺 ${escapeHtml(channel)}
-            </span>
-          `
-          : "";
-
-
-      const venueHtml =
-        venue
-          ? `
-            <span>
-              🏟️ ${escapeHtml(venue)}
-            </span>
-          `
-          : "";
-
-
-      const cityHtml =
-        city
-          ? `
-            <span>
-              📍 ${escapeHtml(city)}
-            </span>
-          `
-          : "";
+        Number(
+          match?.priority || 0
+        ) >= 70;
 
 
       return `
 
-        <article class="match-card">
+        <article class="match">
 
           <div class="match-top">
 
             <span>
-              ${escapeHtml(time)}
+              ${esc(
+                time(match)
+              )}
             </span>
+
 
             ${
               important
                 ? `
-                  <span class="important">
+                  <span class="badge">
                     ⭐ مباراة مهمة
                   </span>
                 `
@@ -1396,16 +1017,16 @@
           <div class="teams">
 
 
-            <!-- الفريق المضيف -->
+            <!-- Home -->
 
             <div class="team">
 
               ${
-                homeLogo
+                home.logo
                   ? `
                     <img
-                      class="team-logo"
-                      src="${escapeHtml(homeLogo)}"
+                      class="logo"
+                      src="${esc(home.logo)}"
                       alt=""
                       loading="lazy"
                     >
@@ -1415,48 +1036,48 @@
 
               <div class="team-name">
 
-                ${escapeHtml(home)}
+                ${esc(
+                  home.name ||
+                  "فريق غير معروف"
+                )}
 
               </div>
 
             </div>
 
 
-            <!-- النتيجة -->
+            <!-- Score -->
 
-            <div class="score-area">
+            <div class="center">
 
               <div class="score">
 
-                ${escapeHtml(score)}
+                ${esc(score)}
 
               </div>
 
 
               <span
-                class="
-                  match-status
-                  ${status.className}
-                "
+                class="status ${matchStatus[1]}"
               >
 
-                ${escapeHtml(status.text)}
+                ${matchStatus[0]}
 
               </span>
 
             </div>
 
 
-            <!-- الفريق الضيف -->
+            <!-- Away -->
 
             <div class="team">
 
               ${
-                awayLogo
+                away.logo
                   ? `
                     <img
-                      class="team-logo"
-                      src="${escapeHtml(awayLogo)}"
+                      class="logo"
+                      src="${esc(away.logo)}"
                       alt=""
                       loading="lazy"
                     >
@@ -1466,24 +1087,61 @@
 
               <div class="team-name">
 
-                ${escapeHtml(away)}
+                ${esc(
+                  away.name ||
+                  "فريق غير معروف"
+                )}
 
               </div>
 
             </div>
 
+
           </div>
 
 
-          <!-- تفاصيل -->
+          <!--
+            المعلومات الإضافية
+          -->
 
-          <div class="match-details">
+          <div class="details">
 
-            ${venueHtml}
 
-            ${cityHtml}
+            ${
+              match?.venue
+                ? `
+                  <span>
+                    🏟️
+                    ${esc(match.venue)}
+                  </span>
+                `
+                : ""
+            }
 
-            ${channelHtml}
+
+            ${
+              match?.city
+                ? `
+                  <span>
+                    📍
+                    ${esc(match.city)}
+                  </span>
+                `
+                : ""
+            }
+
+
+            ${
+              matchChannel
+                ? `
+                  <span class="channel">
+                    📺
+                    ${esc(matchChannel)}
+                  </span>
+                `
+                : ""
+            }
+
 
           </div>
 
@@ -1494,352 +1152,159 @@
     }
 
 
-    /*
-     * ==========================================================
-     * تجميع المباريات حسب الدوري
-     * ==========================================================
-     */
+    /* =========================
+       Render Matches
+    ========================= */
 
-    function groupMatches(matches) {
+    function render(data) {
 
-      const groups =
-        new Map();
-
-
-      for (
-        const match of matches
-      ) {
-
-        const league =
-          getLeagueName(match);
-
-
-        if (
-          !groups.has(league)
-        ) {
-
-          groups.set(
-            league,
-            []
-          );
-
-        }
-
-
-        groups
-          .get(league)
-          .push(match);
-
-      }
-
-
-      return [
-
-        ...groups.entries()
-
-      ].sort(
-
-        (a, b) => {
-
-          return (
-
-            getLeaguePriority(
-              a[1][0]
-            )
-
-            -
-
-            getLeaguePriority(
-              b[1][0]
-            )
-
-          );
-
-        }
-
-      );
-
-    }
-
-
-    /*
-     * ==========================================================
-     * عرض المباريات
-     * ==========================================================
-     */
-
-    function renderMatches(matches) {
-
-      const container =
+      const root =
         document.getElementById(
-          "matches-container"
+          "matches"
         );
 
 
-      /*
-       * لا توجد مباريات
-       */
-
-      if (
-        !Array.isArray(matches) ||
-        matches.length === 0
-      ) {
-
-        updateMatchCount(0);
+      document.getElementById(
+        "count"
+      ).textContent =
+        data.length;
 
 
-        container.innerHTML = `
+      if (!data.length) {
+
+        root.innerHTML = `
 
           <div class="empty">
 
-            <div class="empty-icon">
-              🏳️
+            <div
+              style="
+                font-size:36px;
+                margin-bottom:10px;
+              "
+            >
+              ⚽
             </div>
 
             <p>
-              لا توجد مباريات مجدولة في هذا التاريخ.
+              لا توجد مباريات مجدولة
+              في هذا التاريخ.
             </p>
 
           </div>
 
         `;
 
-
         return;
 
       }
 
 
-      updateMatchCount(
-        matches.length
-      );
+      /*
+        ترتيب المباريات
+        حسب الأولوية
+      */
+
+      const sorted =
+        [...data].sort(
+          (a, b) =>
+            priority(b) -
+            priority(a)
+        );
 
 
       /*
-       * ترتيب المباريات
-       */
+        تجميع حسب البطولة
+      */
 
-      const sorted =
-        [...matches].sort(
-
-          (a, b) => {
-
-            /*
-             * أولاً أهمية الدوري
-             */
-
-            const leagueA =
-              getLeaguePriority(a);
-
-            const leagueB =
-              getLeaguePriority(b);
+      const groups =
+        new Map();
 
 
-            if (
-              leagueA !== leagueB
-            ) {
+      sorted.forEach(
+        match => {
 
-              return (
-                leagueA -
-                leagueB
-              );
-
-            }
+          const name =
+            leagueName(match);
 
 
-            /*
-             * ثم أولوية المباراة
-             */
+          if (
+            !groups.has(name)
+          ) {
 
-            const priorityA =
-              Number(
-                a?.priority ?? 999
-              );
-
-
-            const priorityB =
-              Number(
-                b?.priority ?? 999
-              );
-
-
-            return (
-              priorityA -
-              priorityB
+            groups.set(
+              name,
+              []
             );
 
           }
 
-        );
+
+          groups
+            .get(name)
+            .push(match);
+
+        }
+      );
 
 
       /*
-       * تجميع حسب الدوري
-       */
+        بناء الواجهة
+      */
 
-      const groups =
-        groupMatches(sorted);
+      root.innerHTML =
+        [...groups]
+          .map(
+            ([name, matches]) => `
 
+              <section class="league">
 
-      /*
-       * بناء الصفحة
-       */
+                <div
+                  class="league-head"
+                >
 
-      container.innerHTML =
+                  <strong>
+                    🏆
+                    ${esc(name)}
+                  </strong>
 
-        groups.map(
+                  <small>
+                    ${matches.length}
+                    مباراة
+                  </small>
 
-          ([league, leagueMatches]) => `
-
-            <section class="league-section">
-
-
-              <div class="league-header">
-
-                <span class="league-name">
-
-                  🏆
-                  ${escapeHtml(league)}
-
-                </span>
+                </div>
 
 
-                <span class="league-count">
+                ${matches
+                  .map(card)
+                  .join("")}
 
-                  ${leagueMatches.length}
-                  مباراة
+              </section>
 
-                </span>
-
-              </div>
-
-
-              ${
-
-                leagueMatches
-                  .map(
-                    createMatchCard
-                  )
-                  .join("")
-
-              }
-
-            </section>
-
-          `
-
-        ).join("");
+            `
+          )
+          .join("");
 
     }
 
 
-    /*
-     * ==========================================================
-     * عداد المباريات
-     * ==========================================================
-     */
+    /* =========================
+       Load Matches
+    ========================= */
 
-    function updateMatchCount(count) {
+    async function load() {
 
-      document.getElementById(
-        "match-count"
-      ).textContent = count;
-
-    }
-
-
-    /*
-     * ==========================================================
-     * عنوان التاريخ
-     * ==========================================================
-     */
-
-    function updateDateLabel() {
-
-      const active =
-        document.querySelector(
-          ".day-button.active"
-        );
-
-
-      if (!active) {
-
-        return;
-
-      }
-
-
-      const offset =
-        active.dataset.offset;
-
-
-      let label =
-        "اليوم";
-
-
-      if (
-        offset === "-1"
-      ) {
-
-        label = "أمس";
-
-      }
-
-
-      if (
-        offset === "1"
-      ) {
-
-        label = "غداً";
-
-      }
-
-
-      document.getElementById(
-        "date-label"
-      ).textContent =
-
-        `${label} — ${currentDate}`;
-
-    }
-
-
-    /*
-     * ==========================================================
-     * جلب المباريات
-     * ==========================================================
-     *
-     * هذه هي النقطة المهمة في الإصلاح.
-     *
-     * السيرفر عندك يرجع:
-     *
-     * {
-     *   source: "...",
-     *   data: [...],
-     *   count: 297,
-     *   date: "2026-08-12"
-     * }
-     *
-     * لذلك نقرأ result.data
-     */
-
-    async function loadMatches(date) {
-
-      const container =
+      const root =
         document.getElementById(
-          "matches-container"
+          "matches"
         );
 
 
-      container.innerHTML = `
+      root.innerHTML = `
 
         <div class="loading">
 
-          <div class="loading-icon">
-            ⏳
-          </div>
-
-          جاري تحميل المباريات...
+          ⏳ جاري تحميل المباريات...
 
         </div>
 
@@ -1848,35 +1313,25 @@
 
       try {
 
-        /*
-         * منع الكاش
-         */
-
-        const url =
-          `${API_URL}?date=${encodeURIComponent(date)}`;
-
-
         const response =
           await fetch(
-
-            url,
-
+            `${API}?date=${encodeURIComponent(
+              currentDate
+            )}`,
             {
-              method: "GET",
+              cache: "no-store",
 
               headers: {
-                "Accept":
+                Accept:
                   "application/json"
-              },
-
-              cache: "no-store"
-
+              }
             }
-
           );
 
 
-        if (!response.ok) {
+        if (
+          !response.ok
+        ) {
 
           throw new Error(
             `HTTP ${response.status}`
@@ -1885,111 +1340,50 @@
         }
 
 
-        const result =
+        const json =
           await response.json();
 
 
-        /*
-         * مهم للتأكد من البيانات
-         */
-
         console.log(
-          "مدرج لايف - API:",
-          result
+          "مدرج لايف:",
+          json
         );
 
 
-        /*
-         * ======================================================
-         * الإصلاح الأساسي
-         * ======================================================
-         */
-
-        let matches = [];
-
-
-        /*
-         * الشكل الحالي للسيرفر
-         */
-
-        if (
+        const data =
           Array.isArray(
-            result.data
+            json.data
           )
-        ) {
-
-          matches =
-            result.data;
-
-        }
+            ? json.data
+            : [];
 
 
-        /*
-         * دعم احتياطي
-         */
-
-        else if (
-          Array.isArray(
-            result.matches
-          )
-        ) {
-
-          matches =
-            result.matches;
-
-        }
-
-
-        /*
-         * دعم events
-         */
-
-        else if (
-          Array.isArray(
-            result.events
-          )
-        ) {
-
-          matches =
-            result.events;
-
-        }
-
-
-        /*
-         * عرض النتائج
-         */
-
-        renderMatches(
-          matches
-        );
+        render(data);
 
 
       } catch (error) {
 
         console.error(
-          "خطأ في جلب المباريات:",
           error
         );
 
 
-        updateMatchCount(0);
+        document.getElementById(
+          "count"
+        ).textContent =
+          "0";
 
 
-        container.innerHTML = `
+        root.innerHTML = `
 
           <div class="error">
 
-            <div class="error-icon">
-              ⚠️
-            </div>
+            ⚠️ تعذر تحميل المباريات.
 
-            <p>
-              تعذر جلب المباريات من السيرفر.
-            </p>
+            <br>
 
             <small>
-              ${escapeHtml(
+              ${esc(
                 error.message
               )}
             </small>
@@ -1997,10 +1391,8 @@
             <br>
 
             <button
-              class="retry-button"
-              onclick="
-                loadMatches(currentDate)
-              "
+              class="retry"
+              onclick="load()"
             >
               إعادة المحاولة
             </button>
@@ -2014,31 +1406,68 @@
     }
 
 
-    /*
-     * ==========================================================
-     * أزرار الأيام
-     * ==========================================================
-     */
+    /* =========================
+       Date Label
+    ========================= */
+
+    function updateDate() {
+
+      const active =
+        document.querySelector(
+          ".day.active"
+        );
+
+
+      const offset =
+        active?.dataset.offset ||
+        "0";
+
+
+      let label;
+
+
+      if (
+        offset === "0"
+      ) {
+
+        label = "اليوم";
+
+      } else if (
+        offset === "1"
+      ) {
+
+        label = "غداً";
+
+      } else {
+
+        label = "أمس";
+
+      }
+
+
+      document.getElementById(
+        "dateLabel"
+      ).textContent =
+        `${label} — ${currentDate}`;
+
+    }
+
+
+    /* =========================
+       Date Buttons
+    ========================= */
 
     document
-      .querySelectorAll(
-        ".day-button"
-      )
+      .querySelectorAll(".day")
       .forEach(
-
         button => {
 
-          button.addEventListener(
-            "click",
+          button.onclick =
             () => {
-
-              /*
-               * إزالة التحديد
-               */
 
               document
                 .querySelectorAll(
-                  ".day-button"
+                  ".day"
                 )
                 .forEach(
                   item =>
@@ -2049,76 +1478,48 @@
                 );
 
 
-              /*
-               * تحديد الزر
-               */
-
-              button.classList.add(
-                "active"
-              );
-
-
-              /*
-               * التاريخ
-               */
-
-              currentDate =
-                getDateByOffset(
-                  button.dataset.offset
+              button.classList
+                .add(
+                  "active"
                 );
 
 
-              updateDateLabel();
+              currentDate =
+                dateOffset(
+                  Number(
+                    button.dataset
+                      .offset
+                  )
+                );
 
 
-              /*
-               * جلب المباريات
-               */
+              updateDate();
 
-              loadMatches(
-                currentDate
-              );
+              load();
 
-            }
-          );
+            };
 
         }
-
       );
 
 
-    /*
-     * ==========================================================
-     * التشغيل الأول
-     * ==========================================================
-     */
+    /* =========================
+       Start
+    ========================= */
 
-    updateDateLabel();
+    updateDate();
 
-
-    loadMatches(
-      currentDate
-    );
+    load();
 
 
     /*
-     * ==========================================================
-     * تحديث تلقائي كل دقيقة
-     * ==========================================================
-     */
+      تحديث المباريات
+      كل دقيقة
+    */
 
     setInterval(
-
-      () => {
-
-        loadMatches(
-          currentDate
-        );
-
-      },
-
-      60000
-
+      load,
+      60 * 1000
     );
 
   </script>
