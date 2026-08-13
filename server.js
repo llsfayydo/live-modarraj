@@ -1,10 +1,9 @@
 import express from "express";
 import http from "http";
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
 import { Server } from "socket.io";
 import axios from "axios";
+import { fileURLToPath } from "url";
+import path from "path";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -15,29 +14,25 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*"
-  }
+  },
+  allowEIO3: true
 });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORT = process.env.PORT || 5000;
-const API_KEY = process.env.THESPORTSDB_API_KEY;
-
-const cache = new Map();
-const CACHE_TTL = 60 * 1000;
-
 app.use(express.json());
+app.use(express.static(__dirname));
 
-/* =========================
+/* =========================================================
    CORS
-========================= */
+========================================================= */
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
     "Access-Control-Allow-Methods",
-    "GET,POST,OPTIONS"
+    "GET, POST, OPTIONS"
   );
   res.setHeader(
     "Access-Control-Allow-Headers",
@@ -51,653 +46,668 @@ app.use((req, res, next) => {
   next();
 });
 
-/* =========================
-   STATIC
-========================= */
-
-app.use(express.static(__dirname));
-
-/* =========================
+/* =========================================================
    CONFIG
-========================= */
+========================================================= */
 
-if (!API_KEY) {
-  console.error(
-    "❌ THESPORTSDB_API_KEY غير موجود"
-  );
-} else {
-  console.log(
-    "✅ THESPORTSDB_API_KEY موجود"
-  );
-}
+const PORT = process.env.PORT || 10000;
 
-/* =========================
-   CACHE
-========================= */
+const API_KEY =
+  process.env.THESPORTSDB_API_KEY || "5010468507";
 
-function getCache(key) {
-  const item = cache.get(key);
+const CACHE_TIME = 60 * 1000;
 
-  if (!item) return null;
+const localMemoryCache = new Map();
 
-  if (Date.now() > item.expires) {
-    cache.delete(key);
-    return null;
+/* =========================================================
+   LEAGUES
+   ترتيب الأولوية:
+   1 - السعودية
+   2 - أبطال أوروبا
+   3 - الدوريات الأوروبية الكبرى
+   4 - مصر
+   5 - بطولات أخرى
+========================================================= */
+
+const LEAGUES = [
+  {
+    name: "Saudi Professional League",
+    priority: 1000
+  },
+  {
+    name: "UEFA Champions League",
+    priority: 950
+  },
+  {
+    name: "English Premier League",
+    priority: 900
+  },
+  {
+    name: "La Liga",
+    priority: 890
+  },
+  {
+    name: "Serie A",
+    priority: 880
+  },
+  {
+    name: "Bundesliga",
+    priority: 870
+  },
+  {
+    name: "Ligue 1",
+    priority: 860
+  },
+  {
+    name: "Egyptian Premier League",
+    priority: 800
+  },
+  {
+    name: "Botola Pro",
+    priority: 790
+  }
+];
+
+/* =========================================================
+   BIG TEAMS
+========================================================= */
+
+const PRIORITY_TEAMS = [
+  "Al Hilal",
+  "Al Nassr",
+  "Al Ittihad",
+  "Al Ahli",
+  "Al Shabab",
+
+  "Real Madrid",
+  "Barcelona",
+  "Atletico Madrid",
+
+  "Manchester City",
+  "Manchester United",
+  "Liverpool",
+  "Arsenal",
+  "Chelsea",
+  "Tottenham",
+
+  "Bayern Munich",
+  "Borussia Dortmund",
+
+  "Paris Saint-Germain",
+  "PSG",
+
+  "Juventus",
+  "Inter Milan",
+  "AC Milan",
+  "Napoli",
+  "Roma",
+
+  "Ajax",
+  "Benfica",
+  "Porto"
+];
+
+/* =========================================================
+   DATE
+========================================================= */
+
+function normalizeDate(date) {
+  if (!date) {
+    return new Date()
+      .toISOString()
+      .split("T")[0];
   }
 
-  return item.data;
-}
-
-function setCache(key, data) {
-  cache.set(key, {
-    data,
-    expires: Date.now() + CACHE_TTL
-  });
-}
-
-/* =========================
-   DATE
-========================= */
-
-function validDate(date) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     throw new Error(
-      "التاريخ يجب أن يكون YYYY-MM-DD"
+      "التاريخ يجب أن يكون بصيغة YYYY-MM-DD"
     );
   }
 
   return date;
 }
 
-/* =========================
-   THE SPORT DB V1
-========================= */
+/* =========================================================
+   STATUS
+========================================================= */
 
-async function getEventsDay(date) {
+function normalizeStatus(event) {
+  const status = String(
+    event?.strStatus ||
+    event?.strProgress ||
+    event?.status?.short ||
+    ""
+  ).toUpperCase();
 
-  if (!API_KEY) {
-    throw new Error(
-      "THESPORTSDB_API_KEY غير موجود في Render"
-    );
+  if (
+    status.includes("HALF") ||
+    status === "HT"
+  ) {
+    return "HT";
   }
 
-  const cleanDate = validDate(date);
-
-  const url =
-    `https://www.thesportsdb.com/api/v1/json/${API_KEY}/eventsday.php?d=${cleanDate}`;
-
-  console.log(
-    `📡 TheSportsDB Schedule: ${cleanDate}`
-  );
-
-  const response = await axios.get(url, {
-    timeout: 20000,
-    headers: {
-      Accept: "application/json",
-      "User-Agent": "Live-Modarraj/1.0"
-    }
-  });
-
-  const body = response.data;
-
-  /*
-    TheSportsDB V1 Schedule Day:
-    events: [...]
-  */
-
-  if (Array.isArray(body?.events)) {
-    return body.events;
+  if (
+    status.includes("FINAL") ||
+    status === "FT"
+  ) {
+    return "FT";
   }
 
-  /*
-    دعم احتياطي لأي شكل قديم
-  */
-
-  if (Array.isArray(body?.results)) {
-    return body.results;
+  if (
+    status.includes("NOT STARTED") ||
+    status === "NS"
+  ) {
+    return "NS";
   }
-
-  /*
-    إذا لم يرجع API أحداثاً،
-    لا نعتبرها مشكلة اتصال.
-  */
-
-  return [];
-}
-
-/* =========================
-   V2 LIVE
-========================= */
-
-async function getLiveScores() {
-
-  if (!API_KEY) {
-    throw new Error(
-      "THESPORTSDB_API_KEY غير موجود"
-    );
-  }
-
-  const url =
-    "https://www.thesportsdb.com/api/v2/json/livescore/soccer";
-
-  const response = await axios.get(url, {
-    timeout: 15000,
-    headers: {
-      "X-API-KEY": API_KEY,
-      Accept: "application/json",
-      "User-Agent": "Live-Modarraj/1.0"
-    }
-  });
-
-  const body = response.data;
-
-  if (Array.isArray(body?.livescores)) {
-    return body.livescores;
-  }
-
-  if (Array.isArray(body?.events)) {
-    return body.events;
-  }
-
-  if (Array.isArray(body?.data)) {
-    return body.data;
-  }
-
-  return [];
-}
-
-/* =========================
-   LIVE CHECK
-========================= */
-
-function isLive(event) {
-
-  const status =
-    String(event?.strStatus || "")
-      .toUpperCase();
-
-  const progress =
-    String(event?.strProgress || "")
-      .toUpperCase();
 
   if (
     [
       "LIVE",
       "1H",
       "2H",
-      "HT",
       "ET",
-      "OT",
-      "P",
-      "BT"
+      "P"
     ].includes(status)
   ) {
-    return true;
+    return "LIVE";
   }
 
-  return (
-    progress.includes("LIVE") ||
-    progress.includes("1ST") ||
-    progress.includes("2ND")
-  );
+  return "NS";
 }
 
-/* =========================
-   STATUS
-========================= */
+/* =========================================================
+   PRIORITY
+========================================================= */
 
-function normalizeStatus(event) {
+function getMatchPriority(event, leaguePriority = 50) {
+  let score = Number(leaguePriority) || 50;
 
-  if (isLive(event)) {
-    return (
-      event?.strStatus ||
-      "LIVE"
-    );
-  }
+  const home = String(
+    event?.strHomeTeam || ""
+  ).toLowerCase();
 
-  const status =
-    String(event?.strStatus || "")
-      .toLowerCase();
+  const away = String(
+    event?.strAwayTeam || ""
+  ).toLowerCase();
 
-  if (
-    status.includes("finished") ||
-    status.includes("final")
-  ) {
-    return "FT";
-  }
-
-  if (
-    status.includes("half")
-  ) {
-    return "HT";
-  }
-
-  if (
-    status.includes("postponed")
-  ) {
-    return "POST";
-  }
-
-  if (
-    status.includes("cancel")
-  ) {
-    return "CANC";
-  }
-
-  return (
-    event?.strStatus ||
-    "NS"
-  );
-}
-
-/* =========================
-   SCORE
-========================= */
-
-function numberScore(value) {
-
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return null;
-  }
-
-  const n =
-    Number.parseInt(value, 10);
-
-  return Number.isFinite(n)
-    ? n
-    : null;
-}
-
-/* =========================
-   IMPORTANCE
-========================= */
-
-const majorLeagues = [
-  "Premier League",
-  "English Premier League",
-  "La Liga",
-  "Bundesliga",
-  "Serie A",
-  "Ligue 1",
-  "UEFA Champions League",
-  "Champions League",
-  "UEFA Europa League",
-  "Europa League",
-  "Saudi Professional League",
-  "Saudi Pro League",
-  "Saudi King's Cup",
-  "King Cup",
-  "AFC Champions League",
-  "FIFA World Cup",
-  "World Cup",
-  "Copa Libertadores"
-];
-
-const majorTeams = [
-  "Real Madrid",
-  "Barcelona",
-  "Manchester City",
-  "Manchester United",
-  "Liverpool",
-  "Arsenal",
-  "Chelsea",
-  "Bayern Munich",
-  "Borussia Dortmund",
-  "Paris Saint-Germain",
-  "Inter Milan",
-  "AC Milan",
-  "Juventus",
-  "Al Hilal",
-  "Al-Hilal",
-  "Al Nassr",
-  "Al-Nassr",
-  "Al Ittihad",
-  "Al-Ittihad",
-  "Al Ahly",
-  "Zamalek"
-];
-
-function importance(event) {
-
-  let value = 0;
-
-  const league =
-    String(event?.strLeague || "");
-
-  const home =
-    String(event?.strHomeTeam || "")
-      .toLowerCase();
-
-  const away =
-    String(event?.strAwayTeam || "")
-      .toLowerCase();
-
-  const leagueLower =
-    league.toLowerCase();
-
-  for (const major of majorLeagues) {
-
-    if (
-      leagueLower.includes(
-        major.toLowerCase()
-      )
-    ) {
-      value += 100;
-      break;
-    }
-  }
-
-  let bigTeams = 0;
-
-  for (const team of majorTeams) {
-
-    const t =
-      team.toLowerCase();
+  for (const team of PRIORITY_TEAMS) {
+    const t = team.toLowerCase();
 
     if (home.includes(t)) {
-      value += 30;
-      bigTeams++;
+      score += 100;
     }
 
     if (away.includes(t)) {
-      value += 30;
-      bigTeams++;
+      score += 100;
     }
   }
 
-  if (bigTeams >= 2) {
-    value += 50;
+  const status = normalizeStatus(event);
+
+  if (
+    status === "LIVE" ||
+    status === "HT"
+  ) {
+    score += 10000;
   }
 
-  /*
-    المباراة المباشرة دائماً فوق
-  */
-
-  if (isLive(event)) {
-    value += 10000;
-  }
-
-  return value;
+  return score;
 }
 
-/* =========================
-   EVENT NORMALIZER
-========================= */
+/* =========================================================
+   FETCH EVENTS DAY
+========================================================= */
 
-function normalizeEvent(event) {
+async function fetchEventsDay(date) {
+  const allEvents = [];
 
-  const date =
-    event?.dateEventLocal ||
-    event?.dateEvent ||
-    "";
+  for (const league of LEAGUES) {
+    try {
+      const url =
+        `https://www.thesportsdb.com/api/v1/json/` +
+        `${API_KEY}/eventsday.php?d=${date}` +
+        `&l=${encodeURIComponent(league.name)}`;
 
-  const time =
-    event?.strTimeLocal ||
-    event?.strTime ||
-    "00:00:00";
+      console.log(
+        `📡 ${league.name} - ${date}`
+      );
 
-  return {
+      const response = await axios.get(
+        url,
+        {
+          timeout: 15000,
+          headers: {
+            "User-Agent":
+              "Live-Modarraj/1.0"
+          }
+        }
+      );
 
-    fixture: {
+      const results =
+        response?.data?.events ||
+        response?.data?.results ||
+        [];
 
-      id:
-        String(
-          event?.idEvent ||
-          ""
-        ),
+      const events = Array.isArray(results)
+        ? results
+        : [results];
 
-      date:
-        date
-          ? `${date}T${time}`
-          : event?.strTimestamp ||
-            "",
-
-      status: {
-
-        short:
-          normalizeStatus(event),
-
-        elapsed:
-          event?.strProgress ||
-          null
-      }
-    },
-
-    league: {
-
-      id:
-        String(
-          event?.idLeague ||
-          ""
-        ),
-
-      name:
-        event?.strLeague ||
-        "غير محددة",
-
-      country:
-        event?.strCountry ||
-        "",
-
-      badge:
-        event?.strLeagueBadge ||
-        ""
-    },
-
-    teams: {
-
-      home: {
-
-        id:
-          String(
-            event?.idHomeTeam ||
-            ""
-          ),
-
-        name:
-          event?.strHomeTeam ||
-          "",
-
-        logo:
-          event?.strHomeTeamBadge ||
-          ""
-      },
-
-      away: {
-
-        id:
-          String(
-            event?.idAwayTeam ||
-            ""
-          ),
-
-        name:
-          event?.strAwayTeam ||
-          "",
-
-        logo:
-          event?.strAwayTeamBadge ||
-          ""
-      }
-    },
-
-    goals: {
-
-      home:
-        numberScore(
-          event?.intHomeScore
-        ),
-
-      away:
-        numberScore(
-          event?.intAwayScore
+      const validEvents = events
+        .filter(
+          event =>
+            event &&
+            event.strHomeTeam &&
+            event.strAwayTeam
         )
-    },
+        .map(event => ({
+          ...event,
+          _leaguePriority:
+            league.priority
+        }));
 
-    venue:
-      event?.strVenue ||
-      "",
+      console.log(
+        `   ✅ ${validEvents.length} مباراة`
+      );
 
-    country:
-      event?.strCountry ||
-      "",
+      allEvents.push(...validEvents);
 
-    tv:
-      event?.strTVStation ||
-      "",
-
-    priority:
-      importance(event),
-
-    source:
-      "TheSportsDB"
-  };
-}
-
-/* =========================
-   DEDUPLICATE
-========================= */
-
-function uniqueEvents(events) {
-
-  const map = new Map();
-
-  for (const event of events) {
-
-    const id =
-      event?.idEvent;
-
-    if (!id) continue;
-
-    if (!map.has(String(id))) {
-      map.set(
-        String(id),
-        event
+    } catch (error) {
+      console.log(
+        `   ⚠️ ${league.name}: ${error.message}`
       );
     }
   }
 
-  return [...map.values()];
+  return allEvents;
 }
 
-/* =========================
-   MATCHES
-========================= */
+/* =========================================================
+   V2 LIVESCORE
+========================================================= */
+
+async function fetchLiveScores() {
+  try {
+    const urls = [
+      `https://www.thesportsdb.com/api/v2/json/livescore/${API_KEY}`,
+      `https://www.thesportsdb.com/api/v2/json/livescore`
+    ];
+
+    for (const url of urls) {
+      try {
+        const response = await axios.get(
+          url,
+          {
+            timeout: 15000,
+            headers: {
+              "X-API-KEY": API_KEY,
+              "User-Agent":
+                "Live-Modarraj/1.0"
+            }
+          }
+        );
+
+        const data =
+          response?.data?.data ||
+          response?.data?.events ||
+          response?.data?.livescores ||
+          response?.data?.results ||
+          [];
+
+        if (Array.isArray(data)) {
+          return data;
+        }
+      } catch {
+        continue;
+      }
+    }
+
+    return [];
+
+  } catch (error) {
+    console.log(
+      "⚠️ Livescore:",
+      error.message
+    );
+
+    return [];
+  }
+}
+
+/* =========================================================
+   MERGE
+========================================================= */
+
+function mergeEvents(arrays) {
+  const map = new Map();
+
+  for (const events of arrays) {
+    for (const event of events || []) {
+      if (!event) {
+        continue;
+      }
+
+      const id =
+        event.idEvent ||
+        event.idLiveScore ||
+        event.fixture?.id ||
+        `${event.idHomeTeam}-${event.idAwayTeam}-${event.dateEvent}`;
+
+      if (!id) {
+        continue;
+      }
+
+      const existing = map.get(id);
+
+      if (!existing) {
+        map.set(id, event);
+        continue;
+      }
+
+      const currentStatus =
+        normalizeStatus(event);
+
+      if (
+        currentStatus === "LIVE" ||
+        currentStatus === "HT"
+      ) {
+        map.set(id, event);
+      }
+    }
+  }
+
+  return Array.from(map.values());
+}
+
+/* =========================================================
+   NORMALIZE EVENT
+========================================================= */
+
+function normalizeEvent(event) {
+  const status =
+    normalizeStatus(event);
+
+  const homeScore =
+    Number.parseInt(
+      event?.intHomeScore ??
+      event?.goals?.home ??
+      0,
+      10
+    ) || 0;
+
+  const awayScore =
+    Number.parseInt(
+      event?.intAwayScore ??
+      event?.goals?.away ??
+      0,
+      10
+    ) || 0;
+
+  const channel = String(
+    event?.strTVStation ||
+    event?.media?.channel ||
+    ""
+  ).trim();
+
+  const commentator = String(
+    event?.strCommentator ||
+    event?.media?.commentator ||
+    ""
+  ).trim();
+
+  const media = {};
+
+  /*
+     القناة تظهر فقط إذا كانت موجودة فعليًا.
+     لا يوجد SSC / beIN افتراضي.
+  */
+
+  if (channel) {
+    media.channel = channel;
+  }
+
+  if (commentator) {
+    media.commentator = commentator;
+  }
+
+  const date =
+    event?.dateEvent
+      ? `${event.dateEvent}T${
+          event.strTime ||
+          "00:00:00"
+        }`
+      : event?.fixture?.date ||
+        new Date().toISOString();
+
+  const priority =
+    getMatchPriority(
+      event,
+      event?._leaguePriority || 50
+    );
+
+  return {
+    fixture: {
+      id:
+        event?.idEvent ||
+        event?.idLiveScore ||
+        event?.fixture?.id,
+
+      date,
+
+      status: {
+        short: status,
+
+        elapsed:
+          event?.strProgress ||
+          event?.status?.elapsed ||
+          ""
+      }
+    },
+
+    league: {
+      name:
+        event?.strLeague ||
+        event?.league?.name ||
+        "بطولات أخرى"
+    },
+
+    teams: {
+      home: {
+        name:
+          event?.strHomeTeam ||
+          event?.teams?.home?.name ||
+          "فريق غير معروف",
+
+        logo:
+          event?.strHomeTeamBadge ||
+          event?.teams?.home?.logo ||
+          "https://www.thesportsdb.com/images/media/team/badge/default.png"
+      },
+
+      away: {
+        name:
+          event?.strAwayTeam ||
+          event?.teams?.away?.name ||
+          "فريق غير معروف",
+
+        logo:
+          event?.strAwayTeamBadge ||
+          event?.teams?.away?.logo ||
+          "https://www.thesportsdb.com/images/media/team/badge/default.png"
+      }
+    },
+
+    goals: {
+      home: homeScore,
+      away: awayScore
+    },
+
+    media,
+
+    priority
+  };
+}
+
+/* =========================================================
+   SORT
+========================================================= */
+
+function sortMatches(matches) {
+  return matches.sort((a, b) => {
+
+    const liveA =
+      ["LIVE", "HT"].includes(
+        a.fixture?.status?.short
+      )
+        ? 1
+        : 0;
+
+    const liveB =
+      ["LIVE", "HT"].includes(
+        b.fixture?.status?.short
+      )
+        ? 1
+        : 0;
+
+    if (liveA !== liveB) {
+      return liveB - liveA;
+    }
+
+    if (
+      Number(b.priority || 0) !==
+      Number(a.priority || 0)
+    ) {
+      return (
+        Number(b.priority || 0) -
+        Number(a.priority || 0)
+      );
+    }
+
+    return (
+      new Date(a.fixture.date) -
+      new Date(b.fixture.date)
+    );
+  });
+}
+
+/* =========================================================
+   GET MATCHES
+========================================================= */
+
+async function getMatches(date) {
+
+  const cacheKey =
+    `matches:${date}`;
+
+  const cached =
+    localMemoryCache.get(cacheKey);
+
+  if (
+    cached &&
+    Date.now() < cached.expiresAt
+  ) {
+    return {
+      data: cached.data,
+      cached: true
+    };
+  }
+
+  const dayEvents =
+    await fetchEventsDay(date);
+
+  const liveEvents =
+    await fetchLiveScores();
+
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
+
+  const filteredLive =
+    date === today
+      ? liveEvents
+      : [];
+
+  const rawEvents =
+    mergeEvents([
+      dayEvents,
+      filteredLive
+    ]);
+
+  let matches =
+    rawEvents.map(normalizeEvent);
+
+  matches =
+    Array.from(
+      new Map(
+        matches.map(match => [
+          match.fixture.id,
+          match
+        ])
+      ).values()
+    );
+
+  matches =
+    sortMatches(matches);
+
+  localMemoryCache.set(
+    cacheKey,
+    {
+      data: matches,
+      expiresAt:
+        Date.now() + CACHE_TIME
+    }
+  );
+
+  return {
+    data: matches,
+    cached: false
+  };
+}
+
+/* =========================================================
+   API MATCHES
+========================================================= */
 
 app.get(
   "/api/matches",
   async (req, res) => {
 
-    const date =
-      typeof req.query.date === "string"
-        ? req.query.date
-        : new Date()
-            .toISOString()
-            .slice(0, 10);
-
-    const key =
-      `matches:${date}`;
-
     try {
 
-      const cached =
-        getCache(key);
-
-      if (cached) {
-
-        return res.json({
-
-          source:
-            "TheSportsDB API",
-
-          data:
-            cached,
-
-          count:
-            cached.length,
-
-          date,
-
-          cached:
-            true,
-
-          timestamp:
-            new Date().toISOString()
-        });
-      }
-
-      const events =
-        await getEventsDay(date);
-
-      const cleaned =
-        uniqueEvents(events);
-
-      const matches =
-        cleaned.map(
-          normalizeEvent
+      const requestedDate =
+        normalizeDate(
+          req.query.date
         );
 
-      /*
-        الأهم أولاً
-      */
-
-      matches.sort(
-        (a, b) => {
-
-          if (
-            b.priority !==
-            a.priority
-          ) {
-            return (
-              b.priority -
-              a.priority
-            );
-          }
-
-          return (
-            String(
-              a.fixture.date
-            ).localeCompare(
-              String(
-                b.fixture.date
-              )
-            )
-          );
-        }
-      );
-
-      setCache(
-        key,
-        matches
-      );
+      const result =
+        await getMatches(
+          requestedDate
+        );
 
       io.emit(
         "matchUpdate",
         {
-          date,
-          matches
+          date: requestedDate,
+          matches: result.data
         }
       );
 
       return res.json({
-
         source:
-          "TheSportsDB API",
+          result.cached
+            ? "Local Memory Cache"
+            : "TheSportsDB API",
 
-        data:
-          matches,
+        data: result.data,
 
         count:
-          matches.length,
+          result.data.length,
 
-        date,
+        date:
+          requestedDate,
 
         cached:
-          false,
+          result.cached,
 
         timestamp:
           new Date().toISOString()
@@ -706,42 +716,15 @@ app.get(
     } catch (error) {
 
       console.error(
-        "❌ MATCHES ERROR:",
+        "❌ /api/matches:",
         error.message
       );
 
-      console.error(
-        "HTTP STATUS:",
-        error.response?.status
-      );
-
-      console.error(
-        "THE SPORTS DB RESPONSE:",
-        error.response?.data
-      );
-
-      return res.status(502).json({
-
-        source:
-          "TheSportsDB API",
-
+      return res.status(500).json({
+        source: "Server Error",
         data: [],
-
         count: 0,
-
-        date,
-
-        error:
-          error.message,
-
-        upstreamStatus:
-          error.response?.status ||
-          null,
-
-        upstream:
-          error.response?.data ||
-          null,
-
+        error: error.message,
         timestamp:
           new Date().toISOString()
       });
@@ -749,119 +732,9 @@ app.get(
   }
 );
 
-/* =========================
-   LIVE
-========================= */
-
-app.get(
-  "/api/live",
-  async (req, res) => {
-
-    try {
-
-      const events =
-        await getLiveScores();
-
-      const matches =
-        uniqueEvents(events)
-          .map(
-            normalizeEvent
-          );
-
-      matches.sort(
-        (a, b) =>
-          b.priority -
-          a.priority
-      );
-
-      return res.json({
-
-        status:
-          "success",
-
-        source:
-          "TheSportsDB V2 Livescore",
-
-        matches:
-          matches.length,
-
-        data:
-          matches,
-
-        timestamp:
-          new Date().toISOString()
-      });
-
-    } catch (error) {
-
-      console.error(
-        "❌ LIVE ERROR:",
-        error.message
-      );
-
-      return res.status(502).json({
-
-        status:
-          "error",
-
-        source:
-          "TheSportsDB V2 Livescore",
-
-        matches: 0,
-
-        data: [],
-
-        error:
-          error.message,
-
-        upstreamStatus:
-          error.response?.status ||
-          null,
-
-        upstream:
-          error.response?.data ||
-          null
-      });
-    }
-  }
-);
-
-/* =========================
-   HEALTH
-========================= */
-
-app.get(
-  "/api/health",
-  (req, res) => {
-
-    res.json({
-
-      status:
-        "ok",
-
-      server:
-        "Live Modarraj",
-
-      database:
-        "disabled",
-
-      cache:
-        "memory",
-
-      theSportsDB:
-        API_KEY
-          ? "connected"
-          : "missing",
-
-      timestamp:
-        new Date().toISOString()
-    });
-  }
-);
-
-/* =========================
-   TEST
-========================= */
+/* =========================================================
+   API TEST
+========================================================= */
 
 app.get(
   "/api/test",
@@ -870,28 +743,64 @@ app.get(
     const date =
       new Date()
         .toISOString()
-        .slice(0, 10);
+        .split("T")[0];
 
     try {
 
-      const events =
-        await getEventsDay(
-          date
-        );
+      const day =
+        await fetchEventsDay(date);
+
+      const live =
+        await fetchLiveScores();
 
       return res.json({
-
-        status:
-          "success",
-
-        source:
-          "TheSportsDB Schedule Day",
-
+        status: "success",
+        message:
+          "اتصال TheSportsDB يعمل",
         date,
+        eventsDay:
+          day.length,
+        liveScores:
+          live.length,
+        api:
+          "V1 Events Day + V2 Livescore available",
+        timestamp:
+          new Date().toISOString()
+      });
 
-        events:
-          events.length,
+    } catch (error) {
 
+      return res.status(500).json({
+        status: "error",
+        error: error.message,
+        timestamp:
+          new Date().toISOString()
+      });
+    }
+  }
+);
+
+/* =========================================================
+   LIVE TEST
+========================================================= */
+
+app.get(
+  "/api/test/live",
+  async (req, res) => {
+
+    try {
+
+      const live =
+        await fetchLiveScores();
+
+      return res.json({
+        status: "success",
+        source:
+          "TheSportsDB V2 Livescore",
+        matches:
+          live.length,
+        data:
+          live,
         timestamp:
           new Date().toISOString()
       });
@@ -899,133 +808,139 @@ app.get(
     } catch (error) {
 
       return res.status(502).json({
-
-        status:
-          "error",
-
-        error:
-          error.message,
-
-        upstreamStatus:
-          error.response?.status ||
-          null,
-
-        upstream:
-          error.response?.data ||
-          null
+        status: "error",
+        error: error.message
       });
     }
   }
 );
 
-/* =========================
+/* =========================================================
+   HEALTH
+========================================================= */
+
+app.get(
+  "/api/health",
+  (req, res) => {
+
+    res.json({
+      status: "ok",
+      server: "Live Modarraj",
+
+      database:
+        "disabled - memory cache only",
+
+      apiKey:
+        API_KEY
+          ? "موجود"
+          : "غير موجود",
+
+      cache:
+        "memory",
+
+      theSportsDB:
+        "enabled",
+
+      nodeVersion:
+        process.version,
+
+      environment:
+        process.env.NODE_ENV ||
+        "production",
+
+      timestamp:
+        new Date().toISOString()
+    });
+  }
+);
+
+/* =========================================================
    FRONTEND
-========================= */
+========================================================= */
 
 app.get(
   "/",
   (req, res) => {
-
-    const index =
+    res.sendFile(
       path.join(
         __dirname,
-        "index.html"
-      );
-
-    if (
-      fs.existsSync(index)
-    ) {
-
-      return res.sendFile(
-        index
-      );
-    }
-
-    return res.status(404).send(`
-      <!DOCTYPE html>
-      <html lang="ar" dir="rtl">
-      <head>
-        <meta charset="UTF-8">
-        <title>مدرج لايف</title>
-      </head>
-      <body>
-        <h1>مدرج لايف</h1>
-        <p>
-          ملف index.html غير موجود.
-        </p>
-      </body>
-      </html>
-    `);
+        "live_modarraj_frontend.html"
+      )
+    );
   }
 );
 
-/* =========================
+/* =========================================================
+   FAVICON
+========================================================= */
+
+app.get(
+  "/favicon.ico",
+  (req, res) => {
+    res.status(204).end();
+  }
+);
+
+/* =========================================================
    404
-========================= */
+========================================================= */
 
 app.use(
   (req, res) => {
 
     res.status(404).json({
-
       error:
         "الرابط المطلوب غير موجود",
-
-      path:
-        req.path,
-
-      method:
-        req.method
+      path: req.path,
+      method: req.method
     });
   }
 );
 
-/* =========================
-   SOCKET
-========================= */
+/* =========================================================
+   ERROR
+========================================================= */
 
-io.on(
-  "connection",
-  socket => {
+app.use(
+  (err, req, res, next) => {
 
-    console.log(
-      `🔌 Connected: ${socket.id}`
+    console.error(
+      "❌ خطأ غير متوقع:",
+      err
     );
 
-    socket.on(
-      "disconnect",
-      () => {
-
-        console.log(
-          `🔌 Disconnected: ${socket.id}`
-        );
-      }
-    );
+    res.status(500).json({
+      error:
+        "حدث خطأ في السيرفر",
+      message:
+        err.message
+    });
   }
 );
 
-/* =========================
+/* =========================================================
    START
-========================= */
+========================================================= */
 
 server.listen(
   PORT,
   () => {
 
+    console.log("");
     console.log(
-      "======================================"
+      "══════════════════════════════════════"
     );
 
     console.log(
-      `🚀 Live Modarraj : ${PORT}`
+      `🚀 Live Modarraj يعمل على ${PORT}`
     );
 
     console.log(
-      "🗄️ MongoDB: OFF"
+      "💾 Database: OFF"
     );
 
     console.log(
-      "💾 Cache: MEMORY"
+      "🧠 Cache: MEMORY"
     );
 
     console.log(
@@ -1033,22 +948,29 @@ server.listen(
     );
 
     console.log(
-      "======================================"
+      "══════════════════════════════════════"
+    );
+
+    console.log(
+      `🌐 Port: ${PORT}`
+    );
+
+    console.log(
+      "══════════════════════════════════════"
     );
   }
 );
 
-/* =========================
+/* =========================================================
    PROCESS ERRORS
-========================= */
+========================================================= */
 
 process.on(
   "unhandledRejection",
-  error => {
-
+  reason => {
     console.error(
-      "Unhandled Rejection:",
-      error
+      "❌ Unhandled Rejection:",
+      reason
     );
   }
 );
@@ -1058,8 +980,10 @@ process.on(
   error => {
 
     console.error(
-      "Uncaught Exception:",
+      "❌ Uncaught Exception:",
       error
     );
+
+    process.exit(1);
   }
 );
