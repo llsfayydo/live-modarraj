@@ -75,12 +75,12 @@ const memoryCache = new Map();
 
 function normalizeDate(date) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-    throw new Error("صيغة التاريخ يجب أن تكون YYYY-MM-DD");
+    throw new Error(
+      "صيغة التاريخ يجب أن تكون YYYY-MM-DD"
+    );
   }
 
-  const [year, month, day] = date.split("-");
-
-  return `${day}.${month}.${year}`;
+  return date;
 }
 
 /* =========================
