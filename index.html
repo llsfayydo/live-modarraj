@@ -2080,6 +2080,7 @@
     function getMatchTime(match) {
 
       const value =
+        match?.fixture?.timestamp ||
         match?.fixture?.time ||
         match?.fixture?.date ||
         "";
@@ -2231,19 +2232,9 @@
 
     function getMatchPriority(match) {
 
-      let score =
-        getLeaguePriority(
-          match?.league?.name
-        );
-
-      const status =
-        String(match?.fixture?.status?.short || "").toUpperCase();
-
-      // Live matches always go first.
-      if (status === "LIVE") score += 10000;
-      else if (status === "HT") score += 9500;
-
-      return score;
+      return getLeaguePriority(
+        match?.league?.name
+      );
 
     }
 
@@ -2251,6 +2242,7 @@
     function getMatchTimestamp(match) {
 
       const value =
+        match?.fixture?.timestamp ||
         match?.fixture?.time ||
         match?.fixture?.date ||
         "";
@@ -2285,8 +2277,20 @@
       const priorityA = getMatchPriority(a);
       const priorityB = getMatchPriority(b);
 
+      // League importance comes first. A live match from a minor league
+      // must not jump above a major-league match.
       if (priorityA !== priorityB) {
         return priorityB - priorityA;
+      }
+
+      const statusA = String(a?.fixture?.status?.short || "").toUpperCase();
+      const statusB = String(b?.fixture?.status?.short || "").toUpperCase();
+
+      const liveA = statusA === "LIVE" || statusA === "HT";
+      const liveB = statusB === "LIVE" || statusB === "HT";
+
+      if (liveA !== liveB) {
+        return liveB - liveA;
       }
 
       const leagueA = getLeagueOrderName(a?.league?.name);
