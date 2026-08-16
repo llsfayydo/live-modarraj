@@ -1408,16 +1408,16 @@
           "مباراة مهمة",
 
         notStarted:
-          "لم تبدأ",
+          "لم تبدأ بعد",
 
         live:
           "مباشر",
 
         halftime:
-          "استراحة",
+          "نهاية الشوط الأول",
 
         finished:
-          "انتهت",
+          "انتهت المباراة",
 
         other:
           "بطولات أخرى",
@@ -1742,60 +1742,79 @@
 
     function getMatchTime(match) {
 
-      const date =
-        match?.fixture?.date;
+      const value =
+        match?.fixture?.time ||
+        match?.fixture?.date ||
+        "";
 
-      const time =
-       formatMatchTime(match)
-
-
-      if (time) {
-
-        const clean =
-          String(time)
-            .substring(0, 5);
-
-        if (
-          /^\d{2}:\d{2}$/.test(
-            clean
-          )
-        ) {
-
-          return clean;
-
-        }
-
+      if (!value) {
+        return "--:--";
       }
 
+      const text = String(value).trim();
 
-      if (date) {
+      /*
+       * When the API provides a real timestamp,
+       * convert it to the visitor's device timezone.
+       */
+      if (
+        text.includes("T") ||
+        text.endsWith("Z") ||
+        /[+-]\d{2}:\d{2}$/.test(text)
+      ) {
 
-        const parsed =
-          new Date(
-            `${date}T${time || "00:00:00"}`
-          );
+        const parsed = new Date(text);
 
+        if (!Number.isNaN(parsed.getTime())) {
 
-        if (
-          !Number.isNaN(
-            parsed.getTime()
-          )
-        ) {
-
-          return parsed.toLocaleTimeString(
-            language === "ar"
-              ? "ar-SA"
-              : "en-US",
+          return new Intl.DateTimeFormat(
+            undefined,
             {
               hour: "2-digit",
-              minute: "2-digit"
+              minute: "2-digit",
+              hour12: false
             }
-          );
+          ).format(parsed);
 
         }
 
       }
 
+      /*
+       * Plain API time such as 20:00 or 20:00:00.
+       * There is no timezone information in this value,
+       * so it is displayed unchanged.
+       */
+      const timeMatch =
+        text.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+
+      if (timeMatch) {
+
+        return (
+          String(Number(timeMatch[1])).padStart(2, "0") +
+          ":" +
+          timeMatch[2]
+        );
+
+      }
+
+      /*
+       * If fixture.date itself is a timestamp, use it.
+       */
+      const parsedDate = new Date(text);
+
+      if (!Number.isNaN(parsedDate.getTime())) {
+
+        return new Intl.DateTimeFormat(
+          undefined,
+          {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false
+          }
+        ).format(parsedDate);
+
+      }
 
       return "--:--";
 
@@ -2689,33 +2708,3 @@
 </body>
 
 </html>
-function formatMatchTime(match) {
-    const timestamp = match?.fixture?.time;
-
-    if (!timestamp) {
-        return "--:--";
-    }
-
-    // إذا كان Timestamp حقيقي
-    if (
-        timestamp.includes("T") ||
-        timestamp.includes("Z") ||
-        timestamp.includes("+")
-    ) {
-        const date = new Date(timestamp);
-
-        if (!Number.isNaN(date.getTime())) {
-            return new Intl.DateTimeFormat(
-                undefined,
-                {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false
-                }
-            ).format(date);
-        }
-    }
-
-    // fallback إذا كان API أرسل 20:00 أو 20:00:00
-    return String(timestamp).slice(0, 5);
-}
