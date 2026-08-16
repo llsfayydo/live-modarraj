@@ -917,6 +917,168 @@
     }
 
     /* =========================
+       SETTINGS
+    ========================= */
+
+    .header-inner {
+      position: relative;
+    }
+
+    .settings-btn {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      flex: 0 0 auto;
+    }
+
+    .settings-btn:hover {
+      border-color: var(--gold);
+    }
+
+    .settings-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+    }
+
+    .settings-modal.show {
+      display: block;
+    }
+
+    .settings-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,.68);
+      backdrop-filter: blur(5px);
+    }
+
+    .settings-panel {
+      position: relative;
+      width: min(520px, 92%);
+      margin: 9vh auto 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 25px 80px rgba(0,0,0,.45);
+      overflow: hidden;
+    }
+
+    .settings-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 20px;
+      background: var(--card2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-header h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .settings-header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .settings-close {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--card);
+      color: white;
+      cursor: pointer;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .settings-body {
+      padding: 8px 20px;
+    }
+
+    .setting-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 16px 0;
+      border-bottom: 1px solid rgba(38,61,93,.65);
+    }
+
+    .setting-row:last-child {
+      border-bottom: 0;
+    }
+
+    .setting-row strong,
+    .setting-row small {
+      display: block;
+    }
+
+    .setting-row strong {
+      font-size: 14px;
+    }
+
+    .setting-row small {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .setting-row select {
+      min-width: 180px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--bg2);
+      color: white;
+      outline: none;
+    }
+
+    .setting-row select:focus {
+      border-color: var(--gold);
+    }
+
+    .settings-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 16px 20px;
+      border-top: 1px solid var(--border);
+      background: rgba(7,17,31,.35);
+    }
+
+    .settings-primary,
+    .settings-secondary {
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 18px;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .settings-primary {
+      background: var(--gold);
+      color: #111;
+    }
+
+    .settings-secondary {
+      background: var(--card2);
+      color: white;
+      border: 1px solid var(--border);
+    }
+
+    /* =========================
        MOBILE
     ========================= */
 
@@ -1072,6 +1234,16 @@
         </button>
 
       </div>
+
+      <button
+        id="settingsBtn"
+        class="settings-btn"
+        type="button"
+        aria-label="Settings"
+        title="Settings"
+      >
+        ⚙️
+      </button>
 
     </div>
 
@@ -1260,6 +1432,85 @@
   </main>
 
 
+  <!-- =========================
+       SETTINGS MODAL
+  ========================= -->
+
+  <div
+    id="settingsModal"
+    class="settings-modal"
+    aria-hidden="true"
+  >
+
+    <div class="settings-backdrop" id="settingsBackdrop"></div>
+
+    <section
+      class="settings-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="settingsTitle"
+    >
+
+      <div class="settings-header">
+        <div>
+          <h2 id="settingsTitle" data-i18n="settingsTitle">Settings</h2>
+          <p data-i18n="settingsDescription">Customize language, time zone and time format.</p>
+        </div>
+
+        <button
+          id="settingsClose"
+          class="settings-close"
+          type="button"
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="settings-body">
+
+        <label class="setting-row">
+          <span>
+            <strong data-i18n="languageSetting">Language</strong>
+            <small data-i18n="languageSettingHint">Choose the interface language.</small>
+          </span>
+          <select id="settingLanguage">
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+          </select>
+        </label>
+
+        <label class="setting-row">
+          <span>
+            <strong data-i18n="timezoneSetting">Time Zone</strong>
+            <small data-i18n="timezoneSettingHint">Automatic uses your device time zone.</small>
+          </span>
+          <select id="settingTimezone"></select>
+        </label>
+
+        <label class="setting-row">
+          <span>
+            <strong data-i18n="timeFormatSetting">Time Format</strong>
+            <small data-i18n="timeFormatSettingHint">Choose how match times are displayed.</small>
+          </span>
+          <select id="settingTimeFormat">
+            <option value="24">24-hour</option>
+            <option value="12">12-hour</option>
+          </select>
+        </label>
+
+      </div>
+
+      <div class="settings-footer">
+        <button id="settingsReset" class="settings-secondary" type="button" data-i18n="resetSettings">Reset</button>
+        <button id="settingsSave" class="settings-primary" type="button" data-i18n="saveSettings">Save</button>
+      </div>
+
+    </section>
+
+  </div>
+
+
   <footer>
 
     <span>
@@ -1287,6 +1538,18 @@
 
     let currentDate =
       getDateOffset(0);
+
+
+    const defaultTimezone =
+      Intl.DateTimeFormat().resolvedOptions().timeZone ||
+      "UTC";
+
+
+    let appSettings = {
+      language: language,
+      timezone: localStorage.getItem("modarraj-timezone") || "auto",
+      timeFormat: localStorage.getItem("modarraj-time-format") || "24"
+    };
 
 
     /* =====================================================
@@ -1358,7 +1621,43 @@
           "Venue",
 
         location:
-          "Location"
+          "Location",
+
+        unknownTeam:
+          "Unknown Team",
+
+        otherCompetitions:
+          "Other Competitions",
+
+        settingsTitle:
+          "Settings",
+
+        settingsDescription:
+          "Customize language, time zone and time format.",
+
+        languageSetting:
+          "Language",
+
+        languageSettingHint:
+          "Choose the interface language.",
+
+        timezoneSetting:
+          "Time Zone",
+
+        timezoneSettingHint:
+          "Automatic uses your device time zone.",
+
+        timeFormatSetting:
+          "Time Format",
+
+        timeFormatSettingHint:
+          "Choose how match times are displayed.",
+
+        resetSettings:
+          "Reset",
+
+        saveSettings:
+          "Save"
 
       },
 
@@ -1426,7 +1725,43 @@
           "الملعب",
 
         location:
-          "الموقع"
+          "الموقع",
+
+        unknownTeam:
+          "فريق غير معروف",
+
+        otherCompetitions:
+          "بطولات أخرى",
+
+        settingsTitle:
+          "الإعدادات",
+
+        settingsDescription:
+          "اضبط اللغة والمنطقة الزمنية وطريقة عرض الوقت.",
+
+        languageSetting:
+          "اللغة",
+
+        languageSettingHint:
+          "اختر لغة واجهة الموقع.",
+
+        timezoneSetting:
+          "المنطقة الزمنية",
+
+        timezoneSettingHint:
+          "تلقائي يستخدم المنطقة الزمنية لجهازك.",
+
+        timeFormatSetting:
+          "تنسيق الوقت",
+
+        timeFormatSettingHint:
+          "اختر طريقة عرض أوقات المباريات.",
+
+        resetSettings:
+          "إعادة الضبط",
+
+        saveSettings:
+          "حفظ"
 
       }
 
@@ -1738,6 +2073,8 @@
 
     /* =====================================================
        MATCH TIME
+       Use the visitor's device timezone when the API gives
+       a real timestamp. Never invent a timezone for HH:MM.
     ===================================================== */
 
     function getMatchTime(match) {
@@ -1747,16 +2084,11 @@
         match?.fixture?.date ||
         "";
 
-      if (!value) {
-        return "--:--";
-      }
+      if (!value) return "--:--";
 
       const text = String(value).trim();
 
-      /*
-       * When the API provides a real timestamp,
-       * convert it to the visitor's device timezone.
-       */
+      // Full timestamp: convert to selected/device timezone.
       if (
         text.includes("T") ||
         text.endsWith("Z") ||
@@ -1767,12 +2099,18 @@
 
         if (!Number.isNaN(parsed.getTime())) {
 
+          const timeZone =
+            appSettings.timezone === "auto"
+              ? undefined
+              : appSettings.timezone;
+
           return new Intl.DateTimeFormat(
-            undefined,
+            language === "ar" ? "ar-SA" : "en-US",
             {
+              timeZone,
               hour: "2-digit",
               minute: "2-digit",
-              hour12: false
+              hour12: appSettings.timeFormat === "12"
             }
           ).format(parsed);
 
@@ -1780,39 +2118,22 @@
 
       }
 
-      /*
-       * Plain API time such as 20:00 or 20:00:00.
-       * There is no timezone information in this value,
-       * so it is displayed unchanged.
-       */
+      // Plain HH:MM[:SS] has no timezone information, so keep it as supplied.
       const timeMatch =
         text.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
 
       if (timeMatch) {
 
-        return (
-          String(Number(timeMatch[1])).padStart(2, "0") +
-          ":" +
-          timeMatch[2]
-        );
+        const hour = Number(timeMatch[1]);
+        const minute = timeMatch[2];
 
-      }
+        if (appSettings.timeFormat === "12") {
+          const suffix = hour >= 12 ? (language === "ar" ? "م" : "PM") : (language === "ar" ? "ص" : "AM");
+          const displayHour = hour % 12 || 12;
+          return `${displayHour}:${minute} ${suffix}`;
+        }
 
-      /*
-       * If fixture.date itself is a timestamp, use it.
-       */
-      const parsedDate = new Date(text);
-
-      if (!Number.isNaN(parsedDate.getTime())) {
-
-        return new Intl.DateTimeFormat(
-          undefined,
-          {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: false
-          }
-        ).format(parsedDate);
+        return String(hour).padStart(2, "0") + ":" + minute;
 
       }
 
@@ -1820,93 +2141,92 @@
 
     }
 
-
     /* =====================================================
        LEAGUE PRIORITY
+       Higher number = shown first
     ===================================================== */
 
-   const leaguePriority = {
+    const leaguePriorityRules = [
 
-  // 🌍 World
-  "FIFA World Cup": 120,
-  "World Cup": 120,
+      // World / major international competitions
+      { score: 140, keys: ["fifa world cup", "world cup"] },
+      { score: 135, keys: ["uefa champions league", "champions league"] },
+      { score: 132, keys: ["uefa europa league", "europa league"] },
+      { score: 129, keys: ["conference league", "uefa europa conference"] },
 
-  // 🇪🇺 Europe
-  "UEFA Champions League": 118,
-  "UEFA Europa League": 114,
-  "UEFA Europa Conference League": 110,
+      // Major European leagues
+      { score: 125, keys: ["english premier league", "premier league"] },
+      { score: 122, keys: ["la liga", "primera division", "spanish la liga"] },
+      { score: 119, keys: ["serie a", "italian serie a"] },
+      { score: 116, keys: ["bundesliga", "german bundesliga"] },
+      { score: 113, keys: ["ligue 1", "french ligue 1"] },
 
-  // 🏴 England
-  "English Premier League": 108,
-  "Premier League": 108,
+      // Saudi / Arab football
+      { score: 108, keys: ["saudi pro league", "saudi professional league", "saudi-arabian pro league"] },
+      { score: 106, keys: ["afc champions league elite", "afc champions league"] },
+      { score: 102, keys: ["moroccan botola", "botola pro", "botola"] },
+      { score: 100, keys: ["egyptian premier league"] },
+      { score: 98, keys: ["qatar stars league"] },
+      { score: 96, keys: ["uae pro league", "uae league"] },
+      { score: 94, keys: ["iraq stars league", "iraqi premier league"] },
+      { score: 92, keys: ["kuwait premier league"] },
+      { score: 90, keys: ["tunisian ligue 1", "tunisia ligue 1"] },
+      { score: 88, keys: ["algeria ligue 1", "algerian ligue 1"] },
 
-  // 🇪🇸 Spain
-  "La Liga": 106,
+      // Other important international competitions
+      { score: 86, keys: ["africa cup of nations", "afcon"] },
+      { score: 84, keys: ["afc asian cup", "asian cup"] }
 
-  // 🇮🇹 Italy
-  "Serie A": 104,
+    ];
 
-  // 🇩🇪 Germany
-  "Bundesliga": 102,
 
-  // 🇫🇷 France
-  "Ligue 1": 100,
+    function normalizeLeagueName(name) {
 
-  // 🇸🇦 Saudi Arabia
-  "Saudi Pro League": 96,
-  "Saudi Professional League": 96,
-  "Saudi-Arabian Pro League": 96,
+      return String(name || "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, " ");
 
-  // 🌏 Asia
-  "AFC Champions League Elite": 94,
-  "AFC Champions League": 92,
-
-  // 🇲🇦 Morocco
-  "Moroccan Botola": 90,
-  "Botola Pro": 90,
-
-  // 🇪🇬 Egypt
-  "Egyptian Premier League": 88,
-
-  // 🇶🇦 Qatar
-  "Qatar Stars League": 86,
-
-  // 🇦🇪 UAE
-  "UAE Pro League": 84,
-
-  // 🇮🇶 Iraq
-  "Iraq Stars League": 82,
-
-  // 🇰🇼 Kuwait
-  "Kuwait Premier League": 80,
-
-  // 🇹🇳 Tunisia
-  "Tunisian Ligue 1": 78,
-
-  // 🇩🇿 Algeria
-  "Algeria Ligue 1": 76
-
-};
+    }
 
 
     function getLeaguePriority(name) {
 
       const value =
-        String(
-          name || ""
+        normalizeLeagueName(name);
+
+      for (const rule of leaguePriorityRules) {
+
+        if (rule.keys.some(key => value.includes(key))) {
+          return rule.score;
+        }
+
+      }
+
+      return 20;
+
+    }
+
+
+    function getLeagueOrderName(name) {
+
+      const value =
+        normalizeLeagueName(name);
+
+      const ruleIndex =
+        leaguePriorityRules.findIndex(rule =>
+          rule.keys.some(key => value.includes(key))
         );
 
-
-      return (
-        leaguePriority[value] ||
-        20
-      );
+      return ruleIndex === -1
+        ? 999
+        : ruleIndex;
 
     }
 
 
     /* =====================================================
-       MATCH PRIORITY
+       MATCH PRIORITY / ORDER
     ===================================================== */
 
     function getMatchPriority(match) {
@@ -1916,24 +2236,79 @@
           match?.league?.name
         );
 
-
       const status =
-        match?.fixture?.status?.short;
+        String(match?.fixture?.status?.short || "").toUpperCase();
+
+      // Live matches always go first.
+      if (status === "LIVE") score += 10000;
+      else if (status === "HT") score += 9500;
+
+      return score;
+
+    }
 
 
-      if (
-        [
-          "LIVE",
-          "HT"
-        ].includes(status)
-      ) {
+    function getMatchTimestamp(match) {
 
-        score += 5000;
+      const value =
+        match?.fixture?.time ||
+        match?.fixture?.date ||
+        "";
+
+      if (!value) return Number.POSITIVE_INFINITY;
+
+      const text = String(value).trim();
+
+      // Full ISO timestamp.
+      if (text.includes("T") || text.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(text)) {
+
+        const parsed = new Date(text).getTime();
+
+        if (Number.isFinite(parsed)) return parsed;
 
       }
 
+      // Plain HH:MM[:SS]. Sort by minutes from midnight.
+      const m = text.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
 
-      return score;
+      if (m) {
+        return Number(m[1]) * 60 + Number(m[2]);
+      }
+
+      return Number.POSITIVE_INFINITY;
+
+    }
+
+
+    function compareMatches(a, b) {
+
+      const priorityA = getMatchPriority(a);
+      const priorityB = getMatchPriority(b);
+
+      if (priorityA !== priorityB) {
+        return priorityB - priorityA;
+      }
+
+      const leagueA = getLeagueOrderName(a?.league?.name);
+      const leagueB = getLeagueOrderName(b?.league?.name);
+
+      if (leagueA !== leagueB) {
+        return leagueA - leagueB;
+      }
+
+      const timeA = getMatchTimestamp(a);
+      const timeB = getMatchTimestamp(b);
+
+      if (timeA !== timeB) {
+        return timeA - timeB;
+      }
+
+      return String(a?.teams?.home?.name || "")
+        .localeCompare(
+          String(b?.teams?.home?.name || ""),
+          undefined,
+          { sensitivity: "base" }
+        );
 
     }
 
@@ -2036,7 +2411,7 @@
       const important =
         getLeaguePriority(
           match?.league?.name
-        ) >= 70;
+        ) >= 88;
 
 
       return `
@@ -2096,7 +2471,7 @@
 
                 ${escapeHtml(
                   home.name ||
-                  "Unknown Team"
+                  t("unknownTeam")
                 )}
 
               </div>
@@ -2161,7 +2536,7 @@
 
                 ${escapeHtml(
                   away.name ||
-                  "Unknown Team"
+                  t("unknownTeam")
                 )}
 
               </div>
@@ -2314,11 +2689,7 @@
       }
 
 
-      list.sort(
-        (a, b) =>
-          getMatchPriority(b) -
-          getMatchPriority(a)
-      );
+      list.sort(compareMatches);
 
 
       const groups =
@@ -2331,7 +2702,7 @@
 
         const league =
           match?.league?.name ||
-          t("other");
+          t("otherCompetitions");
 
 
         if (
@@ -2555,6 +2926,133 @@
 
 
     /* =====================================================
+       SETTINGS
+    ===================================================== */
+
+    const timezoneList = [
+      ["auto", "Automatic"],
+      ["UTC", "UTC"],
+      ["Asia/Riyadh", "Riyadh"],
+      ["Asia/Dubai", "Dubai"],
+      ["Asia/Qatar", "Doha"],
+      ["Africa/Cairo", "Cairo"],
+      ["Africa/Casablanca", "Casablanca"],
+      ["Africa/Tunis", "Tunis"],
+      ["Africa/Algiers", "Algiers"],
+      ["Europe/London", "London"],
+      ["Europe/Paris", "Paris"],
+      ["Europe/Berlin", "Berlin"],
+      ["America/New_York", "New York"],
+      ["America/Los_Angeles", "Los Angeles"],
+      ["Asia/Tokyo", "Tokyo"],
+      ["Asia/Kolkata", "Kolkata"]
+    ];
+
+
+    function populateTimezoneSelect() {
+
+      const select =
+        document.getElementById("settingTimezone");
+
+      select.innerHTML = timezoneList
+        .map(([value, label]) =>
+          `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`
+        )
+        .join("");
+
+      select.value =
+        timezoneList.some(item => item[0] === appSettings.timezone)
+          ? appSettings.timezone
+          : "auto";
+
+    }
+
+
+    function syncSettingsControls() {
+
+      document.getElementById("settingLanguage").value = language;
+      document.getElementById("settingTimezone").value = appSettings.timezone;
+      document.getElementById("settingTimeFormat").value = appSettings.timeFormat;
+
+    }
+
+
+    function openSettings() {
+
+      syncSettingsControls();
+
+      const modal = document.getElementById("settingsModal");
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden", "false");
+
+    }
+
+
+    function closeSettings() {
+
+      const modal = document.getElementById("settingsModal");
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden", "true");
+
+    }
+
+
+    document.getElementById("settingsBtn").addEventListener("click", openSettings);
+    document.getElementById("settingsClose").addEventListener("click", closeSettings);
+    document.getElementById("settingsBackdrop").addEventListener("click", closeSettings);
+
+
+    document.getElementById("settingsSave").addEventListener("click", () => {
+
+      language =
+        document.getElementById("settingLanguage").value;
+
+      appSettings.timezone =
+        document.getElementById("settingTimezone").value;
+
+      appSettings.timeFormat =
+        document.getElementById("settingTimeFormat").value;
+
+      appSettings.language = language;
+
+      localStorage.setItem("modarraj-language", language);
+      localStorage.setItem("modarraj-timezone", appSettings.timezone);
+      localStorage.setItem("modarraj-time-format", appSettings.timeFormat);
+
+      applyLanguage();
+      closeSettings();
+
+    });
+
+
+    document.getElementById("settingsReset").addEventListener("click", () => {
+
+      language = "en";
+
+      appSettings = {
+        language: "en",
+        timezone: "auto",
+        timeFormat: "24"
+      };
+
+      localStorage.setItem("modarraj-language", "en");
+      localStorage.setItem("modarraj-timezone", "auto");
+      localStorage.setItem("modarraj-time-format", "24");
+
+      syncSettingsControls();
+      applyLanguage();
+
+    });
+
+
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") {
+        closeSettings();
+      }
+    });
+
+
+    /* =====================================================
        LANGUAGE BUTTONS
     ===================================================== */
 
@@ -2568,6 +3066,8 @@
 
           language =
             "en";
+
+          appSettings.language = language;
 
           localStorage.setItem(
             "modarraj-language",
@@ -2590,6 +3090,8 @@
 
           language =
             "ar";
+
+          appSettings.language = language;
 
           localStorage.setItem(
             "modarraj-language",
@@ -2677,6 +3179,8 @@
        INITIALIZE
     ===================================================== */
 
+    populateTimezoneSelect();
+    syncSettingsControls();
     applyLanguage();
 
     updateDateLabels();
