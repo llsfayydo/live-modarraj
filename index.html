@@ -1686,6 +1686,8 @@
 
   </div>
 
+  <script src="/socket.io/socket.io.js"></script>
+
   <script>
 
     /* =====================================================
@@ -4131,12 +4133,14 @@
 
       try {
 
+        subscribeSocket();
+
         const response =
           await fetch(
 
             `${API}?date=${encodeURIComponent(
               currentDate
-            )}`,
+            )}&tz=${encodeURIComponent(getActiveTimezone())}`,
 
             {
               method:
@@ -5026,6 +5030,43 @@
 
 
     /* =====================================================
+       REAL-TIME SOCKET UPDATES
+    ===================================================== */
+
+    const socket =
+      typeof io === "function"
+        ? io({ transports: ["websocket", "polling"] })
+        : null;
+
+    socket?.on("matchUpdate", payload => {
+
+      if (!payload || payload.date !== currentDate) return;
+      if (payload.timezone && payload.timezone !== getActiveTimezone()) return;
+
+      if (!Array.isArray(payload.matches)) return;
+
+      window.currentMatches = payload.matches;
+      renderMatches(payload.matches);
+
+    });
+
+    function subscribeSocket() {
+      socket?.emit("subscribeMatches", {
+        date: currentDate,
+        timezone: getActiveTimezone()
+      });
+    }
+
+    socket?.on("connect", () => {
+      console.log("Modarraj realtime connected");
+      subscribeSocket();
+    });
+
+    socket?.on("disconnect", () => {
+      console.log("Modarraj realtime disconnected");
+    });
+
+    /* =====================================================
        INITIALIZE
     ===================================================== */
 
@@ -5038,21 +5079,22 @@
     updateDateLabels();
 
     loadMatches();
+    subscribeSocket();
 
 
     /* =====================================================
-       AUTO REFRESH
-       Every 60 seconds.
+       AUTO REFRESH FALLBACK
+       Socket.IO handles live updates. This remains as a lightweight
+       fallback for fixtures/status changes when the socket is unavailable.
     ===================================================== */
 
     setInterval(
       () => {
+        if (document.visibilityState !== "visible") return;
 
         loadMatches({
-          preserveScroll:
-            true
+          preserveScroll: true
         });
-
       },
       60 * 1000
     );
