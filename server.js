@@ -22,7 +22,16 @@ app.use(express.static(__dirname));
 
 const PORT = process.env.PORT || 5000;
 const API_KEY = process.env.THESPORTSDB_API_KEY;
-const APP_TIMEZONE = process.env.APP_TIMEZONE || "UTC";
+const APP_TIMEZONE = process.env.APP_TIMEZONE || "Asia/Riyadh";
+
+function isValidTimeZone(timeZone) {
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone }).format();
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function getDateInTimezone(timeZone = APP_TIMEZONE) {
   try {
@@ -53,6 +62,7 @@ const api = axios.create({
 
 const cache = new Map();
 const CACHE_TIME = 30_000;
+const LIVE_POLL_INTERVAL = 20_000;
 
 const LEAGUE_PRIORITY = {
   "UEFA Champions League": 100,
@@ -339,8 +349,9 @@ function sortMatches(matches) {
   });
 }
 
-async function getMatches(date) {
-  const key = `matches:${date}`;
+async function getMatches(date, timeZone = APP_TIMEZONE) {
+  const safeTimeZone = isValidTimeZone(timeZone) ? timeZone : APP_TIMEZONE;
+  const key = `matches:${date}:${safeTimeZone}`;
   const cached = cache.get(key);
 
   if (cached && Date.now() < cached.expiresAt) {
@@ -349,7 +360,9 @@ async function getMatches(date) {
 
   const dayEvents = await fetchEventsDay(date);
 
-  const today = getDateInTimezone();
+  // The requested date comes from the browser. Use the same browser timezone
+  // to decide whether the global livescore feed should be merged.
+  const today = getDateInTimezone(safeTimeZone);
   const liveEvents = date === today ? await fetchLiveScores() : [];
 
   // لا نستخدم MongoDB ولا بيانات تجريبية.
@@ -378,8 +391,15 @@ async function getMatches(date) {
 }
 
 app.get("/api/matches", async (req, res) => {
+  const clientTimeZone = String(
+    req.query.tz || req.headers["x-time-zone"] || APP_TIMEZONE
+  );
+  const safeTimeZone = isValidTimeZone(clientTimeZone)
+    ? clientTimeZone
+    : APP_TIMEZONE;
+
   const requestedDate =
-    req.query.date || getDateInTimezone();
+    req.query.date || getDateInTimezone(safeTimeZone);
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) {
     return res.status(400).json({
@@ -391,10 +411,11 @@ app.get("/api/matches", async (req, res) => {
   }
 
   try {
-    const result = await getMatches(requestedDate);
+    const result = await getMatches(requestedDate, safeTimeZone);
 
-    io.emit("matchUpdate", {
+    io.to(roomFor(requestedDate, safeTimeZone)).emit("matchUpdate", {
       date: requestedDate,
+      timezone: safeTimeZone,
       matches: result.data
     });
 
@@ -403,6 +424,7 @@ app.get("/api/matches", async (req, res) => {
       data: result.data,
       count: result.data.length,
       date: requestedDate,
+      timezone: safeTimeZone,
       cached: result.cached,
       timestamp: new Date().toISOString()
     });
@@ -424,6 +446,7 @@ app.get("/api/health", (req, res) => {
     server: "Live Modarraj",
     apiKey: API_KEY ? "موجود" : "غير موجود",
     database: "disabled - memory cache only",
+    timezone: APP_TIMEZONE,
     timestamp: new Date().toISOString()
   });
 });
@@ -461,12 +484,68 @@ app.use((req, res) => {
   });
 });
 
+let connectedClients = 0;
+let livePollRunning = false;
+
+function roomFor(date, timeZone) {
+  return `matches:${date}:${encodeURIComponent(timeZone)}`;
+}
+
+async function broadcastLiveUpdates() {
+  if (livePollRunning || connectedClients === 0 || !API_KEY) return;
+  livePollRunning = true;
+
+  try {
+    const liveEvents = await fetchLiveScores();
+    const today = getDateInTimezone(APP_TIMEZONE);
+    // Rebuild today's list with the freshest livescore response.
+    const dayEvents = await fetchEventsDay(today);
+    const raw = mergeEvents([dayEvents, liveEvents]);
+    const matches = sortMatches(
+      [...new Map(raw.map(event => {
+        const match = normalizeEvent(event, liveEvents.includes(event) ? "V2 Livescore" : "TheSportsDB");
+        return [match.fixture.id, match];
+      })).values()]
+    );
+
+    cache.set(`matches:${today}:${APP_TIMEZONE}`, {
+      data: matches,
+      expiresAt: Date.now() + CACHE_TIME
+    });
+
+    io.to(roomFor(today, APP_TIMEZONE)).emit("matchUpdate", {
+      date: today,
+      timezone: APP_TIMEZONE,
+      matches,
+      source: "background-live-poll"
+    });
+  } catch (error) {
+    console.error("Background live poll:", error.message);
+  } finally {
+    livePollRunning = false;
+  }
+}
+
 io.on("connection", socket => {
+  connectedClients += 1;
   console.log(`Socket connected: ${socket.id}`);
+
+  socket.on("subscribeMatches", ({ date, timezone } = {}) => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || ""))) return;
+    const safeTimeZone = isValidTimeZone(String(timezone || ""))
+      ? String(timezone)
+      : APP_TIMEZONE;
+    socket.join(roomFor(String(date), safeTimeZone));
+  });
+
   socket.on("disconnect", () => {
+    connectedClients = Math.max(0, connectedClients - 1);
     console.log(`Socket disconnected: ${socket.id}`);
   });
 });
+
+const livePollTimer = setInterval(broadcastLiveUpdates, LIVE_POLL_INTERVAL);
+livePollTimer.unref?.();
 
 server.listen(PORT, () => {
   console.log(`Live Modarraj running on port ${PORT}`);
