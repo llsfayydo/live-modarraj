@@ -3301,6 +3301,7 @@
 
       const type =
         getCompetitionType(
+          match?.league?.originalName ||
           match?.league?.name
         );
 
@@ -3494,12 +3495,14 @@
 
       const priorityA =
         getLeaguePriority(
+          a?.league?.originalName ||
           a?.league?.name
         );
 
 
       const priorityB =
         getLeaguePriority(
+          b?.league?.originalName ||
           b?.league?.name
         );
 
