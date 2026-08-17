@@ -2,7 +2,6 @@
 <html lang="en" dir="ltr">
 
 <head>
-
   <meta charset="UTF-8">
 
   <meta
@@ -47,9 +46,7 @@
     }
 
     body {
-
       margin: 0;
-
       min-height: 100vh;
 
       background:
@@ -69,8 +66,24 @@
         sans-serif;
     }
 
-    button {
+    body.modal-open {
+      overflow: hidden;
+    }
+
+    button,
+    select {
       font-family: inherit;
+    }
+
+    button {
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button:focus-visible,
+    select:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--gold2);
+      outline-offset: 2px;
     }
 
     /* =========================
@@ -78,11 +91,8 @@
     ========================= */
 
     header {
-
       position: sticky;
-
       top: 0;
-
       z-index: 100;
 
       background:
@@ -97,58 +107,39 @@
     }
 
     .header-inner {
+      width: min(1150px, 94%);
+      margin: auto;
 
-      width:
-        min(1150px, 94%);
+      min-height: 76px;
 
-      margin:
-        auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
 
-      min-height:
-        76px;
-
-      display:
-        flex;
-
-      align-items:
-        center;
-
-      justify-content:
-        space-between;
-
-      gap: 20px;
+      gap: 12px;
     }
 
     .brand {
-
-      display:
-        flex;
-
-      align-items:
-        center;
-
+      display: flex;
+      align-items: center;
       gap: 12px;
 
-      text-decoration:
-        none;
+      text-decoration: none;
+      color: white;
 
-      color:
-        white;
+      min-width: 0;
     }
 
     .brand-icon {
-
       width: 42px;
-
       height: 42px;
+
+      flex: 0 0 auto;
 
       border-radius: 12px;
 
-      display:
-        grid;
-
-      place-items:
-        center;
+      display: grid;
+      place-items: center;
 
       background:
         linear-gradient(
@@ -157,8 +148,7 @@
           var(--gold2)
         );
 
-      color:
-        #101010;
+      color: #101010;
 
       font-size: 22px;
 
@@ -168,56 +158,43 @@
     }
 
     .brand-title {
-
       font-size: 21px;
-
       font-weight: 900;
-
-      letter-spacing:
-        -.3px;
+      letter-spacing: -.3px;
     }
 
     .brand-subtitle {
-
-      color:
-        var(--muted);
-
+      color: var(--muted);
       font-size: 11px;
-
       margin-top: 2px;
     }
 
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
     .language-switch {
-
-      display:
-        flex;
-
+      display: flex;
       gap: 3px;
 
       padding: 4px;
 
-      border:
-        1px solid
-        var(--border);
-
+      border: 1px solid var(--border);
       border-radius: 10px;
 
-      background:
-        var(--card);
+      background: var(--card);
     }
 
     .lang {
-
       border: 0;
+      background: transparent;
 
-      background:
-        transparent;
+      color: var(--muted);
 
-      color:
-        var(--muted);
-
-      padding:
-        7px 12px;
+      padding: 7px 12px;
 
       border-radius: 7px;
 
@@ -226,13 +203,34 @@
       cursor: pointer;
     }
 
+    .lang:hover {
+      color: white;
+    }
+
     .lang.active {
+      background: var(--gold);
+      color: #111;
+    }
 
-      background:
-        var(--gold);
+    .settings-btn {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: white;
 
-      color:
-        #111;
+      width: 40px;
+      height: 40px;
+
+      border-radius: 10px;
+
+      cursor: pointer;
+
+      font-size: 18px;
+
+      flex: 0 0 auto;
+    }
+
+    .settings-btn:hover {
+      border-color: var(--gold);
     }
 
     /* =========================
@@ -240,87 +238,82 @@
     ========================= */
 
     main {
-
-      width:
-        min(1150px, 94%);
-
-      margin:
-        28px auto 60px;
+      width: min(1150px, 94%);
+      margin: 28px auto 45px;
     }
 
     .hero {
-
-      display:
-        flex;
-
-      justify-content:
-        space-between;
-
-      align-items:
-        flex-end;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
 
       gap: 20px;
 
-      margin-bottom:
-        22px;
+      margin-bottom: 22px;
     }
 
     .hero h1 {
-
       margin: 0;
 
       font-size:
         clamp(26px, 4vw, 38px);
 
-      font-weight:
-        950;
-
-      letter-spacing:
-        -.7px;
+      font-weight: 950;
+      letter-spacing: -.7px;
     }
 
     .hero p {
+      margin: 7px 0 0;
 
-      margin:
-        7px 0 0;
+      color: var(--muted);
 
-      color:
-        var(--muted);
-
-      font-size:
-        14px;
+      font-size: 14px;
     }
 
     .refresh {
+      border: 1px solid var(--border);
 
-      border:
-        1px solid
-        var(--border);
+      background: var(--card);
+      color: white;
 
-      background:
-        var(--card);
+      padding: 10px 15px;
 
-      color:
-        white;
+      border-radius: 10px;
 
-      padding:
-        10px 15px;
+      cursor: pointer;
 
-      border-radius:
-        10px;
+      font-weight: 800;
 
-      cursor:
-        pointer;
+      white-space: nowrap;
 
-      font-weight:
-        800;
+      transition:
+        border-color .18s ease,
+        transform .18s ease;
     }
 
     .refresh:hover {
+      border-color: var(--gold);
+      transform: translateY(-1px);
+    }
 
-      border-color:
-        var(--gold);
+    .refresh.loading {
+      opacity: .65;
+      pointer-events: none;
+    }
 
+    .refresh-icon {
+      display: inline-block;
+      margin-inline-end: 4px;
+    }
+
+    .refresh.loading .refresh-icon {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     /* =========================
@@ -328,90 +321,58 @@
     ========================= */
 
     .date-nav {
-
-      display:
-        grid;
+      display: grid;
 
       grid-template-columns:
         repeat(3, 1fr);
 
       gap: 10px;
 
-      margin-bottom:
-        24px;
+      margin-bottom: 24px;
     }
 
     .date-button {
+      border: 1px solid var(--border);
 
-      border:
-        1px solid
-        var(--border);
+      background: var(--card);
 
-      background:
-        var(--card);
+      color: var(--muted);
 
-      color:
-        var(--muted);
+      border-radius: 13px;
 
-      border-radius:
-        13px;
+      padding: 13px 10px;
 
-      padding:
-        13px 10px;
+      cursor: pointer;
 
-      cursor:
-        pointer;
+      font-weight: 800;
 
-      font-weight:
-        800;
-
-      transition:
-        .18s ease;
+      transition: .18s ease;
     }
 
     .date-button:hover {
-
-      border-color:
-        var(--gold);
-
-      color:
-        white;
+      border-color: var(--gold);
+      color: white;
     }
 
     .date-button.active {
-
-      background:
-        var(--gold);
-
-      color:
-        #111;
-
-      border-color:
-        var(--gold);
+      background: var(--gold);
+      color: #111;
+      border-color: var(--gold);
     }
 
     .date-main {
-
-      display:
-        block;
-
-      font-size:
-        15px;
+      display: block;
+      font-size: 15px;
     }
 
     .date-small {
+      display: block;
 
-      display:
-        block;
+      margin-top: 3px;
 
-      margin-top:
-        3px;
+      font-size: 11px;
 
-      font-size:
-        11px;
-
-      opacity:
-        .8;
+      opacity: .8;
     }
 
     /* =========================
@@ -419,30 +380,21 @@
     ========================= */
 
     .summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
 
-      display:
-        flex;
+      gap: 12px;
 
-      align-items:
-        center;
+      margin-bottom: 13px;
 
-      justify-content:
-        space-between;
+      color: var(--muted);
 
-      margin-bottom:
-        13px;
-
-      color:
-        var(--muted);
-
-      font-size:
-        13px;
+      font-size: 13px;
     }
 
     .summary strong {
-
-      color:
-        white;
+      color: white;
     }
 
     /* =========================
@@ -450,15 +402,11 @@
     ========================= */
 
     .live-bar {
+      display: none;
 
-      display:
-        none;
+      margin-bottom: 18px;
 
-      margin-bottom:
-        18px;
-
-      padding:
-        13px 16px;
+      padding: 13px 16px;
 
       border:
         1px solid
@@ -471,14 +419,11 @@
           rgba(7, 63, 49, .45)
         );
 
-      border-radius:
-        13px;
+      border-radius: 13px;
 
-      color:
-        #8fffcf;
+      color: #8fffcf;
 
-      font-weight:
-        900;
+      font-weight: 900;
     }
 
     .live-bar.show {
@@ -486,22 +431,16 @@
     }
 
     .live-dot {
-
-      display:
-        inline-block;
+      display: inline-block;
 
       width: 8px;
-
       height: 8px;
 
-      margin-inline-end:
-        8px;
+      margin-inline-end: 8px;
 
-      border-radius:
-        50%;
+      border-radius: 50%;
 
-      background:
-        var(--green);
+      background: var(--green);
 
       box-shadow:
         0 0 10px
@@ -513,19 +452,15 @@
     ========================= */
 
     .league {
+      overflow: hidden;
 
-      overflow:
-        hidden;
-
-      margin-bottom:
-        20px;
+      margin-bottom: 20px;
 
       border:
         1px solid
         var(--border);
 
-      border-radius:
-        16px;
+      border-radius: 16px;
 
       background:
         rgba(16, 31, 54, .86);
@@ -536,23 +471,15 @@
     }
 
     .league-header {
-
-      display:
-        flex;
-
-      align-items:
-        center;
-
-      justify-content:
-        space-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
 
       gap: 15px;
 
-      padding:
-        14px 17px;
+      padding: 14px 17px;
 
-      background:
-        var(--card2);
+      background: var(--card2);
 
       border-inline-start:
         4px solid
@@ -560,29 +487,26 @@
     }
 
     .league-name {
-
-      display:
-        flex;
-
-      align-items:
-        center;
+      display: flex;
+      align-items: center;
 
       gap: 9px;
 
-      font-size:
-        16px;
+      min-width: 0;
 
-      font-weight:
-        900;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .league-name-text {
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
 
     .league-count {
-
-      color:
-        var(--muted);
-
-      font-size:
-        12px;
+      color: var(--muted);
+      font-size: 12px;
+      flex: 0 0 auto;
     }
 
     /* =========================
@@ -590,168 +514,121 @@
     ========================= */
 
     .match {
-
       border-top:
         1px solid
         var(--border);
 
-      padding:
-        17px 15px;
+      padding: 17px 15px;
     }
 
     .match-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
 
-      display:
-        flex;
+      gap: 12px;
 
-      align-items:
-        center;
+      color: var(--muted);
 
-      justify-content:
-        space-between;
+      font-size: 11px;
 
-      color:
-        var(--muted);
-
-      font-size:
-        11px;
-
-      margin-bottom:
-        15px;
+      margin-bottom: 15px;
     }
 
-    .important {
+    .match-meta-left,
+    .match-meta-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
 
-      color:
-        #ffd36a;
+      min-width: 0;
+    }
 
-      font-weight:
-        900;
+    .match-meta-right span {
+      overflow-wrap: anywhere;
+      text-align: end;
     }
 
     .match-grid {
-
-      display:
-        grid;
+      display: grid;
 
       grid-template-columns:
         1fr 130px 1fr;
 
-      align-items:
-        center;
+      align-items: center;
 
       gap: 10px;
     }
 
     .team {
-
-      min-width:
-        0;
-
-      text-align:
-        center;
+      min-width: 0;
+      text-align: center;
     }
 
     .team-logo {
+      display: block;
 
-      display:
-        block;
+      width: 58px;
+      height: 58px;
 
-      width:
-        58px;
+      margin: 0 auto 8px;
 
-      height:
-        58px;
-
-      margin:
-        0 auto 8px;
-
-      object-fit:
-        contain;
+      object-fit: contain;
     }
 
     .team-name {
+      font-size: 15px;
+      font-weight: 900;
 
-      font-size:
-        15px;
+      line-height: 1.45;
 
-      font-weight:
-        900;
-
-      line-height:
-        1.45;
-
-      word-break:
-        break-word;
+      overflow-wrap: anywhere;
     }
 
     .score-box {
-
-      text-align:
-        center;
+      text-align: center;
     }
 
     .score {
+      font-size: 28px;
 
-      font-size:
-        28px;
+      font-weight: 950;
 
-      font-weight:
-        950;
-
-      letter-spacing:
-        .5px;
+      letter-spacing: .5px;
     }
 
     .match-time {
+      color: white;
 
-      color:
-        white;
+      font-size: 13px;
 
-      font-size:
-        13px;
+      font-weight: 800;
 
-      font-weight:
-        800;
-
-      margin-top:
-        2px;
+      margin-top: 2px;
     }
 
     .status {
+      display: inline-block;
 
-      display:
-        inline-block;
+      margin-top: 7px;
 
-      margin-top:
-        7px;
+      padding: 4px 9px;
 
-      padding:
-        4px 9px;
+      border-radius: 20px;
 
-      border-radius:
-        20px;
+      background: #2d3d55;
 
-      background:
-        #2d3d55;
+      color: #d4deea;
 
-      color:
-        #d4deea;
+      font-size: 10px;
 
-      font-size:
-        10px;
-
-      font-weight:
-        900;
+      font-weight: 900;
     }
 
     .status.live {
+      background: var(--green-bg);
 
-      background:
-        var(--green-bg);
-
-      color:
-        #7dffca;
+      color: #7dffca;
 
       border:
         1px solid
@@ -759,12 +636,8 @@
     }
 
     .status.finished {
-
-      background:
-        #313c4e;
-
-      color:
-        #bbc7d5;
+      background: #313c4e;
+      color: #bbc7d5;
     }
 
     /* =========================
@@ -772,46 +645,33 @@
     ========================= */
 
     .match-details {
+      display: flex;
 
-      display:
-        flex;
+      align-items: center;
+      justify-content: center;
 
-      align-items:
-        center;
+      flex-wrap: wrap;
 
-      justify-content:
-        center;
+      gap: 8px 18px;
 
-      flex-wrap:
-        wrap;
+      margin-top: 14px;
 
-      gap:
-        8px 18px;
-
-      margin-top:
-        14px;
-
-      padding-top:
-        11px;
+      padding-top: 11px;
 
       border-top:
         1px solid
         rgba(38,61,93,.7);
 
-      color:
-        var(--muted);
+      color: var(--muted);
 
-      font-size:
-        11px;
+      font-size: 11px;
+
+      text-align: center;
     }
 
     .channel {
-
-      color:
-        #ffd35b;
-
-      font-weight:
-        900;
+      color: #ffd35b;
+      font-weight: 900;
     }
 
     /* =========================
@@ -819,132 +679,164 @@
     ========================= */
 
     .message {
+      padding: 55px 20px;
 
-      padding:
-        55px 20px;
-
-      text-align:
-        center;
+      text-align: center;
 
       border:
         1px dashed
+        var(--border);
+
+      border-radius: 16px;
+
+      background: var(--card);
+
+      color: var(--muted);
+    }
+
+    .message-icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .retry {
+      margin-top: 13px;
+
+      padding: 9px 17px;
+
+      border: 0;
+
+      border-radius: 9px;
+
+      background: var(--gold);
+
+      color: #111;
+
+      font-weight: 900;
+
+      cursor: pointer;
+    }
+
+    .retry:hover {
+      background: var(--gold2);
+    }
+
+    /* =========================
+       CONTACT
+    ========================= */
+
+    .site-footer {
+      width: min(1150px, 94%);
+
+      margin:
+        0 auto 30px;
+
+      padding:
+        22px 24px;
+
+      border:
+        1px solid
         var(--border);
 
       border-radius:
         16px;
 
       background:
-        var(--card);
+        rgba(16, 31, 54, .78);
 
-      color:
-        var(--muted);
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 20px;
+
+      flex-wrap: wrap;
     }
 
-    .message-icon {
-
-      font-size:
-        36px;
-
-      margin-bottom:
-        10px;
+    .footer-copy h3 {
+      margin: 0 0 6px;
+      font-size: 17px;
     }
 
-    .retry {
+    .footer-copy p {
+      margin: 0;
 
-      margin-top:
-        13px;
+      color: var(--muted);
 
-      padding:
-        9px 17px;
+      font-size: 13px;
+
+      line-height: 1.6;
+    }
+
+    .footer-actions {
+      display: flex;
+
+      gap: 10px;
+
+      flex-wrap: wrap;
+    }
+
+    .footer-link {
+      display: inline-flex;
+
+      align-items: center;
+      justify-content: center;
+
+      min-height: 42px;
+
+      padding: 10px 15px;
+
+      border-radius: 10px;
 
       border:
-        0;
-
-      border-radius:
-        9px;
-
-      background:
-        var(--gold);
-
-      color:
-        #111;
-
-      font-weight:
-        900;
-
-      cursor:
-        pointer;
-    }
-
-    /* =========================
-       FOOTER
-    ========================= */
-
-    footer {
-
-      width:
-        min(1150px, 94%);
-
-      margin:
-        0 auto;
-
-      padding:
-        20px 0 35px;
-
-      border-top:
         1px solid
         var(--border);
 
-      color:
-        #617894;
+      background: var(--card);
 
-      font-size:
-        11px;
+      color: white;
 
-      text-align:
-        center;
+      text-decoration: none;
+
+      font-weight: 800;
+
+      transition: .18s ease;
     }
 
-    /* =========================
-       RTL
-    ========================= */
+    .footer-link:hover {
+      border-color: var(--gold);
+      color: var(--gold2);
 
-    html[dir="rtl"] .hero {
+      transform: translateY(-1px);
+    }
 
-      flex-direction:
-        row;
+    .footer-link.primary {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #111;
+    }
 
+    .footer-link.primary:hover {
+      color: #111;
+      background: var(--gold2);
     }
 
     /* =========================
        SETTINGS
     ========================= */
 
-    .header-inner {
-      position: relative;
-    }
-
-    .settings-btn {
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: white;
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 18px;
-      flex: 0 0 auto;
-    }
-
-    .settings-btn:hover {
-      border-color: var(--gold);
-    }
-
     .settings-modal {
       position: fixed;
+
       inset: 0;
+
       z-index: 1000;
+
       display: none;
+
+      overflow-y: auto;
     }
 
     .settings-modal.show {
@@ -952,31 +844,62 @@
     }
 
     .settings-backdrop {
-      position: absolute;
+      position: fixed;
+
       inset: 0;
-      background: rgba(0,0,0,.68);
-      backdrop-filter: blur(5px);
+
+      background:
+        rgba(0,0,0,.68);
+
+      backdrop-filter:
+        blur(5px);
     }
 
     .settings-panel {
       position: relative;
-      width: min(520px, 92%);
-      margin: 9vh auto 0;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      box-shadow: 0 25px 80px rgba(0,0,0,.45);
-      overflow: hidden;
+
+      width:
+        min(560px, 92%);
+
+      margin:
+        9vh auto 30px;
+
+      background:
+        var(--card);
+
+      border:
+        1px solid
+        var(--border);
+
+      border-radius:
+        18px;
+
+      box-shadow:
+        0 25px 80px
+        rgba(0,0,0,.45);
+
+      overflow:
+        hidden;
     }
 
     .settings-header {
       display: flex;
+
       align-items: flex-start;
-      justify-content: space-between;
+
+      justify-content:
+        space-between;
+
       gap: 15px;
+
       padding: 20px;
-      background: var(--card2);
-      border-bottom: 1px solid var(--border);
+
+      background:
+        var(--card2);
+
+      border-bottom:
+        1px solid
+        var(--border);
     }
 
     .settings-header h2 {
@@ -986,19 +909,32 @@
 
     .settings-header p {
       margin: 6px 0 0;
+
       color: var(--muted);
+
       font-size: 12px;
+
+      line-height: 1.6;
     }
 
     .settings-close {
       width: 34px;
       height: 34px;
-      border: 1px solid var(--border);
+
+      border:
+        1px solid
+        var(--border);
+
       border-radius: 9px;
+
       background: var(--card);
+
       color: white;
+
       cursor: pointer;
+
       font-size: 22px;
+
       line-height: 1;
     }
 
@@ -1008,11 +944,18 @@
 
     .setting-row {
       display: flex;
+
       align-items: center;
+
       justify-content: space-between;
+
       gap: 20px;
+
       padding: 16px 0;
-      border-bottom: 1px solid rgba(38,61,93,.65);
+
+      border-bottom:
+        1px solid
+        rgba(38,61,93,.65);
     }
 
     .setting-row:last-child {
@@ -1030,18 +973,30 @@
 
     .setting-row small {
       margin-top: 4px;
+
       color: var(--muted);
+
       font-size: 11px;
+
       line-height: 1.5;
     }
 
     .setting-row select {
-      min-width: 180px;
+      min-width: 190px;
+
       padding: 10px 12px;
-      border: 1px solid var(--border);
+
+      border:
+        1px solid
+        var(--border);
+
       border-radius: 9px;
-      background: var(--bg2);
+
+      background:
+        var(--bg2);
+
       color: white;
+
       outline: none;
     }
 
@@ -1051,19 +1006,31 @@
 
     .settings-footer {
       display: flex;
+
       justify-content: flex-end;
+
       gap: 10px;
+
       padding: 16px 20px;
-      border-top: 1px solid var(--border);
-      background: rgba(7,17,31,.35);
+
+      border-top:
+        1px solid
+        var(--border);
+
+      background:
+        rgba(7,17,31,.35);
     }
 
     .settings-primary,
     .settings-secondary {
       border: 0;
+
       border-radius: 9px;
+
       padding: 10px 18px;
+
       cursor: pointer;
+
       font-weight: 900;
     }
 
@@ -1072,10 +1039,34 @@
       color: #111;
     }
 
+    .settings-primary:hover {
+      background: var(--gold2);
+    }
+
     .settings-secondary {
       background: var(--card2);
       color: white;
-      border: 1px solid var(--border);
+
+      border:
+        1px solid
+        var(--border);
+    }
+
+    /* =========================
+       RTL
+    ========================= */
+
+    html[dir="rtl"] .match-meta {
+      direction: rtl;
+    }
+
+    html[dir="rtl"] .settings-footer {
+      justify-content: flex-start;
+    }
+
+    html[dir="rtl"] .league-header {
+      border-inline-start: 0;
+      border-inline-end: 4px solid var(--gold);
     }
 
     /* =========================
@@ -1085,97 +1076,105 @@
     @media (max-width: 700px) {
 
       .header-inner {
-
-        min-height:
-          68px;
-
+        min-height: 68px;
       }
 
       .brand-subtitle {
-
-        display:
-          none;
-
+        display: none;
       }
 
       .brand-title {
+        font-size: 18px;
+      }
 
-        font-size:
-          18px;
-
+      .language-switch {
+        display: none;
       }
 
       .hero {
-
-        align-items:
-          flex-start;
-
-        flex-direction:
-          column;
-
+        align-items: flex-start;
+        flex-direction: column;
       }
 
       .refresh {
-
-        width:
-          100%;
+        width: 100%;
       }
 
       .match-grid {
-
         grid-template-columns:
           1fr 80px 1fr;
-
       }
 
       .team-logo {
-
-        width:
-          46px;
-
-        height:
-          46px;
+        width: 46px;
+        height: 46px;
       }
 
       .team-name {
-
-        font-size:
-          13px;
+        font-size: 13px;
       }
 
       .score {
-
-        font-size:
-          22px;
+        font-size: 22px;
       }
 
       .date-nav {
-
-        gap:
-          7px;
+        gap: 7px;
       }
 
       .date-button {
-
-        padding:
-          11px 5px;
+        padding: 11px 5px;
       }
 
       .date-small {
-
-        font-size:
-          10px;
+        font-size: 10px;
       }
 
+      .setting-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .setting-row select {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .settings-footer {
+        flex-direction: column;
+      }
+
+      .settings-primary,
+      .settings-secondary {
+        width: 100%;
+      }
+
+      .site-footer {
+        padding: 18px;
+      }
+
+      .footer-actions {
+        width: 100%;
+      }
+
+      .footer-link {
+        flex: 1;
+      }
+
+      .match-meta {
+        align-items: flex-start;
+      }
+
+      .match-meta-right {
+        text-align: end;
+      }
     }
 
   </style>
-
 </head>
 
-
 <body>
-
 
   <!-- =========================
        HEADER
@@ -1188,6 +1187,7 @@
       <a
         href="/"
         class="brand"
+        aria-label="Modarraj Live"
       >
 
         <div class="brand-icon">
@@ -1211,51 +1211,54 @@
 
       </a>
 
+      <div class="header-actions">
 
-      <div
-        class="language-switch"
-        aria-label="Language"
-      >
+        <div
+          class="language-switch"
+          aria-label="Language"
+        >
+
+          <button
+            id="enBtn"
+            class="lang"
+            type="button"
+            aria-label="English"
+          >
+            EN
+          </button>
+
+          <button
+            id="arBtn"
+            class="lang"
+            type="button"
+            aria-label="Arabic"
+          >
+            AR
+          </button>
+
+        </div>
 
         <button
-          id="enBtn"
-          class="lang active"
+          id="settingsBtn"
+          class="settings-btn"
           type="button"
+          aria-label="Settings"
+          title="Settings"
         >
-          EN
-        </button>
-
-        <button
-          id="arBtn"
-          class="lang"
-          type="button"
-        >
-          AR
+          ⚙️
         </button>
 
       </div>
 
-      <button
-        id="settingsBtn"
-        class="settings-btn"
-        type="button"
-        aria-label="Settings"
-        title="Settings"
-      >
-        ⚙️
-      </button>
-
     </div>
 
   </header>
-
 
   <!-- =========================
        MAIN
   ========================= -->
 
   <main>
-
 
     <section class="hero">
 
@@ -1266,18 +1269,23 @@
         </h1>
 
         <p data-i18n="description">
-          Follow today's most important matches
+          Follow today's matches
         </p>
 
       </div>
-
 
       <button
         id="refreshBtn"
         class="refresh"
         type="button"
       >
-        ↻
+        <span
+          class="refresh-icon"
+          aria-hidden="true"
+        >
+          ↻
+        </span>
+
         <span data-i18n="refresh">
           Refresh
         </span>
@@ -1285,10 +1293,7 @@
 
     </section>
 
-
-    <!-- =========================
-         DATE NAV
-    ========================= -->
+    <!-- DATE -->
 
     <nav
       class="date-nav"
@@ -1311,11 +1316,9 @@
         <span
           class="date-small"
           id="dateMinus"
-        >
-        </span>
+        ></span>
 
       </button>
-
 
       <button
         class="date-button active"
@@ -1333,11 +1336,9 @@
         <span
           class="date-small"
           id="dateToday"
-        >
-        </span>
+        ></span>
 
       </button>
-
 
       <button
         class="date-button"
@@ -1355,17 +1356,13 @@
         <span
           class="date-small"
           id="datePlus"
-        >
-        </span>
+        ></span>
 
       </button>
 
     </nav>
 
-
-    <!-- =========================
-         SUMMARY
-    ========================= -->
+    <!-- SUMMARY -->
 
     <div class="summary">
 
@@ -1383,20 +1380,16 @@
 
       </span>
 
-
-      <span id="selectedDate">
-      </span>
+      <span id="selectedDate"></span>
 
     </div>
 
-
-    <!-- =========================
-         LIVE BAR
-    ========================= -->
+    <!-- LIVE -->
 
     <div
       id="liveBar"
       class="live-bar"
+      aria-live="polite"
     >
 
       <span class="live-dot"></span>
@@ -1407,12 +1400,12 @@
 
     </div>
 
+    <!-- MATCHES -->
 
-    <!-- =========================
-         MATCHES
-    ========================= -->
-
-    <section id="matches">
+    <section
+      id="matches"
+      aria-live="polite"
+    >
 
       <div class="message">
 
@@ -1428,12 +1421,50 @@
 
     </section>
 
-
   </main>
 
+  <!-- =========================
+       CONTACT / ADVERTISING
+  ========================= -->
+
+  <footer class="site-footer">
+
+    <div class="footer-copy">
+
+      <h3 data-i18n="contactTitle">
+        Contact & Advertising
+      </h3>
+
+      <p data-i18n="contactDescription">
+        For advertising, partnerships or contacting the Modarraj Live team.
+      </p>
+
+    </div>
+
+    <div class="footer-actions">
+
+      <a
+        class="footer-link primary"
+        href="mailto:llsfayydo@gmail.com?subject=Modarraj%20Live%20Advertising"
+        data-i18n="advertiseLink"
+      >
+        Advertise
+      </a>
+
+      <a
+        class="footer-link"
+        href="mailto:llsfayydo@gmail.com?subject=Modarraj%20Live%20Contact"
+        data-i18n="contactLink"
+      >
+        Contact Us
+      </a>
+
+    </div>
+
+  </footer>
 
   <!-- =========================
-       SETTINGS MODAL
+       SETTINGS
   ========================= -->
 
   <div
@@ -1442,7 +1473,10 @@
     aria-hidden="true"
   >
 
-    <div class="settings-backdrop" id="settingsBackdrop"></div>
+    <div
+      class="settings-backdrop"
+      id="settingsBackdrop"
+    ></div>
 
     <section
       class="settings-panel"
@@ -1452,9 +1486,20 @@
     >
 
       <div class="settings-header">
+
         <div>
-          <h2 id="settingsTitle" data-i18n="settingsTitle">Settings</h2>
-          <p data-i18n="settingsDescription">Customize language, time zone and time format.</p>
+
+          <h2
+            id="settingsTitle"
+            data-i18n="settingsTitle"
+          >
+            Settings
+          </h2>
+
+          <p data-i18n="settingsDescription">
+            Customize language, time zone and time format.
+          </p>
+
         </div>
 
         <button
@@ -1465,60 +1510,181 @@
         >
           ×
         </button>
+
       </div>
 
       <div class="settings-body">
 
+        <!-- LANGUAGE -->
+
         <label class="setting-row">
+
           <span>
-            <strong data-i18n="languageSetting">Language</strong>
-            <small data-i18n="languageSettingHint">Choose the interface language.</small>
+
+            <strong data-i18n="languageSetting">
+              Language
+            </strong>
+
+            <small data-i18n="languageSettingHint">
+              Choose the interface language.
+            </small>
+
           </span>
+
           <select id="settingLanguage">
-            <option value="en">English</option>
-            <option value="ar">العربية</option>
+
+            <option value="en">
+              English
+            </option>
+
+            <option value="ar">
+              العربية
+            </option>
+
           </select>
+
         </label>
 
+        <!-- TIMEZONE -->
+
         <label class="setting-row">
+
           <span>
-            <strong data-i18n="timezoneSetting">Time Zone</strong>
-            <small data-i18n="timezoneSettingHint">Automatic uses your device time zone.</small>
+
+            <strong data-i18n="timezoneSetting">
+              Time Zone
+            </strong>
+
+            <small data-i18n="timezoneSettingHint">
+              Automatic uses your device time zone.
+            </small>
+
           </span>
+
           <select id="settingTimezone"></select>
+
         </label>
 
+        <!-- TIME FORMAT -->
+
         <label class="setting-row">
+
           <span>
-            <strong data-i18n="timeFormatSetting">Time Format</strong>
-            <small data-i18n="timeFormatSettingHint">Choose how match times are displayed.</small>
+
+            <strong data-i18n="timeFormatSetting">
+              Time Format
+            </strong>
+
+            <small data-i18n="timeFormatSettingHint">
+              Choose how match times are displayed.
+            </small>
+
           </span>
+
           <select id="settingTimeFormat">
-            <option value="24">24-hour</option>
-            <option value="12">12-hour</option>
+
+            <option
+              value="24"
+              data-i18n="time24"
+            >
+              24-hour
+            </option>
+
+            <option
+              value="12"
+              data-i18n="time12"
+            >
+              12-hour
+            </option>
+
           </select>
+
+        </label>
+
+        <!-- COMPETITIONS -->
+
+        <label class="setting-row">
+
+          <span>
+
+            <strong data-i18n="competitionFilter">
+              Competitions
+            </strong>
+
+            <small data-i18n="competitionFilterHint">
+              Choose which competition types appear.
+            </small>
+
+          </span>
+
+          <select id="settingCompetitionFilter">
+
+            <option
+              value="main"
+              data-i18n="mainCompetitions"
+            >
+              Main Competitions
+            </option>
+
+            <option
+              value="women"
+              data-i18n="womenCompetitions"
+            >
+              Women
+            </option>
+
+            <option
+              value="youth"
+              data-i18n="youthCompetitions"
+            >
+              Youth
+            </option>
+
+            <option
+              value="other"
+              data-i18n="otherCompetitionsFilter"
+            >
+              Other
+            </option>
+
+            <option
+              value="all"
+              data-i18n="allCompetitions"
+            >
+              All
+            </option>
+
+          </select>
+
         </label>
 
       </div>
 
       <div class="settings-footer">
-        <button id="settingsReset" class="settings-secondary" type="button" data-i18n="resetSettings">Reset</button>
-        <button id="settingsSave" class="settings-primary" type="button" data-i18n="saveSettings">Save</button>
+
+        <button
+          id="settingsReset"
+          class="settings-secondary"
+          type="button"
+          data-i18n="resetSettings"
+        >
+          Reset
+        </button>
+
+        <button
+          id="settingsSave"
+          class="settings-primary"
+          type="button"
+          data-i18n="saveSettings"
+        >
+          Save
+        </button>
+
       </div>
 
     </section>
 
   </div>
-
-
-  <footer>
-
-    <span>
-      Modarraj Live © 2026
-    </span>
-
-  </footer>
-
 
   <script>
 
@@ -1526,30 +1692,228 @@
        CONFIG
     ===================================================== */
 
-    const API =
-      "/api/matches";
+    const API = "/api/matches";
+
+    const STORAGE_KEYS = {
+      language: "modarraj-language",
+      timezone: "modarraj-timezone",
+      timeFormat: "modarraj-time-format",
+      competitionFilter: "modarraj-competition-filter"
+    };
 
 
-    let language =
-      localStorage.getItem(
-        "modarraj-language"
-      ) || "en";
+    /* =====================================================
+       GLOBAL STATE
+    ===================================================== */
 
-
-    let currentDate =
-      getDateOffset(0);
-
-
-    const defaultTimezone =
+    const browserTimezone =
       Intl.DateTimeFormat().resolvedOptions().timeZone ||
       "UTC";
 
 
+    const supportedLanguages = [
+      "en",
+      "ar"
+    ];
+
+
+    const supportedTimeFormats = [
+      "12",
+      "24"
+    ];
+
+
+    const supportedCompetitionFilters = [
+      "main",
+      "women",
+      "youth",
+      "other",
+      "all"
+    ];
+
+
+    let language =
+      getStoredValue(
+        STORAGE_KEYS.language,
+        "en"
+      );
+
+
     let appSettings = {
-      language: language,
-      timezone: localStorage.getItem("modarraj-timezone") || "auto",
-      timeFormat: localStorage.getItem("modarraj-time-format") || "24"
+
+      language,
+
+      timezone:
+        getStoredValue(
+          STORAGE_KEYS.timezone,
+          "auto"
+        ),
+
+      timeFormat:
+        getStoredValue(
+          STORAGE_KEYS.timeFormat,
+          "24"
+        ),
+
+      competitionFilter:
+        getStoredValue(
+          STORAGE_KEYS.competitionFilter,
+          "main"
+        )
+
     };
+
+
+    /* =====================================================
+       STORAGE HELPERS
+    ===================================================== */
+
+    function getStoredValue(
+      key,
+      fallback
+    ) {
+
+      try {
+
+        const value =
+          localStorage.getItem(key);
+
+        return value === null
+          ? fallback
+          : value;
+
+      } catch (error) {
+
+        console.warn(
+          "localStorage read failed:",
+          error
+        );
+
+        return fallback;
+
+      }
+
+    }
+
+
+    function setStoredValue(
+      key,
+      value
+    ) {
+
+      try {
+
+        localStorage.setItem(
+          key,
+          value
+        );
+
+      } catch (error) {
+
+        console.warn(
+          "localStorage write failed:",
+          error
+        );
+
+      }
+
+    }
+
+
+    function removeStoredValue(key) {
+
+      try {
+
+        localStorage.removeItem(key);
+
+      } catch (error) {
+
+        console.warn(
+          "localStorage remove failed:",
+          error
+        );
+
+      }
+
+    }
+
+
+    /* =====================================================
+       VALIDATION
+    ===================================================== */
+
+    function isValidTimezone(timezone) {
+
+      if (
+        timezone === "auto"
+      ) {
+
+        return true;
+
+      }
+
+      try {
+
+        new Intl.DateTimeFormat(
+          "en-US",
+          {
+            timeZone: timezone
+          }
+        );
+
+        return true;
+
+      } catch {
+
+        return false;
+
+      }
+
+    }
+
+
+    if (
+      !supportedLanguages.includes(
+        language
+      )
+    ) {
+
+      language = "en";
+
+    }
+
+
+    if (
+      !isValidTimezone(
+        appSettings.timezone
+      )
+    ) {
+
+      appSettings.timezone = "auto";
+
+    }
+
+
+    if (
+      !supportedTimeFormats.includes(
+        appSettings.timeFormat
+      )
+    ) {
+
+      appSettings.timeFormat = "24";
+
+    }
+
+
+    if (
+      !supportedCompetitionFilters.includes(
+        appSettings.competitionFilter
+      )
+    ) {
+
+      appSettings.competitionFilter = "main";
+
+    }
 
 
     /* =====================================================
@@ -1567,7 +1931,19 @@
           "Live Football Scores",
 
         description:
-          "Follow today's most important matches",
+          "Follow today's matches",
+
+        contactTitle:
+          "Contact & Advertising",
+
+        contactDescription:
+          "For advertising, partnerships or contacting the Modarraj Live team.",
+
+        advertiseLink:
+          "Advertise",
+
+        contactLink:
+          "Contact Us",
 
         refresh:
           "Refresh",
@@ -1599,9 +1975,6 @@
         retry:
           "Try Again",
 
-        important:
-          "Important Match",
-
         notStarted:
           "Not Started",
 
@@ -1614,9 +1987,6 @@
         finished:
           "Finished",
 
-        other:
-          "Other",
-
         venue:
           "Venue",
 
@@ -1628,6 +1998,27 @@
 
         otherCompetitions:
           "Other Competitions",
+
+        competitionFilter:
+          "Competitions",
+
+        mainCompetitions:
+          "Main Competitions",
+
+        womenCompetitions:
+          "Women",
+
+        youthCompetitions:
+          "Youth",
+
+        otherCompetitionsFilter:
+          "Other",
+
+        allCompetitions:
+          "All",
+
+        competitionFilterHint:
+          "Choose which competition types appear.",
 
         settingsTitle:
           "Settings",
@@ -1653,6 +2044,15 @@
         timeFormatSettingHint:
           "Choose how match times are displayed.",
 
+        time24:
+          "24-hour",
+
+        time12:
+          "12-hour",
+
+        automatic:
+          "Automatic",
+
         resetSettings:
           "Reset",
 
@@ -1671,7 +2071,19 @@
           "مباريات كرة القدم",
 
         description:
-          "تابع أهم مباريات اليوم",
+          "تابع مباريات كرة القدم حسب التاريخ",
+
+        contactTitle:
+          "التواصل والإعلان",
+
+        contactDescription:
+          "للإعلان أو الشراكات أو التواصل مع فريق مدرج لايف.",
+
+        advertiseLink:
+          "للإعلان",
+
+        contactLink:
+          "تواصل معنا",
 
         refresh:
           "تحديث",
@@ -1703,9 +2115,6 @@
         retry:
           "إعادة المحاولة",
 
-        important:
-          "مباراة مهمة",
-
         notStarted:
           "لم تبدأ بعد",
 
@@ -1718,9 +2127,6 @@
         finished:
           "انتهت المباراة",
 
-        other:
-          "بطولات أخرى",
-
         venue:
           "الملعب",
 
@@ -1732,6 +2138,27 @@
 
         otherCompetitions:
           "بطولات أخرى",
+
+        competitionFilter:
+          "البطولات",
+
+        mainCompetitions:
+          "البطولات الرئيسية",
+
+        womenCompetitions:
+          "البطولات النسائية",
+
+        youthCompetitions:
+          "بطولات الشباب",
+
+        otherCompetitionsFilter:
+          "بطولات أخرى",
+
+        allCompetitions:
+          "الكل",
+
+        competitionFilterHint:
+          "اختر أنواع البطولات التي تريد ظهورها.",
 
         settingsTitle:
           "الإعدادات",
@@ -1749,13 +2176,22 @@
           "المنطقة الزمنية",
 
         timezoneSettingHint:
-          "تلقائي يستخدم المنطقة الزمنية لجهازك.",
+          "التلقائي يستخدم المنطقة الزمنية لجهازك.",
 
         timeFormatSetting:
           "تنسيق الوقت",
 
         timeFormatSettingHint:
           "اختر طريقة عرض أوقات المباريات.",
+
+        time24:
+          "نظام 24 ساعة",
+
+        time12:
+          "نظام 12 ساعة",
+
+        automatic:
+          "تلقائي",
 
         resetSettings:
           "إعادة الضبط",
@@ -1769,16 +2205,14 @@
 
 
     /* =====================================================
-       I18N
+       TRANSLATION
     ===================================================== */
 
     function t(key) {
 
       return (
-        translations[
-          language
-        ]?.[key] ||
-        translations.en[key] ||
+        translations?.[language]?.[key] ??
+        translations.en?.[key] ??
         key
       );
 
@@ -1801,47 +2235,55 @@
 
 
       document
-        .querySelectorAll(
-          "[data-i18n]"
-        )
-        .forEach(
-          element => {
+        .querySelectorAll("[data-i18n]")
+        .forEach(element => {
 
-            const key =
-              element.dataset.i18n;
+          const key =
+            element.dataset.i18n;
 
-            element.textContent =
-              t(key);
+          element.textContent =
+            t(key);
 
-          }
-        );
+        });
 
 
-      document
-        .getElementById(
+      const enButton =
+        document.getElementById(
           "enBtn"
-        )
-        .classList.toggle(
-          "active",
-          language === "en"
         );
 
 
-      document
-        .getElementById(
+      const arButton =
+        document.getElementById(
           "arBtn"
-        )
-        .classList.toggle(
-          "active",
-          language === "ar"
         );
+
+
+      enButton.classList.toggle(
+        "active",
+        language === "en"
+      );
+
+
+      arButton.classList.toggle(
+        "active",
+        language === "ar"
+      );
+
+
+      populateTimezoneSelect();
+
+
+      syncSettingsControls();
 
 
       updateDateLabels();
 
 
       if (
-        window.currentMatches
+        Array.isArray(
+          window.currentMatches
+        )
       ) {
 
         renderMatches(
@@ -1854,27 +2296,108 @@
 
 
     /* =====================================================
-       DATE
+       TIMEZONE
     ===================================================== */
 
-    function dateObject(offset) {
+    function getActiveTimezone() {
 
-      const date =
-        new Date();
+      const timezone =
+        appSettings.timezone;
 
-      date.setHours(
-        12,
-        0,
-        0,
-        0
+
+      if (
+        timezone === "auto"
+      ) {
+
+        return browserTimezone;
+
+      }
+
+
+      return isValidTimezone(timezone)
+        ? timezone
+        : browserTimezone;
+
+    }
+
+
+    function getTimeZoneParts(
+      date = new Date()
+    ) {
+
+      const formatter =
+        new Intl.DateTimeFormat(
+          "en-US",
+          {
+            timeZone:
+              getActiveTimezone(),
+
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit"
+          }
+        );
+
+
+      const parts =
+        formatter.formatToParts(date);
+
+
+      const result = {};
+
+
+      for (
+        const part
+        of parts
+      ) {
+
+        if (
+          part.type !== "literal"
+        ) {
+
+          result[part.type] =
+            part.value;
+
+        }
+
+      }
+
+
+      return result;
+
+    }
+
+
+    function dateObject(
+      offset = 0
+    ) {
+
+      const parts =
+        getTimeZoneParts(
+          new Date()
+        );
+
+
+      const year =
+        Number(parts.year);
+
+      const month =
+        Number(parts.month) - 1;
+
+      const day =
+        Number(parts.day);
+
+
+      return new Date(
+        Date.UTC(
+          year,
+          month,
+          day + offset,
+          12,
+          0,
+          0
+        )
       );
-
-      date.setDate(
-        date.getDate() +
-        offset
-      );
-
-      return date;
 
     }
 
@@ -1882,19 +2405,25 @@
     function formatApiDate(date) {
 
       return [
-        date.getFullYear(),
+
+        date.getUTCFullYear(),
+
         String(
-          date.getMonth() + 1
+          date.getUTCMonth() + 1
         ).padStart(2, "0"),
+
         String(
-          date.getDate()
+          date.getUTCDate()
         ).padStart(2, "0")
+
       ].join("-");
 
     }
 
 
-    function getDateOffset(offset) {
+    function getDateOffset(
+      offset
+    ) {
 
       return formatApiDate(
         dateObject(offset)
@@ -1903,17 +2432,58 @@
     }
 
 
-    function formatDisplayDate(date) {
+    let currentDate =
+      getDateOffset(0);
 
-      return date.toLocaleDateString(
+
+    function formatDisplayDate(
+      date
+    ) {
+
+      return new Intl.DateTimeFormat(
+
         language === "ar"
           ? "ar-SA"
           : "en-US",
+
         {
+          timeZone:
+            getActiveTimezone(),
+
           month: "short",
+
           day: "numeric"
         }
-      );
+
+      ).format(date);
+
+    }
+
+
+    function updateDateButtons() {
+
+      document
+        .querySelectorAll(
+          ".date-button"
+        )
+        .forEach(button => {
+
+          const offset =
+            Number(
+              button.dataset.offset
+            );
+
+
+          const buttonDate =
+            getDateOffset(offset);
+
+
+          button.classList.toggle(
+            "active",
+            buttonDate === currentDate
+          );
+
+        });
 
     }
 
@@ -1921,9 +2491,7 @@
     function updateDateLabels() {
 
       document
-        .getElementById(
-          "dateMinus"
-        )
+        .getElementById("dateMinus")
         .textContent =
         formatDisplayDate(
           dateObject(-1)
@@ -1931,9 +2499,7 @@
 
 
       document
-        .getElementById(
-          "dateToday"
-        )
+        .getElementById("dateToday")
         .textContent =
         formatDisplayDate(
           dateObject(0)
@@ -1941,26 +2507,28 @@
 
 
       document
-        .getElementById(
-          "datePlus"
-        )
+        .getElementById("datePlus")
         .textContent =
         formatDisplayDate(
           dateObject(1)
         );
 
 
+      const selected =
+        new Date(
+          `${currentDate}T12:00:00Z`
+        );
+
+
       document
-        .getElementById(
-          "selectedDate"
-        )
+        .getElementById("selectedDate")
         .textContent =
         formatDisplayDate(
-          new Date(
-            currentDate +
-            "T12:00:00"
-          )
+          selected
         );
+
+
+      updateDateButtons();
 
     }
 
@@ -1969,7 +2537,9 @@
        SAFE HTML
     ===================================================== */
 
-    function escapeHtml(value) {
+    function escapeHtml(
+      value
+    ) {
 
       return String(
         value ?? ""
@@ -2003,335 +2573,1001 @@
     }
 
 
+    function safeImageUrl(
+      value
+    ) {
+
+      if (
+        typeof value !== "string"
+      ) {
+
+        return "";
+
+      }
+
+
+      const url =
+        value.trim();
+
+
+      if (!url) {
+
+        return "";
+
+      }
+
+
+      try {
+
+        const parsed =
+          new URL(
+            url,
+            window.location.origin
+          );
+
+
+        if (
+          parsed.protocol !== "http:" &&
+          parsed.protocol !== "https:"
+        ) {
+
+          return "";
+
+        }
+
+
+        return parsed.href;
+
+      } catch {
+
+        return "";
+
+      }
+
+    }
+
+
+    /* =====================================================
+       TIMESTAMP
+    ===================================================== */
+
+    function parseMatchDate(
+      value
+    ) {
+
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+
+        return null;
+
+      }
+
+
+      if (
+        typeof value === "number" ||
+        /^\d+$/.test(
+          String(value).trim()
+        )
+      ) {
+
+        const number =
+          Number(value);
+
+
+        if (
+          !Number.isFinite(number)
+        ) {
+
+          return null;
+
+        }
+
+
+        const milliseconds =
+          number < 100000000000
+            ? number * 1000
+            : number;
+
+
+        const date =
+          new Date(
+            milliseconds
+          );
+
+
+        return Number.isNaN(
+          date.getTime()
+        )
+          ? null
+          : date;
+
+      }
+
+
+      const text =
+        String(value).trim();
+
+
+      if (!text) {
+
+        return null;
+
+      }
+
+
+      /*
+        ISO timestamps with timezone.
+      */
+
+      if (
+        text.includes("T") ||
+        text.endsWith("Z") ||
+        /[+-]\d{2}:?\d{2}$/.test(text)
+      ) {
+
+        const parsed =
+          new Date(text);
+
+
+        if (
+          !Number.isNaN(
+            parsed.getTime()
+          )
+        ) {
+
+          return parsed;
+
+        }
+
+      }
+
+
+      /*
+        Date-only value:
+        YYYY-MM-DD
+      */
+
+      if (
+        /^\d{4}-\d{2}-\d{2}$/.test(text)
+      ) {
+
+        const parsed =
+          new Date(
+            `${text}T12:00:00Z`
+          );
+
+
+        if (
+          !Number.isNaN(
+            parsed.getTime()
+          )
+        ) {
+
+          return parsed;
+
+        }
+
+      }
+
+
+      return null;
+
+    }
+
+
+    function getMatchTime(
+      match
+    ) {
+
+      const value =
+        match?.fixture?.timestamp ??
+        match?.fixture?.date ??
+        match?.fixture?.time ??
+        "";
+
+
+      if (
+        value === "" ||
+        value === null ||
+        value === undefined
+      ) {
+
+        return "--:--";
+
+      }
+
+
+      const parsed =
+        parseMatchDate(value);
+
+
+      if (parsed) {
+
+        return new Intl.DateTimeFormat(
+
+          language === "ar"
+            ? "ar-SA"
+            : "en-US",
+
+          {
+            timeZone:
+              getActiveTimezone(),
+
+            hour: "2-digit",
+
+            minute: "2-digit",
+
+            hour12:
+              appSettings.timeFormat === "12"
+          }
+
+        ).format(parsed);
+
+      }
+
+
+      const text =
+        String(value).trim();
+
+
+      const timeMatch =
+        text.match(
+          /^(\d{1,2}):(\d{2})(?::\d{2})?$/
+        );
+
+
+      if (timeMatch) {
+
+        const hour =
+          Number(
+            timeMatch[1]
+          );
+
+        const minute =
+          timeMatch[2];
+
+
+        if (
+          hour < 0 ||
+          hour > 23
+        ) {
+
+          return "--:--";
+
+        }
+
+
+        if (
+          appSettings.timeFormat === "12"
+        ) {
+
+          const suffix =
+            hour >= 12
+              ? (
+                  language === "ar"
+                    ? "م"
+                    : "PM"
+                )
+              : (
+                  language === "ar"
+                    ? "ص"
+                    : "AM"
+                );
+
+
+          const displayHour =
+            hour % 12 || 12;
+
+
+          return (
+            `${displayHour}:${minute} ${suffix}`
+          );
+
+        }
+
+
+        return (
+          `${String(hour).padStart(2, "0")}:${minute}`
+        );
+
+      }
+
+
+      return "--:--";
+
+    }
+
+
     /* =====================================================
        MATCH STATUS
     ===================================================== */
 
-    function getMatchStatus(match) {
+    function getStatusCode(
+      match
+    ) {
+
+      return String(
+        match?.fixture?.status?.short ||
+        ""
+      ).toUpperCase();
+
+    }
+
+
+    function isLiveMatch(
+      match
+    ) {
 
       const status =
-        String(
-          match?.fixture?.status?.short ||
-          ""
-        ).toUpperCase();
+        getStatusCode(match);
+
+
+      return [
+
+        "LIVE",
+        "1H",
+        "2H",
+        "ET",
+        "P",
+        "BT",
+        "INT",
+        "HT"
+
+      ].includes(status);
+
+    }
+
+
+    function isFinishedMatch(
+      match
+    ) {
+
+      const status =
+        getStatusCode(match);
+
+
+      return [
+
+        "FT",
+        "FINAL",
+        "AET",
+        "PEN"
+
+      ].includes(status);
+
+    }
+
+
+    function getMatchStatus(
+      match
+    ) {
+
+      const status =
+        getStatusCode(match);
 
 
       if (
-        [
-          "LIVE",
-          "1H",
-          "2H",
-          "ET",
-          "P"
-        ].includes(status)
+        isLiveMatch(match)
       ) {
 
+        if (
+          status === "HT"
+        ) {
+
+          return {
+
+            text:
+              t("halftime"),
+
+            className:
+              "live"
+
+          };
+
+        }
+
+
         return {
-          text: t("live"),
-          className: "live"
+
+          text:
+            t("live"),
+
+          className:
+            "live"
+
         };
 
       }
 
 
       if (
-        status === "HT"
+        isFinishedMatch(match)
       ) {
 
         return {
-          text: t("halftime"),
-          className: "live"
-        };
 
-      }
+          text:
+            t("finished"),
 
+          className:
+            "finished"
 
-      if (
-        [
-          "FT",
-          "FINAL",
-          "AET",
-          "PEN"
-        ].includes(status)
-      ) {
-
-        return {
-          text: t("finished"),
-          className: "finished"
         };
 
       }
 
 
       return {
-        text: t("notStarted"),
-        className: ""
+
+        text:
+          t("notStarted"),
+
+        className:
+          ""
+
       };
 
     }
 
 
     /* =====================================================
-       MATCH TIME
-       Use the visitor's device timezone when the API gives
-       a real timestamp. Never invent a timezone for HH:MM.
-    ===================================================== */
-
-    function getMatchTime(match) {
-
-      const value =
-        match?.fixture?.timestamp ||
-        match?.fixture?.time ||
-        match?.fixture?.date ||
-        "";
-
-      if (!value) return "--:--";
-
-      const text = String(value).trim();
-
-      // Full timestamp: convert to selected/device timezone.
-      if (
-        text.includes("T") ||
-        text.endsWith("Z") ||
-        /[+-]\d{2}:\d{2}$/.test(text)
-      ) {
-
-        const parsed = new Date(text);
-
-        if (!Number.isNaN(parsed.getTime())) {
-
-          const timeZone =
-            appSettings.timezone === "auto"
-              ? undefined
-              : appSettings.timezone;
-
-          return new Intl.DateTimeFormat(
-            language === "ar" ? "ar-SA" : "en-US",
-            {
-              timeZone,
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: appSettings.timeFormat === "12"
-            }
-          ).format(parsed);
-
-        }
-
-      }
-
-      // Plain HH:MM[:SS] has no timezone information, so keep it as supplied.
-      const timeMatch =
-        text.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-
-      if (timeMatch) {
-
-        const hour = Number(timeMatch[1]);
-        const minute = timeMatch[2];
-
-        if (appSettings.timeFormat === "12") {
-          const suffix = hour >= 12 ? (language === "ar" ? "م" : "PM") : (language === "ar" ? "ص" : "AM");
-          const displayHour = hour % 12 || 12;
-          return `${displayHour}:${minute} ${suffix}`;
-        }
-
-        return String(hour).padStart(2, "0") + ":" + minute;
-
-      }
-
-      return "--:--";
-
-    }
-
-    /* =====================================================
-       LEAGUE PRIORITY
-       Higher number = shown first
+       COMPETITION PRIORITY
     ===================================================== */
 
     const leaguePriorityRules = [
 
-      // World / major international competitions
-      { score: 140, keys: ["fifa world cup", "world cup"] },
-      { score: 135, keys: ["uefa champions league", "champions league"] },
-      { score: 132, keys: ["uefa europa league", "europa league"] },
-      { score: 129, keys: ["conference league", "uefa europa conference"] },
+      {
+        score: 200,
+        keys: [
+          "fifa world cup",
+          "world cup"
+        ]
+      },
 
-      // Major European leagues
-      { score: 125, keys: ["english premier league", "premier league"] },
-      { score: 122, keys: ["la liga", "primera division", "spanish la liga"] },
-      { score: 119, keys: ["serie a", "italian serie a"] },
-      { score: 116, keys: ["bundesliga", "german bundesliga"] },
-      { score: 113, keys: ["ligue 1", "french ligue 1"] },
+      {
+        score: 195,
+        keys: [
+          "fifa club world cup",
+          "club world cup"
+        ]
+      },
 
-      // Saudi / Arab football
-      { score: 108, keys: ["saudi pro league", "saudi professional league", "saudi-arabian pro league"] },
-      { score: 106, keys: ["afc champions league elite", "afc champions league"] },
-      { score: 102, keys: ["moroccan botola", "botola pro", "botola"] },
-      { score: 100, keys: ["egyptian premier league"] },
-      { score: 98, keys: ["qatar stars league"] },
-      { score: 96, keys: ["uae pro league", "uae league"] },
-      { score: 94, keys: ["iraq stars league", "iraqi premier league"] },
-      { score: 92, keys: ["kuwait premier league"] },
-      { score: 90, keys: ["tunisian ligue 1", "tunisia ligue 1"] },
-      { score: 88, keys: ["algeria ligue 1", "algerian ligue 1"] },
+      {
+        score: 190,
+        keys: [
+          "uefa champions league",
+          "champions league"
+        ]
+      },
 
-      // Other important international competitions
-      { score: 86, keys: ["africa cup of nations", "afcon"] },
-      { score: 84, keys: ["afc asian cup", "asian cup"] }
+      {
+        score: 185,
+        keys: [
+          "uefa europa league",
+          "europa league"
+        ]
+      },
+
+      {
+        score: 180,
+        keys: [
+          "conference league",
+          "uefa europa conference"
+        ]
+      },
+
+      {
+        score: 175,
+        keys: [
+          "english premier league",
+          "premier league"
+        ]
+      },
+
+      {
+        score: 170,
+        keys: [
+          "la liga",
+          "primera division",
+          "spanish la liga"
+        ]
+      },
+
+      {
+        score: 165,
+        keys: [
+          "serie a",
+          "italian serie a"
+        ]
+      },
+
+      {
+        score: 160,
+        keys: [
+          "bundesliga",
+          "german bundesliga"
+        ]
+      },
+
+      {
+        score: 155,
+        keys: [
+          "ligue 1",
+          "french ligue 1"
+        ]
+      },
+
+      {
+        score: 150,
+        keys: [
+          "saudi pro league",
+          "saudi professional league",
+          "saudi-arabian pro league",
+          "saudi league"
+        ]
+      },
+
+      {
+        score: 145,
+        keys: [
+          "afc champions league elite"
+        ]
+      },
+
+      {
+        score: 140,
+        keys: [
+          "afc champions league"
+        ]
+      },
+
+      {
+        score: 135,
+        keys: [
+          "moroccan botola",
+          "botola pro",
+          "botola"
+        ]
+      },
+
+      {
+        score: 130,
+        keys: [
+          "egyptian premier league"
+        ]
+      },
+
+      {
+        score: 125,
+        keys: [
+          "qatar stars league"
+        ]
+      },
+
+      {
+        score: 120,
+        keys: [
+          "uae pro league",
+          "uae league"
+        ]
+      },
+
+      {
+        score: 115,
+        keys: [
+          "iraq stars league",
+          "iraqi premier league"
+        ]
+      },
+
+      {
+        score: 110,
+        keys: [
+          "kuwait premier league"
+        ]
+      },
+
+      {
+        score: 105,
+        keys: [
+          "tunisian ligue 1",
+          "tunisia ligue 1"
+        ]
+      },
+
+      {
+        score: 100,
+        keys: [
+          "algeria ligue 1",
+          "algerian ligue 1"
+        ]
+      },
+
+      {
+        score: 95,
+        keys: [
+          "africa cup of nations",
+          "afcon"
+        ]
+      },
+
+      {
+        score: 90,
+        keys: [
+          "afc asian cup",
+          "asian cup"
+        ]
+      }
 
     ];
 
 
-    function normalizeLeagueName(name) {
+    function normalizeLeagueName(
+      name
+    ) {
 
-      return String(name || "")
+      return String(
+        name || ""
+      )
         .trim()
         .toLowerCase()
-        .replace(/\s+/g, " ");
+        .replace(
+          /\s+/g,
+          " "
+        );
 
     }
 
 
-    function getLeaguePriority(name) {
+    function isWomenCompetition(
+      name
+    ) {
 
       const value =
         normalizeLeagueName(name);
 
-      for (const rule of leaguePriorityRules) {
 
-        if (rule.keys.some(key => value.includes(key))) {
+      return /\b(women|women's|womens|female|ladies|feminine|frauen|femminile|liga f|wsl)\b/
+        .test(value);
+
+    }
+
+
+    function isYouthCompetition(
+      name
+    ) {
+
+      const value =
+        normalizeLeagueName(name);
+
+
+      return /\b(u[0-9]{1,2}|under[- ]?[0-9]{1,2}|youth|junior|reserve|reserves|academy|2nd|3rd)\b/
+        .test(value);
+
+    }
+
+
+    function getCompetitionType(
+      name
+    ) {
+
+      if (
+        isWomenCompetition(name)
+      ) {
+
+        return "women";
+
+      }
+
+
+      if (
+        isYouthCompetition(name)
+      ) {
+
+        return "youth";
+
+      }
+
+
+      const value =
+        normalizeLeagueName(name);
+
+
+      const isMain =
+        leaguePriorityRules.some(
+          rule =>
+            rule.keys.some(
+              key =>
+                value.includes(key)
+            )
+        );
+
+
+      return isMain
+        ? "main"
+        : "other";
+
+    }
+
+
+    function competitionIsVisible(
+      match
+    ) {
+
+      const type =
+        getCompetitionType(
+          match?.league?.name
+        );
+
+
+      switch (
+        appSettings.competitionFilter
+      ) {
+
+        case "women":
+          return type === "women";
+
+        case "youth":
+          return type === "youth";
+
+        case "other":
+          return type === "other";
+
+        case "all":
+          return true;
+
+        case "main":
+        default:
+          return type === "main";
+
+      }
+
+    }
+
+
+    function getLeaguePriority(
+      name
+    ) {
+
+      const value =
+        normalizeLeagueName(name);
+
+
+      if (
+        isWomenCompetition(value)
+      ) {
+
+        return 5;
+
+      }
+
+
+      if (
+        isYouthCompetition(value)
+      ) {
+
+        return 4;
+
+      }
+
+
+      for (
+        const rule
+        of leaguePriorityRules
+      ) {
+
+        if (
+          rule.keys.some(
+            key =>
+              value.includes(key)
+          )
+        ) {
+
           return rule.score;
+
         }
 
       }
+
 
       return 20;
 
     }
 
 
-    function getLeagueOrderName(name) {
-
-      const value =
-        normalizeLeagueName(name);
-
-      const ruleIndex =
-        leaguePriorityRules.findIndex(rule =>
-          rule.keys.some(key => value.includes(key))
-        );
-
-      return ruleIndex === -1
-        ? 999
-        : ruleIndex;
-
-    }
-
-
     /* =====================================================
-       MATCH PRIORITY / ORDER
+       MATCH SORTING
     ===================================================== */
 
-    function getMatchPriority(match) {
-
-      return getLeaguePriority(
-        match?.league?.name
-      );
-
-    }
-
-
-    function getMatchTimestamp(match) {
+    function getMatchTimestamp(
+      match
+    ) {
 
       const value =
-        match?.fixture?.timestamp ||
-        match?.fixture?.time ||
-        match?.fixture?.date ||
+        match?.fixture?.timestamp ??
+        match?.fixture?.date ??
+        match?.fixture?.time ??
         "";
 
-      if (!value) return Number.POSITIVE_INFINITY;
 
-      const text = String(value).trim();
+      const parsed =
+        parseMatchDate(value);
 
-      // Full ISO timestamp.
-      if (text.includes("T") || text.endsWith("Z") || /[+-]\d{2}:\d{2}$/.test(text)) {
 
-        const parsed = new Date(text).getTime();
+      if (parsed) {
 
-        if (Number.isFinite(parsed)) return parsed;
+        return parsed.getTime();
 
       }
 
-      // Plain HH:MM[:SS]. Sort by minutes from midnight.
-      const m = text.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+
+      const text =
+        String(
+          value || ""
+        ).trim();
+
+
+      const m =
+        text.match(
+          /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/
+        );
+
 
       if (m) {
-        return Number(m[1]) * 60 + Number(m[2]);
+
+        return (
+
+          Number(m[1]) *
+            3600000 +
+
+          Number(m[2]) *
+            60000 +
+
+          Number(m[3] || 0) *
+            1000
+
+        );
+
       }
+
 
       return Number.POSITIVE_INFINITY;
 
     }
 
 
-    function compareMatches(a, b) {
+    function getStatusOrder(
+      match
+    ) {
 
-      const priorityA = getMatchPriority(a);
-      const priorityB = getMatchPriority(b);
+      if (
+        isLiveMatch(match)
+      ) {
 
-      // League importance comes first. A live match from a minor league
-      // must not jump above a major-league match.
-      if (priorityA !== priorityB) {
-        return priorityB - priorityA;
+        return 0;
+
       }
 
-      const statusA = String(a?.fixture?.status?.short || "").toUpperCase();
-      const statusB = String(b?.fixture?.status?.short || "").toUpperCase();
 
-      const liveA = statusA === "LIVE" || statusA === "HT";
-      const liveB = statusB === "LIVE" || statusB === "HT";
+      if (
+        isFinishedMatch(match)
+      ) {
 
-      if (liveA !== liveB) {
-        return liveB - liveA;
+        return 2;
+
       }
 
-      const leagueA = getLeagueOrderName(a?.league?.name);
-      const leagueB = getLeagueOrderName(b?.league?.name);
 
-      if (leagueA !== leagueB) {
-        return leagueA - leagueB;
-      }
+      return 1;
 
-      const timeA = getMatchTimestamp(a);
-      const timeB = getMatchTimestamp(b);
+    }
 
-      if (timeA !== timeB) {
-        return timeA - timeB;
-      }
 
-      return String(a?.teams?.home?.name || "")
-        .localeCompare(
-          String(b?.teams?.home?.name || ""),
-          undefined,
-          { sensitivity: "base" }
+    function compareMatches(
+      a,
+      b
+    ) {
+
+      const statusA =
+        getStatusOrder(a);
+
+      const statusB =
+        getStatusOrder(b);
+
+
+      if (
+        statusA !== statusB
+      ) {
+
+        return (
+          statusA -
+          statusB
         );
+
+      }
+
+
+      const priorityA =
+        getLeaguePriority(
+          a?.league?.name
+        );
+
+
+      const priorityB =
+        getLeaguePriority(
+          b?.league?.name
+        );
+
+
+      if (
+        priorityA !== priorityB
+      ) {
+
+        return (
+          priorityB -
+          priorityA
+        );
+
+      }
+
+
+      const timeA =
+        getMatchTimestamp(a);
+
+
+      const timeB =
+        getMatchTimestamp(b);
+
+
+      if (
+        timeA !== timeB
+      ) {
+
+        return (
+          timeA -
+          timeB
+        );
+
+      }
+
+
+      return String(
+        a?.teams?.home?.name || ""
+      ).localeCompare(
+
+        String(
+          b?.teams?.home?.name || ""
+        ),
+
+        undefined,
+
+        {
+          sensitivity:
+            "base"
+        }
+
+      );
 
     }
 
 
     /* =====================================================
        CHANNEL
-       IMPORTANT:
-       Don't render if unavailable
     ===================================================== */
 
-    function getChannel(match) {
+    function getChannel(
+      match
+    ) {
 
       const channel =
         match?.media?.channel;
 
 
       if (
-        typeof channel !==
-        "string"
+        typeof channel !== "string"
       ) {
 
         return "";
@@ -2346,10 +3582,8 @@
       if (
         !value ||
         value === "-" ||
-        value.toLowerCase() ===
-          "null" ||
-        value.toLowerCase() ===
-          "undefined"
+        value.toLowerCase() === "null" ||
+        value.toLowerCase() === "undefined"
       ) {
 
         return "";
@@ -2366,21 +3600,20 @@
        MATCH CARD
     ===================================================== */
 
-    function renderMatch(match) {
+    function renderMatch(
+      match
+    ) {
 
       const home =
-        match?.teams?.home ||
-        {};
+        match?.teams?.home || {};
+
 
       const away =
-        match?.teams?.away ||
-        {};
+        match?.teams?.away || {};
 
 
       const status =
-        getMatchStatus(
-          match
-        );
+        getMatchStatus(match);
 
 
       const homeScore =
@@ -2412,78 +3645,98 @@
         getChannel(match);
 
 
-      const important =
-        getLeaguePriority(
-          match?.league?.name
-        ) >= 88;
+      const leagueName =
+        match?.league?.name ||
+        t("otherCompetitions");
+
+
+      const venue =
+        match?.fixture?.venue?.name ||
+        match?.venue ||
+        "";
+
+
+      const city =
+        match?.fixture?.venue?.city ||
+        match?.city ||
+        "";
+
+
+      const homeLogo =
+        safeImageUrl(
+          home.logo
+        );
+
+
+      const awayLogo =
+        safeImageUrl(
+          away.logo
+        );
+
+
+      const matchTime =
+        getMatchTime(match);
 
 
       return `
 
         <article class="match">
 
-
           <div class="match-meta">
 
-            <span>
-              ${escapeHtml(
-                getMatchTime(match)
-              )}
-            </span>
+            <div class="match-meta-left">
 
+              <span>
+                ${escapeHtml(
+                  matchTime
+                )}
+              </span>
 
-            ${
-              important
-                ? `
-                  <span class="important">
-                    ⭐
-                    ${escapeHtml(
-                      t("important")
-                    )}
-                  </span>
-                `
-                : ""
-            }
+            </div>
+
+            <div class="match-meta-right">
+
+              <span>
+                ${escapeHtml(
+                  leagueName
+                )}
+              </span>
+
+            </div>
 
           </div>
 
 
           <div class="match-grid">
 
-
-            <!-- HOME -->
-
             <div class="team">
 
               ${
-                home.logo
+                homeLogo
                   ? `
                     <img
                       class="team-logo"
                       src="${escapeHtml(
-                        home.logo
+                        homeLogo
                       )}"
                       alt=""
                       loading="lazy"
+                      decoding="async"
+                      referrerpolicy="no-referrer"
                     >
                   `
                   : ""
               }
 
-
               <div class="team-name">
-
                 ${escapeHtml(
                   home.name ||
                   t("unknownTeam")
                 )}
-
               </div>
 
             </div>
 
-
-            <!-- SCORE -->
 
             <div class="score-box">
 
@@ -2493,104 +3746,91 @@
                 )}
               </div>
 
-
               <div class="match-time">
-
                 ${escapeHtml(
-                  getMatchTime(match)
+                  matchTime
                 )}
-
               </div>
 
-
               <span
-                class="status ${status.className}"
+                class="status ${escapeHtml(
+                  status.className
+                )}"
               >
-
                 ${escapeHtml(
                   status.text
                 )}
-
               </span>
 
             </div>
 
 
-            <!-- AWAY -->
-
             <div class="team">
 
               ${
-                away.logo
+                awayLogo
                   ? `
                     <img
                       class="team-logo"
                       src="${escapeHtml(
-                        away.logo
+                        awayLogo
                       )}"
                       alt=""
                       loading="lazy"
+                      decoding="async"
+                      referrerpolicy="no-referrer"
                     >
                   `
                   : ""
               }
 
-
               <div class="team-name">
-
                 ${escapeHtml(
                   away.name ||
                   t("unknownTeam")
                 )}
-
               </div>
 
             </div>
 
-
           </div>
 
 
-          <!-- DETAILS -->
-
           ${
             (
-              match?.venue ||
-              match?.city ||
+              venue ||
+              city ||
               channel
             )
               ? `
 
                 <div class="match-details">
 
-
                   ${
-                    match?.venue
+                    venue
                       ? `
                         <span>
                           🏟️
                           ${escapeHtml(
-                            match.venue
+                            venue
                           )}
                         </span>
                       `
                       : ""
                   }
 
-
                   ${
-                    match?.city
+                    city
                       ? `
                         <span>
                           📍
                           ${escapeHtml(
-                            match.city
+                            city
                           )}
                         </span>
                       `
                       : ""
                   }
-
 
                   ${
                     channel
@@ -2605,13 +3845,11 @@
                       : ""
                   }
 
-
                 </div>
 
               `
               : ""
           }
-
 
         </article>
 
@@ -2624,7 +3862,9 @@
        RENDER
     ===================================================== */
 
-    function renderMatches(matches) {
+    function renderMatches(
+      matches
+    ) {
 
       const container =
         document.getElementById(
@@ -2633,9 +3873,19 @@
 
 
       const list =
-        Array.isArray(matches)
-          ? [...matches]
-          : [];
+        (
+          Array.isArray(matches)
+            ? [...matches]
+            : []
+        )
+        .filter(
+          match =>
+            match &&
+            typeof match === "object"
+        )
+        .filter(
+          competitionIsVisible
+        );
 
 
       document.getElementById(
@@ -2646,29 +3896,21 @@
 
       const liveCount =
         list.filter(
-          match =>
-            [
-              "LIVE",
-              "HT"
-            ].includes(
-              match?.fixture?.status?.short
-            )
+          isLiveMatch
         ).length;
 
 
-      const liveBar =
-        document.getElementById(
-          "liveBar"
-        );
-
-
-      liveBar.classList.toggle(
+      document.getElementById(
+        "liveBar"
+      ).classList.toggle(
         "show",
         liveCount > 0
       );
 
 
-      if (!list.length) {
+      if (
+        !list.length
+      ) {
 
         container.innerHTML = `
 
@@ -2693,7 +3935,9 @@
       }
 
 
-      list.sort(compareMatches);
+      list.sort(
+        compareMatches
+      );
 
 
       const groups =
@@ -2701,7 +3945,8 @@
 
 
       for (
-        const match of list
+        const match
+        of list
       ) {
 
         const league =
@@ -2731,24 +3976,24 @@
       container.innerHTML =
         [...groups.entries()]
           .map(
-            ([league, matches]) => `
+            (
+              [
+                league,
+                leagueMatches
+              ]
+            ) => `
 
               <section class="league">
 
+                <div class="league-header">
 
-                <div
-                  class="league-header"
-                >
+                  <div class="league-name">
 
-                  <div
-                    class="league-name"
-                  >
-
-                    <span>
+                    <span aria-hidden="true">
                       🏆
                     </span>
 
-                    <span>
+                    <span class="league-name-text">
                       ${escapeHtml(
                         league
                       )}
@@ -2756,24 +4001,19 @@
 
                   </div>
 
+                  <div class="league-count">
 
-                  <div
-                    class="league-count"
-                  >
-
-                    ${matches.length}
+                    ${leagueMatches.length}
 
                   </div>
 
                 </div>
 
-
-                ${matches
+                ${leagueMatches
                   .map(
                     renderMatch
                   )
                   .join("")}
-
 
               </section>
 
@@ -2785,10 +4025,49 @@
 
 
     /* =====================================================
-       LOAD
+       LOAD MATCHES
+       Prevent stale requests from overwriting
+       newer requests.
     ===================================================== */
 
-    async function loadMatches() {
+    let loadingMatches =
+      false;
+
+
+    let requestSequence =
+      0;
+
+
+    async function loadMatches(
+      options = {}
+    ) {
+
+      if (
+        loadingMatches
+      ) {
+
+        return;
+
+      }
+
+
+      loadingMatches =
+        true;
+
+
+      const requestId =
+        ++requestSequence;
+
+
+      const preserveScroll =
+        options.preserveScroll === true;
+
+
+      const savedScrollY =
+        preserveScroll
+          ? window.scrollY
+          : 0;
+
 
       const container =
         document.getElementById(
@@ -2796,32 +4075,69 @@
         );
 
 
-      container.innerHTML = `
+      const refreshBtn =
+        document.getElementById(
+          "refreshBtn"
+        );
 
-        <div class="message">
 
-          <div class="message-icon">
-            ⏳
+      const previousHeight =
+        container.offsetHeight;
+
+
+      if (
+        preserveScroll
+      ) {
+
+        container.style.minHeight =
+          `${Math.max(
+            previousHeight,
+            1
+          )}px`;
+
+      }
+
+
+      if (
+        !window.currentMatches ||
+        !preserveScroll
+      ) {
+
+        container.innerHTML = `
+
+          <div class="message">
+
+            <div class="message-icon">
+              ⏳
+            </div>
+
+            <div>
+              ${escapeHtml(
+                t("loading")
+              )}
+            </div>
+
           </div>
 
-          <div>
-            ${escapeHtml(
-              t("loading")
-            )}
-          </div>
+        `;
 
-        </div>
+      }
 
-      `;
+
+      refreshBtn.classList.add(
+        "loading"
+      );
 
 
       try {
 
         const response =
           await fetch(
+
             `${API}?date=${encodeURIComponent(
               currentDate
             )}`,
+
             {
               method:
                 "GET",
@@ -2833,7 +4149,9 @@
                 Accept:
                   "application/json"
               }
+
             }
+
           );
 
 
@@ -2858,12 +4176,60 @@
         );
 
 
-        const matches =
+        /*
+          Ignore a response belonging
+          to an older request.
+        */
+
+        if (
+          requestId !==
+          requestSequence
+        ) {
+
+          return;
+
+        }
+
+
+        let matches = [];
+
+
+        if (
           Array.isArray(
-            json.data
+            json?.data
           )
-            ? json.data
-            : [];
+        ) {
+
+          matches =
+            json.data;
+
+        } else if (
+          Array.isArray(json)
+        ) {
+
+          /*
+            Also support an API that
+            directly returns an array.
+          */
+
+          matches =
+            json;
+
+        } else if (
+          Array.isArray(
+            json?.matches
+          )
+        ) {
+
+          /*
+            Support:
+            { matches: [...] }
+          */
+
+          matches =
+            json.matches;
+
+        }
 
 
         window.currentMatches =
@@ -2883,46 +4249,126 @@
         );
 
 
-        document.getElementById(
-          "matchCount"
-        ).textContent =
-          "0";
+        /*
+          Do not show an error from
+          an outdated request.
+        */
+
+        if (
+          requestId !==
+          requestSequence
+        ) {
+
+          return;
+
+        }
 
 
-        document.getElementById(
-          "liveBar"
-        ).classList.remove(
-          "show"
-        );
+        if (
+          !preserveScroll ||
+          !window.currentMatches
+        ) {
+
+          document.getElementById(
+            "matchCount"
+          ).textContent =
+            "0";
 
 
-        container.innerHTML = `
+          document.getElementById(
+            "liveBar"
+          ).classList.remove(
+            "show"
+          );
 
-          <div class="message">
 
-            <div class="message-icon">
-              ⚠️
+          container.innerHTML = `
+
+            <div class="message">
+
+              <div class="message-icon">
+                ⚠️
+              </div>
+
+              <div>
+                ${escapeHtml(
+                  t("error")
+                )}
+              </div>
+
+              <button
+                class="retry"
+                type="button"
+                id="retryButton"
+              >
+                ${escapeHtml(
+                  t("retry")
+                )}
+              </button>
+
             </div>
 
-            <div>
-              ${escapeHtml(
-                t("error")
-              )}
-            </div>
+          `;
 
-            <button
-              class="retry"
-              type="button"
-              onclick="loadMatches()"
-            >
-              ${escapeHtml(
-                t("retry")
-              )}
-            </button>
 
-          </div>
+          document
+            .getElementById(
+              "retryButton"
+            )
+            ?.addEventListener(
+              "click",
+              () => {
 
-        `;
+                loadMatches();
+
+              }
+            );
+
+        }
+
+      } finally {
+
+        /*
+          Only the latest request controls
+          the loading state.
+        */
+
+        if (
+          requestId ===
+          requestSequence
+        ) {
+
+          loadingMatches =
+            false;
+
+
+          refreshBtn.classList.remove(
+            "loading"
+          );
+
+
+          if (
+            preserveScroll
+          ) {
+
+            requestAnimationFrame(
+              () => {
+
+                window.scrollTo(
+                  0,
+                  savedScrollY
+                );
+
+
+                container.style.minHeight =
+                  "";
+
+              }
+            );
+
+          }
+
+        }
 
       }
 
@@ -2934,38 +4380,139 @@
     ===================================================== */
 
     const timezoneList = [
-      ["auto", "Automatic"],
-      ["UTC", "UTC"],
-      ["Asia/Riyadh", "Riyadh"],
-      ["Asia/Dubai", "Dubai"],
-      ["Asia/Qatar", "Doha"],
-      ["Africa/Cairo", "Cairo"],
-      ["Africa/Casablanca", "Casablanca"],
-      ["Africa/Tunis", "Tunis"],
-      ["Africa/Algiers", "Algiers"],
-      ["Europe/London", "London"],
-      ["Europe/Paris", "Paris"],
-      ["Europe/Berlin", "Berlin"],
-      ["America/New_York", "New York"],
-      ["America/Los_Angeles", "Los Angeles"],
-      ["Asia/Tokyo", "Tokyo"],
-      ["Asia/Kolkata", "Kolkata"]
+
+      [
+        "auto",
+        "Automatic"
+      ],
+
+      [
+        "UTC",
+        "UTC"
+      ],
+
+      [
+        "Asia/Riyadh",
+        "Riyadh"
+      ],
+
+      [
+        "Asia/Dubai",
+        "Dubai"
+      ],
+
+      [
+        "Asia/Qatar",
+        "Doha"
+      ],
+
+      [
+        "Africa/Cairo",
+        "Cairo"
+      ],
+
+      [
+        "Africa/Casablanca",
+        "Casablanca"
+      ],
+
+      [
+        "Africa/Tunis",
+        "Tunis"
+      ],
+
+      [
+        "Africa/Algiers",
+        "Algiers"
+      ],
+
+      [
+        "Europe/London",
+        "London"
+      ],
+
+      [
+        "Europe/Paris",
+        "Paris"
+      ],
+
+      [
+        "Europe/Berlin",
+        "Berlin"
+      ],
+
+      [
+        "America/New_York",
+        "New York"
+      ],
+
+      [
+        "America/Los_Angeles",
+        "Los Angeles"
+      ],
+
+      [
+        "Asia/Tokyo",
+        "Tokyo"
+      ],
+
+      [
+        "Asia/Kolkata",
+        "Kolkata"
+      ]
+
     ];
 
 
     function populateTimezoneSelect() {
 
       const select =
-        document.getElementById("settingTimezone");
+        document.getElementById(
+          "settingTimezone"
+        );
 
-      select.innerHTML = timezoneList
-        .map(([value, label]) =>
-          `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`
-        )
-        .join("");
+
+      select.innerHTML =
+        timezoneList
+          .map(
+            (
+              [
+                value,
+                label
+              ]
+            ) => {
+
+              const translated =
+                value === "auto"
+                  ? t("automatic")
+                  : label;
+
+
+              return `
+
+                <option
+                  value="${escapeHtml(
+                    value
+                  )}"
+                >
+                  ${escapeHtml(
+                    translated
+                  )}
+                </option>
+
+              `;
+
+            }
+          )
+          .join("");
+
 
       select.value =
-        timezoneList.some(item => item[0] === appSettings.timezone)
+        timezoneList.some(
+          item =>
+            item[0] ===
+            appSettings.timezone
+        )
           ? appSettings.timezone
           : "auto";
 
@@ -2974,86 +4521,374 @@
 
     function syncSettingsControls() {
 
-      document.getElementById("settingLanguage").value = language;
-      document.getElementById("settingTimezone").value = appSettings.timezone;
-      document.getElementById("settingTimeFormat").value = appSettings.timeFormat;
+      document.getElementById(
+        "settingLanguage"
+      ).value =
+        language;
+
+
+      document.getElementById(
+        "settingTimezone"
+      ).value =
+        appSettings.timezone;
+
+
+      document.getElementById(
+        "settingTimeFormat"
+      ).value =
+        appSettings.timeFormat;
+
+
+      document.getElementById(
+        "settingCompetitionFilter"
+      ).value =
+        appSettings.competitionFilter;
 
     }
 
 
     function openSettings() {
 
+      populateTimezoneSelect();
+
       syncSettingsControls();
 
-      const modal = document.getElementById("settingsModal");
-      modal.classList.add("show");
-      modal.setAttribute("aria-hidden", "false");
+
+      const modal =
+        document.getElementById(
+          "settingsModal"
+        );
+
+
+      modal.classList.add(
+        "show"
+      );
+
+
+      modal.setAttribute(
+        "aria-hidden",
+        "false"
+      );
+
+
+      document.body.classList.add(
+        "modal-open"
+      );
+
+
+      document
+        .getElementById(
+          "settingsClose"
+        )
+        .focus();
 
     }
 
 
     function closeSettings() {
 
-      const modal = document.getElementById("settingsModal");
-      modal.classList.remove("show");
-      modal.setAttribute("aria-hidden", "true");
+      const modal =
+        document.getElementById(
+          "settingsModal"
+        );
+
+
+      modal.classList.remove(
+        "show"
+      );
+
+
+      modal.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+
+      document.body.classList.remove(
+        "modal-open"
+      );
+
+
+      document
+        .getElementById(
+          "settingsBtn"
+        )
+        .focus();
 
     }
 
 
-    document.getElementById("settingsBtn").addEventListener("click", openSettings);
-    document.getElementById("settingsClose").addEventListener("click", closeSettings);
-    document.getElementById("settingsBackdrop").addEventListener("click", closeSettings);
+    document
+      .getElementById(
+        "settingsBtn"
+      )
+      .addEventListener(
+        "click",
+        openSettings
+      );
 
 
-    document.getElementById("settingsSave").addEventListener("click", () => {
-
-      language =
-        document.getElementById("settingLanguage").value;
-
-      appSettings.timezone =
-        document.getElementById("settingTimezone").value;
-
-      appSettings.timeFormat =
-        document.getElementById("settingTimeFormat").value;
-
-      appSettings.language = language;
-
-      localStorage.setItem("modarraj-language", language);
-      localStorage.setItem("modarraj-timezone", appSettings.timezone);
-      localStorage.setItem("modarraj-time-format", appSettings.timeFormat);
-
-      applyLanguage();
-      closeSettings();
-
-    });
+    document
+      .getElementById(
+        "settingsClose"
+      )
+      .addEventListener(
+        "click",
+        closeSettings
+      );
 
 
-    document.getElementById("settingsReset").addEventListener("click", () => {
-
-      language = "en";
-
-      appSettings = {
-        language: "en",
-        timezone: "auto",
-        timeFormat: "24"
-      };
-
-      localStorage.setItem("modarraj-language", "en");
-      localStorage.setItem("modarraj-timezone", "auto");
-      localStorage.setItem("modarraj-time-format", "24");
-
-      syncSettingsControls();
-      applyLanguage();
-
-    });
+    document
+      .getElementById(
+        "settingsBackdrop"
+      )
+      .addEventListener(
+        "click",
+        closeSettings
+      );
 
 
-    document.addEventListener("keydown", event => {
-      if (event.key === "Escape") {
-        closeSettings();
+    /* =====================================================
+       SAVE SETTINGS
+    ===================================================== */
+
+    document
+      .getElementById(
+        "settingsSave"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          const oldTimezone =
+            appSettings.timezone;
+
+
+          const newLanguage =
+            document
+              .getElementById(
+                "settingLanguage"
+              )
+              .value;
+
+
+          const newTimezone =
+            document
+              .getElementById(
+                "settingTimezone"
+              )
+              .value;
+
+
+          const newTimeFormat =
+            document
+              .getElementById(
+                "settingTimeFormat"
+              )
+              .value;
+
+
+          const newCompetitionFilter =
+            document
+              .getElementById(
+                "settingCompetitionFilter"
+              )
+              .value;
+
+
+          language =
+            supportedLanguages.includes(
+              newLanguage
+            )
+              ? newLanguage
+              : "en";
+
+
+          appSettings.language =
+            language;
+
+
+          appSettings.timezone =
+            isValidTimezone(
+              newTimezone
+            )
+              ? newTimezone
+              : "auto";
+
+
+          appSettings.timeFormat =
+            supportedTimeFormats.includes(
+              newTimeFormat
+            )
+              ? newTimeFormat
+              : "24";
+
+
+          appSettings.competitionFilter =
+            supportedCompetitionFilters.includes(
+              newCompetitionFilter
+            )
+              ? newCompetitionFilter
+              : "main";
+
+
+          setStoredValue(
+            STORAGE_KEYS.language,
+            language
+          );
+
+
+          setStoredValue(
+            STORAGE_KEYS.timezone,
+            appSettings.timezone
+          );
+
+
+          setStoredValue(
+            STORAGE_KEYS.timeFormat,
+            appSettings.timeFormat
+          );
+
+
+          setStoredValue(
+            STORAGE_KEYS.competitionFilter,
+            appSettings.competitionFilter
+          );
+
+
+          /*
+            If timezone changed,
+            recalculate today's date.
+          */
+
+          if (
+            oldTimezone !==
+            appSettings.timezone
+          ) {
+
+            currentDate =
+              getDateOffset(0);
+
+          }
+
+
+          applyLanguage();
+
+          closeSettings();
+
+
+          loadMatches({
+            preserveScroll:
+              true
+          });
+
+        }
+      );
+
+
+    /* =====================================================
+       RESET SETTINGS
+    ===================================================== */
+
+    document
+      .getElementById(
+        "settingsReset"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          language =
+            "en";
+
+
+          appSettings = {
+
+            language:
+              "en",
+
+            timezone:
+              "auto",
+
+            timeFormat:
+              "24",
+
+            competitionFilter:
+              "main"
+
+          };
+
+
+          setStoredValue(
+            STORAGE_KEYS.language,
+            "en"
+          );
+
+
+          setStoredValue(
+            STORAGE_KEYS.timezone,
+            "auto"
+          );
+
+
+          setStoredValue(
+            STORAGE_KEYS.timeFormat,
+            "24"
+          );
+
+
+          setStoredValue(
+            STORAGE_KEYS.competitionFilter,
+            "main"
+          );
+
+
+          currentDate =
+            getDateOffset(0);
+
+
+          populateTimezoneSelect();
+
+          syncSettingsControls();
+
+          applyLanguage();
+
+          closeSettings();
+
+
+          loadMatches({
+            preserveScroll:
+              true
+          });
+
+        }
+      );
+
+
+    /* =====================================================
+       ESC
+    ===================================================== */
+
+    document.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Escape" &&
+          document
+            .getElementById(
+              "settingsModal"
+            )
+            .classList
+            .contains("show")
+        ) {
+
+          closeSettings();
+
+        }
+
       }
-    });
+    );
 
 
     /* =====================================================
@@ -3071,12 +4906,16 @@
           language =
             "en";
 
-          appSettings.language = language;
 
-          localStorage.setItem(
-            "modarraj-language",
+          appSettings.language =
+            language;
+
+
+          setStoredValue(
+            STORAGE_KEYS.language,
             language
           );
+
 
           applyLanguage();
 
@@ -3095,12 +4934,16 @@
           language =
             "ar";
 
-          appSettings.language = language;
 
-          localStorage.setItem(
-            "modarraj-language",
+          appSettings.language =
+            language;
+
+
+          setStoredValue(
+            STORAGE_KEYS.language,
             language
           );
+
 
           applyLanguage();
 
@@ -3118,7 +4961,14 @@
       )
       .addEventListener(
         "click",
-        loadMatches
+        () => {
+
+          loadMatches({
+            preserveScroll:
+              true
+          });
+
+        }
       );
 
 
@@ -3137,34 +4987,30 @@
             "click",
             () => {
 
-              document
-                .querySelectorAll(
-                  ".date-button"
-                )
-                .forEach(
-                  item =>
-                    item.classList
-                      .remove(
-                        "active"
-                      )
-                );
-
-
-              button.classList.add(
-                "active"
-              );
-
-
               const offset =
                 Number(
                   button.dataset.offset
                 );
 
 
-              currentDate =
+              const newDate =
                 getDateOffset(
                   offset
                 );
+
+
+              if (
+                newDate ===
+                currentDate
+              ) {
+
+                return;
+
+              }
+
+
+              currentDate =
+                newDate;
 
 
               updateDateLabels();
@@ -3184,7 +5030,9 @@
     ===================================================== */
 
     populateTimezoneSelect();
+
     syncSettingsControls();
+
     applyLanguage();
 
     updateDateLabels();
@@ -3194,22 +5042,20 @@
 
     /* =====================================================
        AUTO REFRESH
+       Every 60 seconds.
     ===================================================== */
 
     setInterval(
       () => {
 
-        /*
-          تحديث تلقائي كل دقيقة.
-          مفيد للمباريات المباشرة.
-        */
-
-        loadMatches();
+        loadMatches({
+          preserveScroll:
+            true
+        });
 
       },
       60 * 1000
     );
-
 
   </script>
 
