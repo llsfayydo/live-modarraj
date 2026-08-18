@@ -3271,6 +3271,58 @@
     }
 
 
+    /*
+      TheSportsDB often prefixes league names with a
+      country/nationality adjective (e.g. "Spanish La Liga",
+      "Saudi-Arabian Pro League"). Stripping these known
+      adjectives before matching means a single keyword like
+      "la liga" keeps working even if the exact prefixed form
+      changes or a league we haven't seen before uses the same
+      pattern — instead of relying only on a growing list of
+      exact prefixed strings.
+    */
+
+    const COUNTRY_ADJECTIVES = [
+      "english", "spanish", "italian", "german", "french",
+      "saudi arabian", "saudi-arabian", "saudi",
+      "egyptian", "qatari", "emirati", "uae",
+      "kuwaiti", "tunisian", "algerian", "moroccan",
+      "iraqi", "portuguese", "dutch", "turkish",
+      "brazilian", "argentine", "american"
+    ];
+
+    function stripCountryAdjective(
+      value
+    ) {
+
+      let result = value;
+
+      for (
+        const adjective
+        of COUNTRY_ADJECTIVES
+      ) {
+
+        const prefix =
+          `${adjective} `;
+
+        if (
+          result.startsWith(prefix)
+        ) {
+
+          result =
+            result.slice(
+              prefix.length
+            );
+
+        }
+
+      }
+
+      return result.trim();
+
+    }
+
+
     function isWomenCompetition(
       name
     ) {
@@ -3299,8 +3351,21 @@
     }
 
 
+    const PRIORITY_COUNTRIES =
+      new Set([
+        "saudi arabia",
+        "england",
+        "spain",
+        "italy",
+        "germany",
+        "france",
+        "world"
+      ]);
+
+
     function getCompetitionType(
-      name
+      name,
+      country = ""
     ) {
 
       if (
@@ -3334,10 +3399,31 @@
             )
         );
 
+      if (isMain) return "main";
 
-      return isMain
-        ? "main"
-        : "other";
+
+      /*
+        Fallback: any competition from a country we care about
+        (Saudi Arabia + the other priority countries below) is
+        treated as "main" even if its exact name isn't in our
+        keyword list yet. This means a brand-new cup or
+        rebranded competition from these countries shows up
+        automatically instead of silently disappearing until
+        someone notices and updates the keyword list.
+      */
+
+      if (
+        PRIORITY_COUNTRIES.has(
+          normalizeLeagueName(country)
+        )
+      ) {
+
+        return "main";
+
+      }
+
+
+      return "other";
 
     }
 
@@ -3349,7 +3435,8 @@
       const type =
         getCompetitionType(
           match?.league?.originalName ||
-          match?.league?.name
+          match?.league?.name,
+          match?.league?.country
         );
 
 
@@ -3652,6 +3739,48 @@
        MATCH CARD
     ===================================================== */
 
+    /*
+      Team/league objects carry two names: `name` (Arabic when
+      the server recognizes the team/league, otherwise the raw
+      English name as a fallback) and `originalName` (always
+      the raw English name from TheSportsDB). Until now the UI
+      always showed `name` regardless of the language toggle,
+      so switching to English never revealed the raw names and
+      switching to Arabic silently showed English for anything
+      outside the small translation dictionary. This picks the
+      right one for the active language, falling back to
+      whichever is available.
+    */
+
+    function pickLocalizedName(
+      entity
+    ) {
+
+      const original =
+        entity?.originalName || "";
+
+      const localized =
+        entity?.name || "";
+
+      if (
+        appSettings.language === "ar"
+      ) {
+
+        return (
+          localized ||
+          original
+        );
+
+      }
+
+      return (
+        original ||
+        localized
+      );
+
+    }
+
+
     function renderMatch(
       match
     ) {
@@ -3698,7 +3827,9 @@
 
 
       const leagueName =
-        match?.league?.name ||
+        pickLocalizedName(
+          match?.league
+        ) ||
         t("otherCompetitions");
 
 
@@ -3782,7 +3913,7 @@
 
               <div class="team-name">
                 ${escapeHtml(
-                  home.name ||
+                  pickLocalizedName(home) ||
                   t("unknownTeam")
                 )}
               </div>
@@ -3838,7 +3969,7 @@
 
               <div class="team-name">
                 ${escapeHtml(
-                  away.name ||
+                  pickLocalizedName(away) ||
                   t("unknownTeam")
                 )}
               </div>
