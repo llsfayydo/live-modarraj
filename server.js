@@ -71,23 +71,12 @@ const LEAGUE_PRIORITY = {
   "English Premier League": 88,
   "Premier League": 88,
   "La Liga": 86,
-  "Spanish La Liga": 86,
   "Serie A": 84,
-  "Italian Serie A": 84,
   "Bundesliga": 82,
-  "German Bundesliga": 82,
   "Ligue 1": 80,
-  "French Ligue 1": 80,
   "Saudi Professional League": 78,
   "Saudi-Arabian Pro League": 78,
   "Saudi Pro League": 78,
-  "Saudi King Cup": 65,
-  "FA Cup": 63,
-  "Copa del Rey": 61,
-  "Coppa Italia": 59,
-  "DFB Pokal": 57,
-  "DFB-Pokal": 57,
-  "Coupe de France": 55,
   "Botola Pro": 72,
   "Moroccan Botola": 72,
   "Egyptian Premier League": 70,
@@ -121,14 +110,12 @@ const TEAM_PRIORITY = [
 ];
 
 const TEAM_AR = {
-  /* ===== Saudi Pro League ===== */
   "Al-Hilal":"الهلال","Al Hilal":"الهلال",
   "Al-Hilal Riyadh":"الهلال",
   "Al-Nassr":"النصر","Al Nassr":"النصر",
   "Al-Nassr Riyadh":"النصر",
   "Al-Ittihad":"الاتحاد","Al Ittihad":"الاتحاد",
   "Al-Ahli":"الأهلي","Al Ahli":"الأهلي",
-  "Al-Ahli Saudi":"الأهلي","Al-Ahli Saudi FC":"الأهلي",
   "Al-Shabab":"الشباب","Al Shabab":"الشباب",
   "Al-Ettifaq":"الاتفاق","Al Ettifaq":"الاتفاق",
   "Al-Taawoun":"التعاون","Al Taawoun":"التعاون",
@@ -138,150 +125,18 @@ const TEAM_AR = {
   "Al-Khaleej":"الخليج","Al Khaleej":"الخليج",
   "Al-Okhdood":"الأخدود","Al Okhdood":"الأخدود",
   "Al-Qadsiah":"القادسية","Al Qadsiah":"القادسية",
-  "Al-Fayha":"الفيحاء","Al Fayha":"الفيحاء",
-  "Al-Kholood":"الخلود","Al Kholood":"الخلود",
-  "Al-Najma":"النجمة","Al Najma":"النجمة",
-  "Damac":"ضمك","Damac FC":"ضمك",
-  "Al-Riyadh":"الرياض","Al Riyadh":"الرياض",
-  "Al-Hazem":"الحزم","Al Hazem":"الحزم",
-  "Al-Orobah":"العروبة","Al Orobah":"العروبة",
-  "Al-Zulfi":"الزلفي","Al Zulfi":"الزلفي",
-
-  /* ===== Other Arab leagues (Egypt / UAE / Qatar / Iraq) ===== */
-  "Al Ahly":"الأهلي المصري","Al Ahly SC":"الأهلي المصري",
-  "Zamalek":"الزمالك","Zamalek SC":"الزمالك",
-  "Pyramids FC":"بيراميدز","Pyramids":"بيراميدز",
-  "Ismaily":"الإسماعيلي","Ismaily SC":"الإسماعيلي",
-  "Al Masry":"المصري","Al Masry SC":"المصري",
-  "Al Ain":"العين","Al Ain FC":"العين",
-  "Al Wahda":"الوحدة الإماراتي","Al Wahda FC":"الوحدة الإماراتي",
-  "Al Wasl":"الوصل","Al Wasl FC":"الوصل",
-  "Sharjah":"الشارقة","Sharjah FC":"الشارقة",
-  "Shabab Al Ahli":"شباب الأهلي",
-  "Al Sadd":"السد","Al-Sadd":"السد",
-  "Al Duhail":"الدحيل","Al-Duhail":"الدحيل",
-  "Al Rayyan":"الريان","Al-Rayyan":"الريان",
-  "Al Gharafa":"الغرافة","Al-Gharafa":"الغرافة",
-  "Al Zawraa":"الزوراء",
-  "Al Quwa Al Jawiya":"القوة الجوية",
-
-  /* ===== English Premier League ===== */
-  "Arsenal":"أرسنال",
-  "Aston Villa":"أستون فيلا",
-  "Bournemouth":"بورنموث","AFC Bournemouth":"بورنموث",
-  "Brentford":"برينتفورد",
-  "Brighton and Hove Albion":"برايتون","Brighton":"برايتون",
-  "Burnley":"برنلي",
-  "Chelsea":"تشيلسي",
-  "Crystal Palace":"كريستال بالاس",
-  "Everton":"إيفرتون",
-  "Fulham":"فولهام",
-  "Leeds United":"ليدز يونايتد",
-  "Liverpool":"ليفربول",
+  "Real Madrid":"ريال مدريد","Barcelona":"برشلونة",
+  "Atletico Madrid":"أتلتيكو مدريد",
   "Manchester City":"مانشستر سيتي",
   "Manchester United":"مانشستر يونايتد",
-  "Newcastle United":"نيوكاسل يونايتد",
-  "Nottingham Forest":"نوتنغهام فورست",
-  "Sunderland":"سندرلاند",
+  "Liverpool":"ليفربول","Arsenal":"أرسنال","Chelsea":"تشيلسي",
   "Tottenham Hotspur":"توتنهام",
-  "West Ham United":"وست هام يونايتد",
-  "Wolverhampton Wanderers":"وولفرهامبتون",
-
-  /* ===== La Liga ===== */
-  "Athletic Bilbao":"أتلتيك بيلباو",
-  "Atletico Madrid":"أتلتيكو مدريد","Atlético Madrid":"أتلتيكو مدريد",
-  "Barcelona":"برشلونة",
-  "Celta Vigo":"سلتا فيغو",
-  "Deportivo Alaves":"ديبورتيفو ألافيس","Deportivo Alavés":"ديبورتيفو ألافيس",
-  "Elche":"إلتشي",
-  "Espanyol":"إسبانيول",
-  "Getafe":"خيتافي",
-  "Girona":"جيرونا",
-  "Levante":"ليفانتي",
-  "Mallorca":"مايوركا",
-  "Osasuna":"أوساسونا",
-  "Rayo Vallecano":"رايو فاليكانو",
-  "Real Betis":"ريال بيتيس",
-  "Real Madrid":"ريال مدريد",
-  "Real Oviedo":"ريال أوفييدو",
-  "Real Sociedad":"ريال سوسيداد",
-  "Sevilla":"إشبيلية",
-  "Valencia":"فالنسيا",
-  "Villarreal":"فياريال",
-
-  /* ===== Serie A ===== */
-  "Atalanta":"أتالانتا",
-  "Bologna":"بولونيا",
-  "Cagliari":"كالياري",
-  "Como":"كومو",
-  "Cremonese":"كريمونيزي",
-  "Fiorentina":"فيورنتينا",
-  "Genoa":"جنوى",
-  "Hellas Verona":"هيلاس فيرونا",
-  "Inter Milan":"إنتر ميلان","Internazionale":"إنتر ميلان",
-  "Juventus":"يوفنتوس",
-  "Lazio":"لاتسيو",
-  "Lecce":"ليتشي",
-  "AC Milan":"ميلان",
-  "Napoli":"نابولي",
-  "Parma":"بارما",
-  "Pisa":"بيزا",
-  "Roma":"روما",
-  "Sassuolo":"ساسولو",
-  "Torino":"تورينو",
-  "Udinese":"أودينيزي",
-
-  /* ===== Bundesliga ===== */
   "Bayern Munich":"بايرن ميونخ",
   "Borussia Dortmund":"بوروسيا دورتموند",
-  "RB Leipzig":"آر بي لايبزيغ",
-  "Bayer Leverkusen":"باير ليفركوزن",
-  "Eintracht Frankfurt":"آينتراخت فرانكفورت",
-  "VfB Stuttgart":"شتوتغارت",
-  "Borussia Monchengladbach":"بوروسيا مونشنغلادباخ","Borussia Mönchengladbach":"بوروسيا مونشنغلادباخ",
-  "Werder Bremen":"فيردر بريمن",
-  "VfL Wolfsburg":"فولفسبورغ","Wolfsburg":"فولفسبورغ",
-  "Mainz 05":"ماينز",
-  "SC Freiburg":"فرايبورغ","Freiburg":"فرايبورغ",
-  "Union Berlin":"يونيون برلين",
-  "FC Augsburg":"أوغسبورغ","Augsburg":"أوغسبورغ",
-  "TSG Hoffenheim":"هوفنهايم","Hoffenheim":"هوفنهايم",
-  "FC Heidenheim":"هايدنهايم","Heidenheim":"هايدنهايم",
-  "FC St. Pauli":"سانكت باولي","St. Pauli":"سانكت باولي",
-  "FC Koln":"كولن","FC Köln":"كولن",
-  "Hamburger SV":"هامبورغ",
-
-  /* ===== Ligue 1 ===== */
-  "Paris Saint-Germain":"باريس سان جيرمان","PSG":"باريس سان جيرمان",
-  "Marseille":"مارسيليا",
-  "Monaco":"موناكو",
-  "Lyon":"ليون",
-  "Lille":"ليل",
-  "Nice":"نيس",
-  "Rennes":"رين",
-  "Strasbourg":"ستراسبورغ",
-  "Toulouse":"تولوز",
-  "Nantes":"نانت",
-  "Lens":"لانس",
-  "Brest":"بريست",
-  "Auxerre":"أوكسير",
-  "Le Havre":"لوهافر",
-  "Angers":"أنجيه",
-  "Metz":"ميتز",
-  "Paris FC":"باريس إف سي",
-  "Lorient":"لوريان",
-
-  /* ===== Other big European clubs (Champions League regulars) ===== */
-  "FC Porto":"بورتو","Porto":"بورتو",
-  "Benfica":"بنفيكا",
-  "Sporting CP":"سبورتينغ لشبونة","Sporting Lisbon":"سبورتينغ لشبونة",
-  "Ajax":"أياكس",
-  "PSV Eindhoven":"بي إس في آيندهوفن","PSV":"بي إس في آيندهوفن",
-  "Celtic":"سلتيك",
-  "Rangers":"رينجرز",
-  "Shakhtar Donetsk":"شاختار دونيتسك",
-  "Galatasaray":"غلطة سراي",
-  "Fenerbahce":"فنربخشة","Fenerbahçe":"فنربخشة"
+  "Paris Saint-Germain":"باريس سان جيرمان",
+  "PSG":"باريس سان جيرمان",
+  "Juventus":"يوفنتوس","Inter Milan":"إنتر ميلان",
+  "AC Milan":"ميلان","Napoli":"نابولي","Roma":"روما"
 };
 
 const LEAGUE_AR = {
@@ -297,13 +152,6 @@ const LEAGUE_AR = {
   "Saudi Professional League":"الدوري السعودي للمحترفين",
   "Saudi-Arabian Pro League":"الدوري السعودي للمحترفين",
   "Saudi Pro League":"الدوري السعودي للمحترفين",
-  "Saudi King Cup":"كأس خادم الحرمين الشريفين",
-  "FA Cup":"كأس الاتحاد الإنجليزي",
-  "Copa del Rey":"كأس ملك إسبانيا",
-  "Coppa Italia":"كأس إيطاليا",
-  "DFB Pokal":"كأس ألمانيا",
-  "DFB-Pokal":"كأس ألمانيا",
-  "Coupe de France":"كأس فرنسا",
   "Moroccan Botola":"الدوري المغربي",
   "Botola Pro":"الدوري المغربي للمحترفين",
   "Egyptian Premier League":"الدوري المصري الممتاز",
@@ -344,8 +192,15 @@ function statusOf(event) {
 }
 
 function priorityOf(event) {
-  const league = String(event?.strLeague || "");
-  const leagueBase = LEAGUE_PRIORITY[league] ?? 30;
+  const league = String(event?.strLeague || "").trim();
+  const normalizedLeague = league.toLowerCase().replace(/\s+/g, " ");
+
+  const exactPriority = LEAGUE_PRIORITY[league];
+  const variantPriority = Object.entries(LEAGUE_PRIORITY).find(
+    ([name]) => normalizedLeague === name.toLowerCase()
+  )?.[1];
+
+  const leagueBase = exactPriority ?? variantPriority ?? 30;
   const home = String(event?.strHomeTeam || "").toLowerCase();
   const away = String(event?.strAwayTeam || "").toLowerCase();
 
@@ -491,11 +346,14 @@ function mergeEvents(arrays) {
 
 function sortMatches(matches) {
   return matches.sort((a, b) => {
+    // أولوية البطولة أولًا حتى تظهر الدوريات الكبرى والسعودي في البداية.
+    if (b.priority !== a.priority) return b.priority - a.priority;
+
+    // داخل نفس مستوى البطولة: المباشر أولًا.
     const liveA = ["LIVE", "HT"].includes(a.fixture.status.short) ? 1 : 0;
     const liveB = ["LIVE", "HT"].includes(b.fixture.status.short) ? 1 : 0;
 
     if (liveA !== liveB) return liveB - liveA;
-    if (b.priority !== a.priority) return b.priority - a.priority;
 
     return new Date(a.fixture.date) - new Date(b.fixture.date);
   });
