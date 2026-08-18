@@ -192,15 +192,8 @@ function statusOf(event) {
 }
 
 function priorityOf(event) {
-  const league = String(event?.strLeague || "").trim();
-  const normalizedLeague = league.toLowerCase().replace(/\s+/g, " ");
-
-  const exactPriority = LEAGUE_PRIORITY[league];
-  const variantPriority = Object.entries(LEAGUE_PRIORITY).find(
-    ([name]) => normalizedLeague === name.toLowerCase()
-  )?.[1];
-
-  const leagueBase = exactPriority ?? variantPriority ?? 30;
+  const league = String(event?.strLeague || "");
+  const leagueBase = LEAGUE_PRIORITY[league] ?? 30;
   const home = String(event?.strHomeTeam || "").toLowerCase();
   const away = String(event?.strAwayTeam || "").toLowerCase();
 
@@ -346,14 +339,11 @@ function mergeEvents(arrays) {
 
 function sortMatches(matches) {
   return matches.sort((a, b) => {
-    // أولوية البطولة أولًا حتى تظهر الدوريات الكبرى والسعودي في البداية.
-    if (b.priority !== a.priority) return b.priority - a.priority;
-
-    // داخل نفس مستوى البطولة: المباشر أولًا.
     const liveA = ["LIVE", "HT"].includes(a.fixture.status.short) ? 1 : 0;
     const liveB = ["LIVE", "HT"].includes(b.fixture.status.short) ? 1 : 0;
 
     if (liveA !== liveB) return liveB - liveA;
+    if (b.priority !== a.priority) return b.priority - a.priority;
 
     return new Date(a.fixture.date) - new Date(b.fixture.date);
   });
