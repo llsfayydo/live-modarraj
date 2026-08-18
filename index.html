@@ -1174,6 +1174,77 @@
       font-weight: 800;
     }
 
+    .favorite-leagues-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .favorite-leagues-action {
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      color: white;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .favorite-leagues-action:hover {
+      border-color: var(--gold);
+    }
+
+    .favorite-filter-bar {
+      display: none;
+      align-items: center;
+      gap: 9px;
+      flex-wrap: wrap;
+      margin: 12px 0 16px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+    }
+
+    .favorite-filter-bar.show {
+      display: flex;
+    }
+
+    .favorite-filter-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .favorite-filter-chip {
+      border: 1px solid rgba(255, 193, 7, .35);
+      background: rgba(255, 193, 7, .09);
+      color: #ffd54a;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .favorite-filter-clear {
+      margin-inline-start: auto;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: white;
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 900;
+    }
+
+    .favorite-filter-clear:hover {
+      border-color: var(--gold);
+    }
+
     .settings-footer {
       display: flex;
 
@@ -1564,6 +1635,30 @@
 
     </div>
 
+    <!-- FAVORITE COMPETITIONS -->
+
+    <div
+      id="favoriteFilterBar"
+      class="favorite-filter-bar"
+      aria-live="polite"
+    >
+      <span
+        class="favorite-filter-label"
+        data-i18n="favoriteMatchesLabel"
+      >
+        Favorite competitions
+      </span>
+      <div id="favoriteFilterChips" style="display:flex;gap:7px;flex-wrap:wrap"></div>
+      <button
+        id="favoriteFilterClear"
+        class="favorite-filter-clear"
+        type="button"
+        data-i18n="favoriteShowAll"
+      >
+        Show all
+      </button>
+    </div>
+
     <!-- LIVE -->
 
     <div
@@ -1901,14 +1996,19 @@
           0
         </span>
 
-        <button
-          id="favoriteCompetitionsSave"
-          class="settings-primary"
-          type="button"
-          data-i18n="saveSettings"
-        >
-          Save
-        </button>
+        <div class="favorite-leagues-actions">
+          <button id="favoriteCompetitionsClear" class="favorite-leagues-action" type="button" data-i18n="favoriteClear">
+            Clear
+          </button>
+          <button
+            id="favoriteCompetitionsSave"
+            class="settings-primary"
+            type="button"
+            data-i18n="saveSettings"
+          >
+            Save
+          </button>
+        </div>
       </footer>
 
     </section>
@@ -2247,6 +2347,15 @@
         favoriteCompetitionsEmpty:
           "No leagues found.",
 
+        favoriteMatchesLabel:
+          "Favorite competitions",
+
+        favoriteShowAll:
+          "Show all",
+
+        favoriteClear:
+          "Clear",
+
         settingsTitle:
           "Settings",
 
@@ -2389,6 +2498,15 @@
 
         favoriteCompetitionsEmpty:
           "لم يتم العثور على بطولات.",
+
+        favoriteMatchesLabel:
+          "بطولاتك المفضلة",
+
+        favoriteShowAll:
+          "عرض الكل",
+
+        favoriteClear:
+          "مسح الاختيارات",
 
         settingsTitle:
           "الإعدادات",
@@ -4811,6 +4929,39 @@
       "Botola Pro":"الدوري المغربي للمحترفين"
     };
 
+    function renderFavoriteFilterBar() {
+      const bar = document.getElementById("favoriteFilterBar");
+      const chips = document.getElementById("favoriteFilterChips");
+      if (!bar || !chips) return;
+
+      const ids = Array.isArray(appSettings.favoriteCompetitions)
+        ? appSettings.favoriteCompetitions.map(String)
+        : [];
+
+      if (!ids.length) {
+        bar.classList.remove("show");
+        chips.innerHTML = "";
+        return;
+      }
+
+      const byId = new Map(availableFavoriteLeagues.map(league => [String(league.id), league]));
+      chips.innerHTML = ids.map(id => {
+        const league = byId.get(id);
+        const name = league ? localizedLeagueName(league) : id;
+        return `<span class="favorite-filter-chip">⭐ ${escapeHtml(name)}</span>`;
+      }).join("");
+      bar.classList.add("show");
+    }
+
+    function clearFavoriteCompetitions() {
+      appSettings.favoriteCompetitions = [];
+      setStoredValue(STORAGE_KEYS.favoriteCompetitions, JSON.stringify([]));
+      favoriteCompetitionsDraft = [];
+      updateFavoriteLeaguesButton();
+      renderFavoriteFilterBar();
+      renderMatches(window.currentMatches || []);
+    }
+
     function updateFavoriteLeaguesButton() {
       const button = document.getElementById("favoriteCompetitionsBtn");
       if (!button) return;
@@ -4906,6 +5057,7 @@
         availableFavoriteLeagues = Array.isArray(json?.data) ? json.data : [];
         favoriteCompetitionsLoaded = true;
         renderFavoriteLeaguesList();
+        renderFavoriteFilterBar();
       } catch (error) {
         console.error("Favorite leagues error:", error);
 
@@ -4928,6 +5080,7 @@
         availableFavoriteLeagues = [...map.values()].sort((a,b) => a.name.localeCompare(b.name));
         favoriteCompetitionsLoaded = true;
         renderFavoriteLeaguesList();
+        renderFavoriteFilterBar();
       }
     }
 
@@ -4976,6 +5129,7 @@
 
 
       updateFavoriteLeaguesButton();
+      renderFavoriteFilterBar();
 
     }
 
@@ -5106,9 +5260,18 @@
           JSON.stringify(appSettings.favoriteCompetitions)
         );
         updateFavoriteLeaguesButton();
+        renderFavoriteFilterBar();
         closeFavoriteLeagues();
         renderMatches(window.currentMatches || []);
       });
+
+    document
+      .getElementById("favoriteCompetitionsClear")
+      .addEventListener("click", clearFavoriteCompetitions);
+
+    document
+      .getElementById("favoriteFilterClear")
+      .addEventListener("click", clearFavoriteCompetitions);
 
     /* =====================================================
        SAVE SETTINGS
