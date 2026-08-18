@@ -63,6 +63,7 @@ const api = axios.create({
 const cache = new Map();
 const CACHE_TIME = 30_000;
 const LIVE_POLL_INTERVAL = 20_000;
+const LEAGUES_CACHE_TIME = 6 * 60 * 60_000;
 
 const LEAGUE_PRIORITY = {
   "UEFA Champions League": 100,
@@ -278,6 +279,74 @@ async function fetchEventsDay(date) {
   }
 }
 
+async function fetchSoccerLeagues() {
+  if (!API_KEY) throw new Error("THESPORTSDB_API_KEY غير موجود");
+
+  const cached = cache.get("soccer-leagues");
+  if (cached && Date.now() < cached.expiresAt) {
+    return cached.data;
+  }
+
+  let rows = [];
+
+  try {
+    const response = await api.get(
+      `https://www.thesportsdb.com/api/v1/json/${API_KEY}/all_leagues.php`
+    );
+
+    rows = Array.isArray(response.data?.leagues)
+      ? response.data.leagues
+      : [];
+  } catch (error) {
+    console.warn("V1 all_leagues failed, trying V2:", error.response?.status || error.message);
+
+    try {
+      const response = await api.get(
+        "https://www.thesportsdb.com/api/v2/json/all/leagues",
+        {
+          headers: {
+            "X-API-KEY": API_KEY,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      rows = Array.isArray(response.data?.leagues)
+        ? response.data.leagues
+        : Array.isArray(response.data?.data)
+          ? response.data.data
+          : [];
+    } catch (error2) {
+      console.error("all soccer leagues:", error2.response?.status || error2.message);
+      throw new Error("تعذر جلب قائمة البطولات من TheSportsDB");
+    }
+  }
+
+  const leagues = rows
+    .filter(league => String(league?.strSport || league?.sport || "").toLowerCase() === "soccer")
+    .map(league => ({
+      id: String(league?.idLeague || league?.id || ""),
+      name: String(league?.strLeague || league?.name || "").trim(),
+      alternateName: String(league?.strLeagueAlternate || league?.alternateName || "").trim(),
+      country: String(league?.strCountry || league?.country || "").trim(),
+      sport: "Soccer"
+    }))
+    .filter(league => league.id && league.name)
+    .sort((a, b) => {
+      const pa = LEAGUE_PRIORITY[a.name] ?? 30;
+      const pb = LEAGUE_PRIORITY[b.name] ?? 30;
+      if (pa !== pb) return pb - pa;
+      return a.name.localeCompare(b.name);
+    });
+
+  cache.set("soccer-leagues", {
+    data: leagues,
+    expiresAt: Date.now() + LEAGUES_CACHE_TIME
+  });
+
+  return leagues;
+}
+
 async function fetchLiveScores() {
   if (!API_KEY) return [];
 
@@ -433,6 +502,26 @@ app.get("/api/matches", async (req, res) => {
 
     return res.status(500).json({
       source: "Server Error",
+      data: [],
+      count: 0,
+      error: error.message
+    });
+  }
+});
+
+app.get("/api/leagues", async (req, res) => {
+  try {
+    const leagues = await fetchSoccerLeagues();
+    return res.json({
+      source: "TheSportsDB API",
+      sport: "Soccer",
+      data: leagues,
+      count: leagues.length,
+      cached: Boolean(cache.get("soccer-leagues"))
+    });
+  } catch (error) {
+    return res.status(502).json({
+      source: "TheSportsDB API",
       data: [],
       count: 0,
       error: error.message
