@@ -1004,6 +1004,176 @@
       border-color: var(--gold);
     }
 
+    .favorite-leagues-control {
+      min-width: 190px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--bg2);
+      color: white;
+      cursor: pointer;
+      font-weight: 800;
+      text-align: start;
+    }
+
+    .favorite-leagues-control:hover,
+    .favorite-leagues-control:focus {
+      border-color: var(--gold);
+      outline: none;
+    }
+
+    .favorite-leagues-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1100;
+      display: none;
+      overflow-y: auto;
+    }
+
+    .favorite-leagues-modal.show {
+      display: block;
+    }
+
+    .favorite-leagues-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.72);
+      backdrop-filter: blur(5px);
+    }
+
+    .favorite-leagues-panel {
+      position: relative;
+      width: min(680px, 94%);
+      margin: 7vh auto 30px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 25px 80px rgba(0,0,0,.5);
+      overflow: hidden;
+    }
+
+    .favorite-leagues-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 20px;
+      background: var(--card2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .favorite-leagues-header h2 {
+      margin: 0;
+      font-size: 21px;
+    }
+
+    .favorite-leagues-header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .favorite-leagues-close {
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--card);
+      color: white;
+      cursor: pointer;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .favorite-leagues-tools {
+      display: flex;
+      gap: 10px;
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .favorite-leagues-search {
+      flex: 1;
+      min-width: 0;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: var(--bg2);
+      color: white;
+      outline: none;
+    }
+
+    .favorite-leagues-search:focus {
+      border-color: var(--gold);
+    }
+
+    .favorite-leagues-list {
+      max-height: 55vh;
+      overflow-y: auto;
+      padding: 8px 20px 16px;
+    }
+
+    .favorite-league-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 4px;
+      border-bottom: 1px solid rgba(38,61,93,.45);
+      cursor: pointer;
+    }
+
+    .favorite-league-item:last-child {
+      border-bottom: 0;
+    }
+
+    .favorite-league-item input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--gold);
+      flex: 0 0 auto;
+    }
+
+    .favorite-league-main {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .favorite-league-name {
+      display: block;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .favorite-league-meta {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .favorite-leagues-empty {
+      padding: 30px 10px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .favorite-leagues-footer {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+      padding: 15px 20px;
+      border-top: 1px solid var(--border);
+      background: rgba(7,17,31,.35);
+    }
+
+    .favorite-leagues-count {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
     .settings-footer {
       display: flex;
 
@@ -1136,9 +1306,19 @@
         gap: 10px;
       }
 
-      .setting-row select {
+      .setting-row select,
+      .favorite-leagues-control {
         width: 100%;
         min-width: 0;
+      }
+
+      .favorite-leagues-tools {
+        flex-direction: column;
+      }
+
+      .favorite-leagues-footer {
+        flex-direction: column;
+        align-items: stretch;
       }
 
       .settings-footer {
@@ -1601,34 +1781,31 @@
 
         </label>
 
-        <!-- COMPETITIONS -->
+        <!-- FAVORITE LEAGUES -->
 
-        <label class="setting-row">
+        <div class="setting-row">
 
           <span>
 
-            <strong data-i18n="competitionFilter">
-              Competitions
+            <strong data-i18n="favoriteCompetitions">
+              Favorite Competitions
             </strong>
 
-            <small data-i18n="competitionFilterHint">
-              Choose which competition types appear.
+            <small data-i18n="favoriteCompetitionsHint">
+              Choose leagues from TheSportsDB. If none are selected, all matches remain visible.
             </small>
 
           </span>
 
-          <select id="settingCompetitionFilter">
+          <button
+            id="favoriteCompetitionsBtn"
+            class="favorite-leagues-control"
+            type="button"
+          >
+            0
+          </button>
 
-            <option
-              value="all"
-              data-i18n="allCompetitions"
-            >
-              All Competitions
-            </option>
-
-          </select>
-
-        </label>
+        </div>
 
       </div>
 
@@ -1658,6 +1835,86 @@
 
   </div>
 
+  <div
+    id="favoriteCompetitionsModal"
+    class="favorite-leagues-modal"
+    aria-hidden="true"
+  >
+
+    <div
+      class="favorite-leagues-backdrop"
+      id="favoriteCompetitionsBackdrop"
+    ></div>
+
+    <section
+      class="favorite-leagues-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="favoriteCompetitionsTitle"
+    >
+
+      <header class="favorite-leagues-header">
+        <div>
+          <h2 id="favoriteCompetitionsTitle" data-i18n="favoriteCompetitionsTitle">
+            Favorite Competitions
+          </h2>
+          <p data-i18n="favoriteCompetitionsDescription">
+            Select the competitions you want to see first and filter matches to your choices.
+          </p>
+        </div>
+
+        <button
+          id="favoriteCompetitionsClose"
+          class="favorite-leagues-close"
+          type="button"
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </header>
+
+      <div class="favorite-leagues-tools">
+        <input
+          id="favoriteCompetitionsSearch"
+          class="favorite-leagues-search"
+          type="search"
+          autocomplete="off"
+          data-i18n-placeholder="favoriteCompetitionsSearch"
+          placeholder="Search leagues..."
+        >
+      </div>
+
+      <div
+        id="favoriteCompetitionsList"
+        class="favorite-leagues-list"
+      >
+        <div class="favorite-leagues-empty" data-i18n="favoriteCompetitionsLoading">
+          Loading leagues...
+        </div>
+      </div>
+
+      <footer class="favorite-leagues-footer">
+        <span
+          id="favoriteCompetitionsCount"
+          class="favorite-leagues-count"
+        >
+          0
+        </span>
+
+        <button
+          id="favoriteCompetitionsSave"
+          class="settings-primary"
+          type="button"
+          data-i18n="saveSettings"
+        >
+          Save
+        </button>
+      </footer>
+
+    </section>
+
+  </div>
+
   <script src="/socket.io/socket.io.js"></script>
 
   <script>
@@ -1672,7 +1929,7 @@
       language: "modarraj-language",
       timezone: "modarraj-timezone",
       timeFormat: "modarraj-time-format",
-      competitionFilter: "modarraj-competition-filter"
+      favoriteCompetitions: "modarraj-favorite-leagues"
     };
 
 
@@ -1696,10 +1953,6 @@
       "24"
     ];
 
-
-    const supportedCompetitionFilters = [
-      "all"
-    ];
 
 
     let language =
@@ -1725,10 +1978,10 @@
           "24"
         ),
 
-      competitionFilter:
-        getStoredValue(
-          STORAGE_KEYS.competitionFilter,
-          "main"
+      favoriteCompetitions:
+        getStoredJsonValue(
+          STORAGE_KEYS.favoriteCompetitions,
+          []
         )
 
     };
@@ -1765,6 +2018,17 @@
 
     }
 
+
+    function getStoredJsonValue(key, fallback) {
+      const raw = getStoredValue(key, "");
+      if (!raw) return fallback;
+      try {
+        const value = JSON.parse(raw);
+        return Array.isArray(value) ? value.map(String) : fallback;
+      } catch {
+        return fallback;
+      }
+    }
 
     function setStoredValue(
       key,
@@ -1875,16 +2139,6 @@
     }
 
 
-    if (
-      !supportedCompetitionFilters.includes(
-        appSettings.competitionFilter
-      )
-    ) {
-
-      appSettings.competitionFilter = "all";
-
-    }
-
 
     /* =====================================================
        TRANSLATIONS
@@ -1969,26 +2223,29 @@
         otherCompetitions:
           "Other Competitions",
 
-        competitionFilter:
-          "Competitions",
+        favoriteCompetitions:
+          "Favorite Competitions",
 
-        mainCompetitions:
-          "Main Competitions",
+        favoriteCompetitionsHint:
+          "Choose leagues from TheSportsDB. If none are selected, all matches remain visible.",
 
-        womenCompetitions:
-          "Women",
+        favoriteCompetitionsTitle:
+          "Favorite Competitions",
 
-        youthCompetitions:
-          "Youth",
+        favoriteCompetitionsDescription:
+          "Select the competitions you want to follow.",
 
-        otherCompetitionsFilter:
-          "Other",
+        favoriteCompetitionsSearch:
+          "Search leagues...",
 
-        allCompetitions:
+        favoriteCompetitionsLoading:
+          "Loading leagues...",
+
+        favoriteCompetitionsNone:
           "All",
 
-        competitionFilterHint:
-          "Choose which competition types appear.",
+        favoriteCompetitionsEmpty:
+          "No leagues found.",
 
         settingsTitle:
           "Settings",
@@ -2109,26 +2366,29 @@
         otherCompetitions:
           "بطولات أخرى",
 
-        competitionFilter:
-          "البطولات",
+        favoriteCompetitions:
+          "بطولاتك المفضلة",
 
-        mainCompetitions:
-          "البطولات الرئيسية",
+        favoriteCompetitionsHint:
+          "اختر البطولات من TheSportsDB. إذا لم تختر أي بطولة فستظهر جميع المباريات.",
 
-        womenCompetitions:
-          "البطولات النسائية",
+        favoriteCompetitionsTitle:
+          "بطولاتك المفضلة",
 
-        youthCompetitions:
-          "بطولات الشباب",
+        favoriteCompetitionsDescription:
+          "اختر البطولات التي تريد متابعتها.",
 
-        otherCompetitionsFilter:
-          "بطولات أخرى",
+        favoriteCompetitionsSearch:
+          "ابحث عن بطولة...",
 
-        allCompetitions:
+        favoriteCompetitionsLoading:
+          "جاري تحميل البطولات...",
+
+        favoriteCompetitionsNone:
           "الكل",
 
-        competitionFilterHint:
-          "اختر أنواع البطولات التي تريد ظهورها.",
+        favoriteCompetitionsEmpty:
+          "لم يتم العثور على بطولات.",
 
         settingsTitle:
           "الإعدادات",
@@ -3313,19 +3573,17 @@
     }
 
 
-    function competitionIsVisible(
-      match
-    ) {
-      /*
-       * IMPORTANT:
-       * Do not remove matches because their league name is not in our
-       * priority list. TheSportsDB is the source of truth for the
-       * competitions returned by the API. Priority controls ordering only.
-       */
-      return Boolean(
-        match &&
-        typeof match === "object"
-      );
+    function competitionIsVisible(match) {
+      if (!match || typeof match !== "object") return false;
+
+      const favorites = Array.isArray(appSettings.favoriteCompetitions)
+        ? appSettings.favoriteCompetitions.map(String)
+        : [];
+
+      if (!favorites.length) return true;
+
+      const leagueId = String(match?.league?.id || "");
+      return leagueId && favorites.includes(leagueId);
     }
 
 
@@ -4508,6 +4766,195 @@
     }
 
 
+    let availableFavoriteLeagues = [];
+    let favoriteCompetitionsDraft = [];
+    let favoriteCompetitionsLoaded = false;
+
+    function localizedLeagueName(league) {
+      const original = String(league?.name || "").trim();
+      const alternate = String(league?.alternateName || "").trim();
+
+      if (language === "ar") {
+        return LEAGUE_AR_CLIENT[original] || original || alternate || t("otherCompetitions");
+      }
+
+      return original || alternate || t("otherCompetitions");
+    }
+
+    const LEAGUE_AR_CLIENT = {
+      "UEFA Champions League":"دوري أبطال أوروبا",
+      "UEFA Europa League":"الدوري الأوروبي",
+      "UEFA Europa Conference League":"دوري المؤتمر الأوروبي",
+      "English Premier League":"الدوري الإنجليزي الممتاز",
+      "Premier League":"الدوري الإنجليزي الممتاز",
+      "La Liga":"الدوري الإسباني",
+      "Serie A":"الدوري الإيطالي",
+      "Bundesliga":"الدوري الألماني",
+      "Ligue 1":"الدوري الفرنسي",
+      "Saudi Professional League":"الدوري السعودي للمحترفين",
+      "Saudi-Arabian Pro League":"الدوري السعودي للمحترفين",
+      "Saudi Pro League":"الدوري السعودي للمحترفين",
+      "AFC Champions League Elite":"دوري أبطال آسيا للنخبة",
+      "AFC Champions League":"دوري أبطال آسيا",
+      "CAF Champions League":"دوري أبطال أفريقيا",
+      "FIFA World Cup":"كأس العالم",
+      "World Cup":"كأس العالم",
+      "AFC Asian Cup":"كأس آسيا",
+      "Asian Cup":"كأس آسيا",
+      "Africa Cup of Nations":"كأس أمم أفريقيا",
+      "Egyptian Premier League":"الدوري المصري الممتاز",
+      "Qatar Stars League":"الدوري القطري",
+      "UAE Pro League":"الدوري الإماراتي للمحترفين",
+      "Iraq Stars League":"دوري نجوم العراق",
+      "Kuwait Premier League":"الدوري الكويتي الممتاز",
+      "Moroccan Botola":"الدوري المغربي",
+      "Botola Pro":"الدوري المغربي للمحترفين"
+    };
+
+    function updateFavoriteLeaguesButton() {
+      const button = document.getElementById("favoriteCompetitionsBtn");
+      if (!button) return;
+      const count = Array.isArray(appSettings.favoriteCompetitions)
+        ? appSettings.favoriteCompetitions.length
+        : 0;
+      button.textContent = count
+        ? `${count} ${language === "ar" ? "بطولة مختارة" : "selected"}`
+        : t("favoriteCompetitionsNone");
+    }
+
+    function updateFavoriteLeaguesCount() {
+      const count = document.getElementById("favoriteCompetitionsCount");
+      if (!count) return;
+      count.textContent = `${favoriteCompetitionsDraft.length} ${language === "ar" ? "مختارة" : "selected"}`;
+    }
+
+    function renderFavoriteLeaguesList() {
+      const container = document.getElementById("favoriteCompetitionsList");
+      const search = normalizeLeagueName(
+        document.getElementById("favoriteCompetitionsSearch")?.value || ""
+      );
+
+      if (!container) return;
+
+      const filtered = availableFavoriteLeagues.filter(league => {
+        const haystack = normalizeLeagueName(
+          `${league.name} ${league.alternateName} ${league.country}`
+        );
+        return !search || haystack.includes(search);
+      });
+
+      if (!filtered.length) {
+        container.innerHTML = `<div class="favorite-leagues-empty">${escapeHtml(t("favoriteCompetitionsEmpty"))}</div>`;
+        updateFavoriteLeaguesCount();
+        return;
+      }
+
+      container.innerHTML = filtered.map(league => {
+        const id = String(league.id);
+        const checked = favoriteCompetitionsDraft.includes(id);
+        const displayName = localizedLeagueName(league);
+        const meta = [
+          language === "ar" && LEAGUE_AR_CLIENT[league.name] ? league.name : league.country,
+          language === "ar" && LEAGUE_AR_CLIENT[league.name] ? league.country : ""
+        ].filter(Boolean).join(" • ");
+
+        return `
+          <label class="favorite-league-item">
+            <input type="checkbox" data-league-id="${escapeHtml(id)}" ${checked ? "checked" : ""}>
+            <span class="favorite-league-main">
+              <span class="favorite-league-name">${escapeHtml(displayName)}</span>
+              ${meta ? `<span class="favorite-league-meta">${escapeHtml(meta)}</span>` : ""}
+            </span>
+          </label>
+        `;
+      }).join("");
+
+      container.querySelectorAll("input[data-league-id]").forEach(input => {
+        input.addEventListener("change", () => {
+          const id = String(input.dataset.leagueId || "");
+          if (!id) return;
+          if (input.checked) {
+            if (!favoriteCompetitionsDraft.includes(id)) favoriteCompetitionsDraft.push(id);
+          } else {
+            favoriteCompetitionsDraft = favoriteCompetitionsDraft.filter(value => value !== id);
+          }
+          updateFavoriteLeaguesCount();
+        });
+      });
+
+      updateFavoriteLeaguesCount();
+    }
+
+    async function loadFavoriteLeagues() {
+      const container = document.getElementById("favoriteCompetitionsList");
+      if (!container) return;
+
+      if (favoriteCompetitionsLoaded) {
+        renderFavoriteLeaguesList();
+        return;
+      }
+
+      container.innerHTML = `<div class="favorite-leagues-empty">${escapeHtml(t("favoriteCompetitionsLoading"))}</div>`;
+
+      try {
+        const response = await fetch("/api/leagues", {
+          headers: { Accept: "application/json" },
+          cache: "no-store"
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const json = await response.json();
+        availableFavoriteLeagues = Array.isArray(json?.data) ? json.data : [];
+        favoriteCompetitionsLoaded = true;
+        renderFavoriteLeaguesList();
+      } catch (error) {
+        console.error("Favorite leagues error:", error);
+
+        // Fallback: use competitions already returned for the current date.
+        const map = new Map();
+        for (const match of (Array.isArray(window.currentMatches) ? window.currentMatches : [])) {
+          const league = match?.league;
+          if (!league?.id || !league?.originalName) continue;
+          const id = String(league.id);
+          if (!map.has(id)) {
+            map.set(id, {
+              id,
+              name: league.originalName,
+              alternateName: "",
+              country: league.country || "",
+              sport: "Soccer"
+            });
+          }
+        }
+        availableFavoriteLeagues = [...map.values()].sort((a,b) => a.name.localeCompare(b.name));
+        favoriteCompetitionsLoaded = true;
+        renderFavoriteLeaguesList();
+      }
+    }
+
+    function openFavoriteLeagues() {
+      favoriteCompetitionsDraft = Array.isArray(appSettings.favoriteCompetitions)
+        ? [...appSettings.favoriteCompetitions].map(String)
+        : [];
+
+      const modal = document.getElementById("favoriteCompetitionsModal");
+      if (!modal) return;
+      document.getElementById("favoriteCompetitionsSearch").value = "";
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      loadFavoriteLeagues();
+      updateFavoriteLeaguesCount();
+      document.getElementById("favoriteCompetitionsSearch")?.focus();
+    }
+
+    function closeFavoriteLeagues() {
+      const modal = document.getElementById("favoriteCompetitionsModal");
+      if (!modal) return;
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+    }
+
     function syncSettingsControls() {
 
       document.getElementById(
@@ -4528,10 +4975,7 @@
         appSettings.timeFormat;
 
 
-      document.getElementById(
-        "settingCompetitionFilter"
-      ).value =
-        appSettings.competitionFilter;
+      updateFavoriteLeaguesButton();
 
     }
 
@@ -4637,6 +5081,35 @@
       );
 
 
+    document
+      .getElementById("favoriteCompetitionsBtn")
+      .addEventListener("click", openFavoriteLeagues);
+
+    document
+      .getElementById("favoriteCompetitionsClose")
+      .addEventListener("click", closeFavoriteLeagues);
+
+    document
+      .getElementById("favoriteCompetitionsBackdrop")
+      .addEventListener("click", closeFavoriteLeagues);
+
+    document
+      .getElementById("favoriteCompetitionsSearch")
+      .addEventListener("input", renderFavoriteLeaguesList);
+
+    document
+      .getElementById("favoriteCompetitionsSave")
+      .addEventListener("click", () => {
+        appSettings.favoriteCompetitions = [...new Set(favoriteCompetitionsDraft.map(String))];
+        setStoredValue(
+          STORAGE_KEYS.favoriteCompetitions,
+          JSON.stringify(appSettings.favoriteCompetitions)
+        );
+        updateFavoriteLeaguesButton();
+        closeFavoriteLeagues();
+        renderMatches(window.currentMatches || []);
+      });
+
     /* =====================================================
        SAVE SETTINGS
     ===================================================== */
@@ -4677,13 +5150,6 @@
               .value;
 
 
-          const newCompetitionFilter =
-            document
-              .getElementById(
-                "settingCompetitionFilter"
-              )
-              .value;
-
 
           language =
             supportedLanguages.includes(
@@ -4713,13 +5179,6 @@
               : "24";
 
 
-          appSettings.competitionFilter =
-            supportedCompetitionFilters.includes(
-              newCompetitionFilter
-            )
-              ? newCompetitionFilter
-              : "all";
-
 
           setStoredValue(
             STORAGE_KEYS.language,
@@ -4738,11 +5197,6 @@
             appSettings.timeFormat
           );
 
-
-          setStoredValue(
-            STORAGE_KEYS.competitionFilter,
-            appSettings.competitionFilter
-          );
 
 
           /*
@@ -4802,8 +5256,8 @@
             timeFormat:
               "24",
 
-            competitionFilter:
-              "main"
+            favoriteCompetitions:
+              []
 
           };
 
@@ -4827,8 +5281,8 @@
 
 
           setStoredValue(
-            STORAGE_KEYS.competitionFilter,
-            "main"
+            STORAGE_KEYS.favoriteCompetitions,
+            JSON.stringify([])
           );
 
 
@@ -5060,6 +5514,7 @@
     syncSettingsControls();
 
     applyLanguage();
+    updateFavoriteLeaguesButton();
 
     updateDateLabels();
 
