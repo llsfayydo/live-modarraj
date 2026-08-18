@@ -1620,38 +1620,10 @@
           <select id="settingCompetitionFilter">
 
             <option
-              value="main"
-              data-i18n="mainCompetitions"
-            >
-              Main Competitions
-            </option>
-
-            <option
-              value="women"
-              data-i18n="womenCompetitions"
-            >
-              Women
-            </option>
-
-            <option
-              value="youth"
-              data-i18n="youthCompetitions"
-            >
-              Youth
-            </option>
-
-            <option
-              value="other"
-              data-i18n="otherCompetitionsFilter"
-            >
-              Other
-            </option>
-
-            <option
               value="all"
               data-i18n="allCompetitions"
             >
-              All
+              All Competitions
             </option>
 
           </select>
@@ -1700,7 +1672,7 @@
       language: "modarraj-language",
       timezone: "modarraj-timezone",
       timeFormat: "modarraj-time-format",
-      competitionFilter: "modarraj-competition-filter-v2"
+      competitionFilter: "modarraj-competition-filter"
     };
 
 
@@ -1726,10 +1698,6 @@
 
 
     const supportedCompetitionFilters = [
-      "main",
-      "women",
-      "youth",
-      "other",
       "all"
     ];
 
@@ -1760,7 +1728,7 @@
       competitionFilter:
         getStoredValue(
           STORAGE_KEYS.competitionFilter,
-          "all"
+          "main"
         )
 
     };
@@ -1916,7 +1884,6 @@
       appSettings.competitionFilter = "all";
 
     }
-
 
 
     /* =====================================================
@@ -3062,7 +3029,57 @@
         ]
       },
 
+      /* Major domestic / continental cups */
       {
+        score: 174,
+        keys: [
+          "fa cup", "the fa cup", "english fa cup", "كأس الاتحاد الإنجليزي"
+        ]
+      },
+      {
+        score: 173,
+        keys: [
+          "copa del rey", "spanish cup", "copa del rey de futbol", "كأس ملك إسبانيا"
+        ]
+      },
+      {
+        score: 172,
+        keys: [
+          "coppa italia", "italian cup", "كأس إيطاليا"
+        ]
+      },
+      {
+        score: 171,
+        keys: [
+          "dfb-pokal", "dfb pokal", "german cup", "كأس ألمانيا"
+        ]
+      },
+      {
+        score: 170,
+        keys: [
+          "coupe de france", "french cup", "كأس فرنسا"
+        ]
+      },
+      {
+        score: 169,
+        keys: [
+          "king cup", "kings cup", "saudi king cup", "saudi kings cup", "king's cup", "كأس خادم الحرمين الشريفين", "كأس الملك"
+        ]
+      },
+      {
+        score: 168,
+        keys: [
+          "saudi super cup", "saudi supercup", "كأس السوبر السعودي"
+        ]
+      },
+      {
+        score: 160,
+        keys: [
+          "community shield", "fa community shield", "carabao cup", "efl cup",
+          "copa italia", "supercoppa italiana", "spanish super cup", "supercopa de espana",
+          "dfb supercup", "coupe de la ligue", "supercopa"
+        ]
+      },      {
         score: 175,
         keys: [
           "english premier league",
@@ -3299,35 +3316,16 @@
     function competitionIsVisible(
       match
     ) {
-
-      const type =
-        getCompetitionType(
-          match?.league?.name
-        );
-
-
-      switch (
-        appSettings.competitionFilter
-      ) {
-
-        case "women":
-          return type === "women";
-
-        case "youth":
-          return type === "youth";
-
-        case "other":
-          return type === "other";
-
-        case "all":
-          return true;
-
-        case "main":
-        default:
-          return type === "main";
-
-      }
-
+      /*
+       * IMPORTANT:
+       * Do not remove matches because their league name is not in our
+       * priority list. TheSportsDB is the source of truth for the
+       * competitions returned by the API. Priority controls ordering only.
+       */
+      return Boolean(
+        match &&
+        typeof match === "object"
+      );
     }
 
 
@@ -3339,22 +3337,8 @@
         normalizeLeagueName(name);
 
 
-      if (
-        isWomenCompetition(value)
-      ) {
-
-        return 5;
-
-      }
-
-
-      if (
-        isYouthCompetition(value)
-      ) {
-
-        return 4;
-
-      }
+      // Women/youth competitions remain visible and are not filtered out.
+      // They use the normal fallback priority unless explicitly matched above.
 
 
       for (
@@ -3474,6 +3458,25 @@
       b
     ) {
 
+      const statusA =
+        getStatusOrder(a);
+
+      const statusB =
+        getStatusOrder(b);
+
+
+      if (
+        statusA !== statusB
+      ) {
+
+        return (
+          statusA -
+          statusB
+        );
+
+      }
+
+
       const priorityA =
         getLeaguePriority(
           a?.league?.name
@@ -3493,25 +3496,6 @@
         return (
           priorityB -
           priorityA
-        );
-
-      }
-
-
-      // داخل نفس مستوى البطولة: المباشر أولًا.
-      const statusA =
-        getStatusOrder(a);
-
-      const statusB =
-        getStatusOrder(b);
-
-      if (
-        statusA !== statusB
-      ) {
-
-        return (
-          statusA -
-          statusB
         );
 
       }
@@ -4819,7 +4803,7 @@
               "24",
 
             competitionFilter:
-              "all"
+              "main"
 
           };
 
@@ -4844,7 +4828,7 @@
 
           setStoredValue(
             STORAGE_KEYS.competitionFilter,
-            "all"
+            "main"
           );
 
 
