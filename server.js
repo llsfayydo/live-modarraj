@@ -213,16 +213,53 @@ function priorityOf(event) {
   return score;
 }
 
+function buildEventTimestamp(event) {
+  // TheSportsDB's current soccer data exposes strTimestamp as the canonical
+  // UTC event timestamp. Since the API normalizes it as
+  // YYYY-MM-DDTHH:MM:SS (without a zone suffix), explicitly mark it as UTC.
+  // This prevents the browser/server from interpreting it as local time.
+  const rawTimestamp = String(event?.strTimestamp || "").trim();
+
+  if (rawTimestamp) {
+    const normalized =
+      /Z$|[+-]\d{2}:?\d{2}$/.test(rawTimestamp)
+        ? rawTimestamp
+        : `${rawTimestamp}Z`;
+
+    const parsed = new Date(normalized);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toISOString();
+    }
+  }
+
+  // Fallback for older/partial records: soccer strTime is UTC.
+  const date = event?.dateEvent || event?.strEventDate || "";
+  const time = event?.strEventTime || event?.strTime || "";
+
+  if (!date || !time || !/^\d{2}:\d{2}(:\d{2})?$/.test(String(time))) {
+    return "";
+  }
+
+  const normalizedTime = String(time).length === 5 ? `${time}:00` : String(time);
+  const raw = `${date}T${normalizedTime}Z`;
+  const parsed = new Date(raw);
+
+  return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString();
+}
+
 function normalizeEvent(event, source = "TheSportsDB") {
   const date = event?.dateEvent || event?.strEventDate || "";
-  const time = event?.strEventTime || event?.strTime || "00:00:00";
+  const timestamp = buildEventTimestamp(event);
   const status = statusOf(event);
 
   return {
     fixture: {
       id: event?.idEvent || event?.idLiveScore ||
         `${event?.idHomeTeam || ""}-${event?.idAwayTeam || ""}-${date}`,
-      date: `${date}T${time}`,
+      // Always expose one canonical UTC timestamp to the frontend.
+      // The frontend converts this timestamp once to the selected timezone.
+      date: timestamp || date,
+      timestamp,
       status: {
         short: status,
         elapsed: event?.strProgress || ""
@@ -276,6 +313,55 @@ async function fetchEventsDay(date) {
   } catch (error) {
     console.error("eventsday:", error.response?.status || error.message);
     return [];
+  }
+}
+
+
+async function fetchEventTimeline(eventId) {
+  if (!API_KEY) throw new Error("THESPORTSDB_API_KEY غير موجود");
+
+  const id = String(eventId || "").trim();
+  if (!/^\d+$/.test(id)) throw new Error("معرف المباراة غير صالح");
+
+  const cacheKey = `timeline:${id}`;
+  const cached = cache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) {
+    return { data: cached.data, cached: true };
+  }
+
+  try {
+    const response = await api.get(
+      `https://www.thesportsdb.com/api/v2/json/lookup/event_timeline/${id}`,
+      {
+        headers: {
+          "X-API-KEY": API_KEY,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    const body = response.data;
+    const timeline =
+      Array.isArray(body) ? body :
+      Array.isArray(body?.timeline) ? body.timeline :
+      Array.isArray(body?.data) ? body.data :
+      Array.isArray(body?.events) ? body.events : [];
+
+    cache.set(cacheKey, {
+      data: timeline,
+      expiresAt: Date.now() + 60 * 1000
+    });
+
+    return { data: timeline, cached: false };
+  } catch (error) {
+    const status = error.response?.status;
+    console.error("Event timeline:", status || error.message);
+
+    if (status === 401 || status === 403) {
+      throw new Error("بيانات أحداث المباراة غير متاحة لمفتاح TheSportsDB الحالي");
+    }
+
+    throw new Error("تعذر جلب أحداث المباراة من TheSportsDB");
   }
 }
 
@@ -502,6 +588,28 @@ app.get("/api/matches", async (req, res) => {
 
     return res.status(500).json({
       source: "Server Error",
+      data: [],
+      count: 0,
+      error: error.message
+    });
+  }
+});
+
+app.get("/api/matches/:eventId/timeline", async (req, res) => {
+  try {
+    const result = await fetchEventTimeline(req.params.eventId);
+    return res.json({
+      source: result.cached ? "Local Cache" : "TheSportsDB API V2",
+      eventId: String(req.params.eventId),
+      data: result.data,
+      count: result.data.length,
+      cached: result.cached,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("/api/matches/:eventId/timeline:", error);
+    return res.status(502).json({
+      source: "TheSportsDB API",
       data: [],
       count: 0,
       error: error.message
