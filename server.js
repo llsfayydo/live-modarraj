@@ -618,7 +618,22 @@ function mergeEvents(arrays) {
 
       const incomingStatus = statusOf(event);
       if (incomingStatus === "LIVE" || incomingStatus === "HT") {
-        map.set(id, event);
+        /*
+          The V2 live-score payload doesn't always carry
+          idEvent (it may only have idLiveScore). If we let it
+          fully replace the V1 event, fixture.id downstream
+          would switch to idLiveScore, and TheSportsDB's
+          event_timeline endpoint only understands the
+          original idEvent — the match card would then always
+          show "no events" for anything that goes live, even
+          when TheSportsDB does have timeline data. Keep the
+          original idEvent when the incoming live object
+          doesn't have its own.
+        */
+        map.set(id, {
+          ...event,
+          idEvent: event.idEvent || existing.idEvent
+        });
       }
     }
   }
