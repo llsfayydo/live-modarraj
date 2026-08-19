@@ -4268,6 +4268,44 @@
       }
     }
 
+    /*
+      Team/league objects carry two names: `name` (Arabic when
+      the server recognizes the team/league, otherwise the raw
+      English name as a fallback) and `originalName` (always
+      the raw English name from TheSportsDB). This picks the
+      right one for the active language toggle, falling back
+      to whichever is available.
+    */
+
+    function pickLocalizedName(
+      entity
+    ) {
+
+      const original =
+        entity?.originalName || "";
+
+      const localized =
+        entity?.name || "";
+
+      if (
+        appSettings.language === "ar"
+      ) {
+
+        return (
+          localized ||
+          original
+        );
+
+      }
+
+      return (
+        original ||
+        localized
+      );
+
+    }
+
+
     function renderMatch(
       match
     ) {
@@ -4314,7 +4352,9 @@
 
 
       const leagueName =
-        match?.league?.name ||
+        pickLocalizedName(
+          match?.league
+        ) ||
         t("otherCompetitions");
 
 
@@ -4398,7 +4438,7 @@
 
               <div class="team-name">
                 ${escapeHtml(
-                  home.name ||
+                  pickLocalizedName(home) ||
                   t("unknownTeam")
                 )}
               </div>
@@ -4454,7 +4494,7 @@
 
               <div class="team-name">
                 ${escapeHtml(
-                  away.name ||
+                  pickLocalizedName(away) ||
                   t("unknownTeam")
                 )}
               </div>
