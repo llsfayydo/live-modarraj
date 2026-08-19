@@ -674,6 +674,105 @@
       font-weight: 900;
     }
 
+
+    .match-events-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      margin-top: 12px;
+      padding: 7px 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(255,255,255,.04);
+      color: #dce7f5;
+      font-size: 11px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .match-events-toggle:hover {
+      background: rgba(255,255,255,.08);
+    }
+
+    .match-events-toggle.loading {
+      opacity: .65;
+      pointer-events: none;
+    }
+
+    .match-events {
+      display: none;
+      margin-top: 12px;
+      padding: 10px;
+      border-top: 1px solid rgba(38,61,93,.7);
+    }
+
+    .match-events.show {
+      display: block;
+    }
+
+    .match-events-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .match-events-header {
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:8px;
+      padding:8px 10px;
+      border-radius:10px;
+      background:rgba(255,255,255,.045);
+    }
+
+    .timeline-updated {
+      font-size:10px;
+      opacity:.7;
+      direction:ltr;
+      white-space:nowrap;
+    }
+
+    .timeline-event {
+      display: grid;
+      grid-template-columns: 46px 30px 1fr;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.035);
+      font-size: 11px;
+    }
+
+    .timeline-minute {
+      font-weight: 950;
+      color: #ffd35b;
+      direction: ltr;
+      text-align: center;
+    }
+
+    .timeline-icon {
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .timeline-main {
+      min-width: 0;
+    }
+
+    .timeline-player {
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+
+    .timeline-meta {
+      margin-top: 2px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+
     /* =========================
        EMPTY / LOADING / ERROR
     ========================= */
@@ -2311,6 +2410,27 @@
         finished:
           "Finished",
 
+        matchEvents:
+          "Match events",
+
+        lastUpdated:
+          "Last updated",
+
+        refreshEvents:
+          "Refresh events",
+
+        matchCenter:
+          "Match Center",
+
+        eventsLoading:
+          "Loading match events...",
+
+        eventsEmpty:
+          "No match events available.",
+
+        eventsError:
+          "Unable to load match events.",
+
         venue:
           "Venue",
 
@@ -2462,6 +2582,27 @@
 
         finished:
           "انتهت المباراة",
+
+        matchEvents:
+          "أحداث المباراة",
+
+        lastUpdated:
+          "آخر تحديث",
+
+        refreshEvents:
+          "تحديث الأحداث",
+
+        matchCenter:
+          "مركز المباراة",
+
+        eventsLoading:
+          "جاري تحميل أحداث المباراة...",
+
+        eventsEmpty:
+          "لا توجد أحداث متاحة لهذه المباراة.",
+
+        eventsError:
+          "تعذر تحميل أحداث المباراة.",
 
         venue:
           "الملعب",
@@ -3047,7 +3188,8 @@
 
 
       /*
-        ISO timestamps with timezone.
+        Server timestamps from TheSportsDB are normalized to UTC.
+        Explicit offsets/Z are respected and converted exactly once below.
       */
 
       if (
@@ -3963,6 +4105,169 @@
        MATCH CARD
     ===================================================== */
 
+
+    const timelineCache = new Map();
+    const timelineUpdatedAt = new Map();
+    const timelineRefreshTimers = new Map();
+
+    function timelineValue(event, keys) {
+      for (const key of keys) {
+        const value = event?.[key];
+        if (value !== null && value !== undefined && String(value).trim()) {
+          return String(value).trim();
+        }
+      }
+      return "";
+    }
+
+    function timelineIcon(event) {
+      const type = timelineValue(event, [
+        "strTimeline", "strEvent", "strType", "strEventType", "event"
+      ]).toLowerCase();
+      if (type.includes("red")) return "🟥";
+      if (type.includes("yellow")) return "🟨";
+      if (type.includes("goal")) return "⚽";
+      if (type.includes("assist")) return "🅰️";
+      if (type.includes("sub")) return "🔄";
+      return "•";
+    }
+
+    function timelineTitle(event) {
+      return timelineValue(event, [
+        "strTimeline", "strEvent", "strType", "strEventType", "event"
+      ]) || "Match event";
+    }
+
+    function timelineMinuteValue(event) {
+      return timelineValue(event, [
+        "strTime", "strMinute", "intTime", "minute", "strTimestamp"
+      ]);
+    }
+
+    function timelineSortValue(event) {
+      const raw = timelineMinuteValue(event);
+      const match = String(raw).match(/(\d+)\s*(?:\+\s*(\d+))?/);
+      if (!match) return 999999;
+      return Number(match[1]) * 100 + Number(match[2] || 0);
+    }
+
+    function formatTimelineUpdated(id) {
+      const timestamp = timelineUpdatedAt.get(String(id));
+      if (!timestamp) return "";
+      const time = new Date(timestamp).toLocaleTimeString(
+        language === "ar" ? "ar-SA" : "en-US",
+        { hour: "2-digit", minute: "2-digit", second: "2-digit" }
+      );
+      return `${t("lastUpdated")}: ${time}`;
+    }
+
+    function renderTimeline(events, eventId) {
+      const id = String(eventId || "");
+      const header = `
+        <div class="match-events-header">
+          <strong>⚽ ${escapeHtml(t("matchCenter"))}</strong>
+          <span class="timeline-updated">${escapeHtml(formatTimelineUpdated(id))}</span>
+        </div>`;
+
+      if (!Array.isArray(events) || !events.length) {
+        return `${header}<div class="message">${escapeHtml(t("eventsEmpty"))}</div>`;
+      }
+
+      const rows = [...events].sort((a, b) => timelineSortValue(a) - timelineSortValue(b));
+
+      return `${header}<div class="match-events-list">${rows.map(event => {
+        const minute = timelineMinuteValue(event) || "-";
+        const player = timelineValue(event, ["strPlayer", "strPlayerName", "player", "name"]);
+        const team = timelineValue(event, ["strTeam", "strTeamName", "team"]);
+        const assist = timelineValue(event, ["strAssist", "strAssistPlayer", "assist"]);
+        const title = timelineTitle(event);
+        const meta = [title, team, assist ? `${language === "ar" ? "تمريرة حاسمة" : "Assist"}: ${assist}` : ""].filter(Boolean).join(" • ");
+        return `
+          <div class="timeline-event">
+            <div class="timeline-minute">${escapeHtml(minute)}${String(minute).includes("'") ? "" : "'"}</div>
+            <div class="timeline-icon" aria-hidden="true">${timelineIcon(event)}</div>
+            <div class="timeline-main">
+              <div class="timeline-player">${escapeHtml(player || title)}</div>
+              <div class="timeline-meta">${escapeHtml(meta)}</div>
+            </div>
+          </div>`;
+      }).join("")}</div>`;
+    }
+
+    function stopTimelineRefresh(eventId) {
+      const id = String(eventId || "");
+      const timer = timelineRefreshTimers.get(id);
+      if (timer) clearInterval(timer);
+      timelineRefreshTimers.delete(id);
+    }
+
+    function shouldRefreshTimeline(match) {
+      const status = getMatchStatus(match);
+      return ["LIVE", "HT"].includes(status);
+    }
+
+    function findCurrentMatch(eventId) {
+      return (window.currentMatches || []).find(
+        match => String(match?.fixture?.id || "") === String(eventId || "")
+      );
+    }
+
+    function startTimelineRefresh(eventId, button, container) {
+      const id = String(eventId || "");
+      stopTimelineRefresh(id);
+      const match = findCurrentMatch(id);
+      if (!shouldRefreshTimeline(match)) return;
+      const timer = setInterval(() => {
+        if (!container.classList.contains("show")) {
+          stopTimelineRefresh(id);
+          return;
+        }
+        loadMatchTimeline(id, button, container, true);
+      }, 45000);
+      timelineRefreshTimers.set(id, timer);
+    }
+
+    async function loadMatchTimeline(eventId, button, container, silent = false) {
+      const id = String(eventId || "").trim();
+      if (!id) return;
+
+      if (!silent && timelineCache.has(id)) {
+        container.innerHTML = renderTimeline(timelineCache.get(id), id);
+        container.classList.add("show");
+        startTimelineRefresh(id, button, container);
+        return;
+      }
+
+      if (!silent) {
+        button.classList.add("loading");
+        container.classList.add("show");
+        container.innerHTML = `<div class="message">${escapeHtml(t("eventsLoading"))}</div>`;
+      }
+
+      try {
+        const response = await fetch(`/api/matches/${encodeURIComponent(id)}/timeline`, {
+          headers: { Accept: "application/json" },
+          cache: "no-store"
+        });
+        const json = await response.json();
+        if (!response.ok) throw new Error(json?.error || "Timeline request failed");
+        const events = Array.isArray(json?.data) ? json.data : [];
+        timelineCache.set(id, events);
+        timelineUpdatedAt.set(id, Date.now());
+        if (container.classList.contains("show")) {
+          container.innerHTML = renderTimeline(events, id);
+        }
+        startTimelineRefresh(id, button, container);
+      } catch (error) {
+        console.error("Match timeline:", error);
+        if (!silent) {
+          container.innerHTML = `<div class="message">${escapeHtml(t("eventsError"))}</div>`;
+        }
+      } finally {
+        button.classList.remove("loading");
+      }
+    }
+
     function renderMatch(
       match
     ) {
@@ -4213,6 +4518,20 @@
               `
               : ""
           }
+
+          ${/^\d+$/.test(String(match?.fixture?.id || "")) ? `
+            <div style="text-align:center">
+              <button
+                class="match-events-toggle"
+                type="button"
+                data-timeline-id="${escapeHtml(match.fixture.id)}"
+                aria-expanded="false"
+              >
+                ⚽ ${escapeHtml(t("matchEvents"))}
+              </button>
+            </div>
+            <div class="match-events" data-timeline-container="${escapeHtml(match.fixture.id)}"></div>
+          ` : ""}
 
         </article>
 
@@ -5634,6 +5953,25 @@
     /* =====================================================
        REAL-TIME SOCKET UPDATES
     ===================================================== */
+
+    document.addEventListener("click", event => {
+      const button = event.target.closest("[data-timeline-id]");
+      if (!button) return;
+
+      const id = button.dataset.timelineId;
+      const container = document.querySelector(
+        `[data-timeline-container="${CSS.escape(id)}"]`
+      );
+      if (!container) return;
+
+      const willOpen = !container.classList.contains("show");
+      container.classList.toggle("show", willOpen);
+      button.setAttribute("aria-expanded", String(willOpen));
+
+      if (willOpen) {
+        loadMatchTimeline(id, button, container);
+      }
+    });
 
     const socket =
       typeof io === "function"
